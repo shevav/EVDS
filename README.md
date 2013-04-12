@@ -53,3 +53,62 @@ The main version of EVDS is 64-bit, but it is also available in a 32-bit version
 EVDS supports the following platforms at the moment:
  - Windows (32-bit and 64-bit)
  - Linux (32-bit and 64-bit)
+ 
+Example
+--------------------------------------------------------------------------------
+[Documentation for the EVDS library is available here](http://evds.wireos.com/).
+
+The EVDS library is hopefully easy to use, but requires at least basic knowledge
+of aerospace topics. Here's a sample code for a small simulator:
+```c
+void main() {
+	EVDS_SYSTEM* system;
+	EVDS_OBJECT* inertial_system;
+	EVDS_OBJECT* earth;
+	EVDS_OBJECT* satellite;
+
+	EVDS_System_Create(&system);
+	EVDS_Common_Register(system);
+
+	//Create inertial system/propagator
+	EVDS_Object_Create(system,0,&inertial_system);
+	EVDS_Object_SetType(inertial_system,"propagator_rk4");
+	EVDS_Object_Initialize(inertial_system,1);
+
+	//Create planet Earth
+	EVDS_Object_Create(system,inertial_system,&earth);
+	EVDS_Object_SetType(earth,"planet");
+	EVDS_Object_SetName(earth,"Earth");
+	EVDS_Object_AddFloatVariable(earth,"mu",3.9860044e14,0);    //m3 sec-2
+	EVDS_Object_AddFloatVariable(earth,"radius",6378.145e3,0);  //m
+	EVDS_Object_AddFloatVariable(earth,"period",86164.10,0);    //sec
+	EVDS_Object_SetPosition(earth,inertial_system,0,0,0);
+	EVDS_Object_Initialize(earth,1);
+
+	//Load satellite
+	EVDS_Object_LoadFromString(inertial_system,
+"<EVDS>"
+"  <object type=\"vessel\" name=\"Satellite\">"
+"    <parameter name=\"mass\">1000</parameter>"
+"    <parameter name=\"ixx\">100</parameter>"
+"    <parameter name=\"iyy\">1000</parameter>"
+"    <parameter name=\"izz\">500</parameter>"
+"    <parameter name=\"cm\">1.0 0.0 -0.5</parameter>"
+"  </object>"
+"</EVDS>",&satellite);
+	EVDS_Object_SetPosition(satellite,inertial_system,6728e3,0,0);
+	EVDS_Object_SetVelocity(satellite,inertial_system,0,7700,0);
+	EVDS_Object_Initialize(satellite,1);
+
+	//Main simulation loop
+	while (1) {
+		//Propagate state
+		EVDS_Object_Solve(inertial_system,1.0);
+
+		//Add a small delay
+		SIMC_Thread_Sleep(0.02);
+	}
+
+	EVDS_System_Destroy(system);
+}
+```
