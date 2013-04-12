@@ -1,0 +1,249 @@
+////////////////////////////////////////////////////////////////////////////////
+/// @file
+////////////////////////////////////////////////////////////////////////////////
+/// Copyright (C) 2012-2013, Black Phoenix
+/// All rights reserved.
+///
+/// Redistribution and use in source and binary forms, with or without
+/// modification, are permitted provided that the following conditions are met:
+///   - Redistributions of source code must retain the above copyright
+///     notice, this list of conditions and the following disclaimer.
+///   - Redistributions in binary form must reproduce the above copyright
+///     notice, this list of conditions and the following disclaimer in the
+///     documentation and/or other materials provided with the distribution.
+///   - Neither the name of the author nor the names of the contributors may
+///     be used to endorse or promote products derived from this software without
+///     specific prior written permission.
+///
+/// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+/// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+/// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+/// DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDERS BE LIABLE FOR ANY
+/// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+/// (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+/// LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+/// ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+/// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+/// SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+////////////////////////////////////////////////////////////////////////////////
+/// @page EVDS_Solver_RocketEngine Rocket Engine
+///
+/// The rocket engine simulation has the following features:
+///	 - Parametric rocket engine geometry.
+///	 - Rocket engine perfomance is calculated from variables defined (geometric variables
+///    or explicit perfomance data).
+///  - Engine perfomance variation due to external pressure is computed.
+///	 - Thrust throttle limit can be defined.
+///	 - Finite throttle up/throttle down time is simulated, finite startup/shutdown times.
+///	 - Engine thrust variation is integrated from several points over a single time step
+///    (if a solver like RK4 is used).
+///
+/// The following parameters define the rocket engine geometry:
+///  - 
+////////////////////////////////////////////////////////////////////////////////
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+#include "evds.h"
+
+
+#ifndef DOXYGEN_INTERNAL_STRUCTS
+typedef struct EVDS_SOLVER_ENGINE_USERDATA_TAG {
+	EVDS_VARIABLE *key;
+	EVDS_VARIABLE *force;
+} EVDS_SOLVER_ENGINE_USERDATA;
+#endif
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// @brief Generate geometry for the rocket engine
+////////////////////////////////////////////////////////////////////////////////
+int EVDS_InternalRocketEngine_GenerateGeometry(EVDS_OBJECT* object) {
+	EVDS_VARIABLE* geometry;
+	EVDS_VARIABLE* variable;
+
+	//Default values
+	EVDS_REAL exit_radius = 0;
+	EVDS_REAL chamber_radius = 0;
+	EVDS_REAL chamber_length = 0;
+	EVDS_REAL area_ratio = 0;
+	EVDS_REAL nozzle_length = 0;
+	EVDS_REAL divergence_angle = 0;
+
+	//Reset the cross-sections for the engine
+	if (EVDS_Object_GetVariable(object,"csection_geometry",&geometry) == EVDS_OK) {
+		EVDS_Variable_Destroy(geometry);
+	}
+	EVDS_Object_AddVariable(object,"csection_geometry",EVDS_VARIABLE_TYPE_NESTED,&geometry);
+
+	//Get engine parameters (FIXME: use userdata)	
+	if (EVDS_Object_GetVariable(object,"exit_radius",&variable) == EVDS_OK)			EVDS_Variable_GetReal(variable,&exit_radius);
+	if (EVDS_Object_GetVariable(object,"chamber_radius",&variable) == EVDS_OK)		EVDS_Variable_GetReal(variable,&chamber_radius);
+	if (EVDS_Object_GetVariable(object,"chamber_length",&variable) == EVDS_OK)		EVDS_Variable_GetReal(variable,&chamber_length);
+	if (EVDS_Object_GetVariable(object,"area_ratio",&variable) == EVDS_OK)			EVDS_Variable_GetReal(variable,&area_ratio);
+	if (EVDS_Object_GetVariable(object,"nozzle_length",&variable) == EVDS_OK)		EVDS_Variable_GetReal(variable,&nozzle_length);
+	if (EVDS_Object_GetVariable(object,"divergence_angle",&variable) == EVDS_OK)	EVDS_Variable_GetReal(variable,&divergence_angle);
+
+	//Sanity checks and limits for inputs
+	if (divergence_angle > 0.0) {
+		if (divergence_angle < 1.0) divergence_angle = 1.0;
+		if (divergence_angle > 80.0) divergence_angle = 80.0;
+		nozzle_length = exit_radius / tan(EVDS_RAD(divergence_angle));
+	}
+	if (area_ratio < 0.1) area_ratio = 0.1;
+
+	//Generate correct geometry
+	if (1) {
+		EVDS_VARIABLE* chamber_tip;
+		EVDS_VARIABLE* chamber_rim;
+		EVDS_VARIABLE* nozzle_start;
+		EVDS_VARIABLE* nozzle_throat;
+		EVDS_VARIABLE* nozzle_end;
+
+		//Add cross-sections
+		EVDS_Variable_AddNested(geometry,"csection_geometry",EVDS_VARIABLE_TYPE_NESTED,&chamber_tip);
+		EVDS_Variable_AddNested(geometry,"csection_geometry",EVDS_VARIABLE_TYPE_NESTED,&chamber_rim);
+		EVDS_Variable_AddNested(geometry,"csection_geometry",EVDS_VARIABLE_TYPE_NESTED,&nozzle_start);
+		EVDS_Variable_AddNested(geometry,"csection_geometry",EVDS_VARIABLE_TYPE_NESTED,&nozzle_throat);
+		EVDS_Variable_AddNested(geometry,"csection_geometry",EVDS_VARIABLE_TYPE_NESTED,&nozzle_end);
+
+		//Radius
+		EVDS_Variable_AddFloatAttribute(chamber_tip,	"rx",0.00,0);
+		EVDS_Variable_AddFloatAttribute(chamber_rim,	"rx",chamber_radius,0);
+		EVDS_Variable_AddFloatAttribute(nozzle_start,	"rx",chamber_radius,0);
+		EVDS_Variable_AddFloatAttribute(nozzle_throat,	"rx",exit_radius*sqrt(1/area_ratio),0);
+		EVDS_Variable_AddFloatAttribute(nozzle_end,		"rx",exit_radius,0);
+
+		//Tangents
+		//EVDS_Variable_AddFloatAttribute(chamber_tip,	"tangent_p_radial",chamber_radius,0);
+		EVDS_Variable_AddFloatAttribute(nozzle_throat,	"tangent_m_radial",0.0,0);
+		EVDS_Variable_AddFloatAttribute(nozzle_throat,	"tangent_m_offset",0.0,0);
+		EVDS_Variable_AddFloatAttribute(nozzle_throat,	"tangent_p_radial",exit_radius*0.5,0);
+		EVDS_Variable_AddFloatAttribute(nozzle_throat,	"tangent_p_offset",exit_radius*0.5,0);
+
+		//Offsets
+		EVDS_Variable_AddFloatAttribute(chamber_tip,	"add_offset",0.0,0);
+		EVDS_Variable_AddFloatAttribute(chamber_rim,	"add_offset",0.0,0);
+		EVDS_Variable_AddFloatAttribute(nozzle_start,	"add_offset",0.0,0);
+		EVDS_Variable_AddFloatAttribute(nozzle_throat,	"add_offset",0.0,0);
+		EVDS_Variable_AddFloatAttribute(nozzle_end,		"add_offset",0.0,0);
+
+		EVDS_Variable_AddFloatAttribute(chamber_tip,	"offset",-chamber_length,0);
+		EVDS_Variable_AddFloatAttribute(chamber_rim,	"offset",-chamber_length,0); //+chamber_radius
+		EVDS_Variable_AddFloatAttribute(nozzle_start,	"offset",0,0);
+		EVDS_Variable_AddFloatAttribute(nozzle_throat,	"offset",nozzle_length*0.1,0);
+		EVDS_Variable_AddFloatAttribute(nozzle_end,		"offset",nozzle_length,0);
+
+		//Thickness
+		EVDS_Variable_AddFloatAttribute(chamber_tip,	"thickness", 0.02,0);
+		EVDS_Variable_AddFloatAttribute(chamber_rim,	"thickness", 0.02,0);
+		EVDS_Variable_AddFloatAttribute(nozzle_start,	"thickness", 0.02,0);
+		EVDS_Variable_AddFloatAttribute(nozzle_throat,	"thickness", 0.02,0);
+		EVDS_Variable_AddFloatAttribute(nozzle_end,		"thickness", 0.02,0);
+	}
+	return EVDS_OK;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// @brief Update engine internal state
+////////////////////////////////////////////////////////////////////////////////
+int EVDS_InternalRocketEngine_Solve(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVDS_OBJECT* object, EVDS_REAL delta_time) {
+	return EVDS_OK;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// @brief Output engine forces
+////////////////////////////////////////////////////////////////////////////////
+int EVDS_InternalRocketEngine_Integrate(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVDS_OBJECT* object,
+								  EVDS_REAL delta_time, EVDS_STATE_VECTOR* state, EVDS_STATE_VECTOR_DERIVATIVE* derivative) {
+	char key = 0;
+	EVDS_REAL force;
+	EVDS_SOLVER_ENGINE_USERDATA* userdata;
+	EVDS_ERRCHECK(EVDS_Object_GetSolverdata(object,(void**)&userdata));
+
+	//Get variables
+	EVDS_Variable_GetReal(userdata->force,&force);
+	EVDS_Variable_GetString(userdata->key,&key,1,0);
+
+	//Calculate force
+	//if (key) {
+		/*extern int glfwGetKey( int key );
+
+		if (glfwGetKey(key)) {
+			EVDS_Vector_Set(&derivative->force,EVDS_VECTOR_FORCE,object,force,0.0,0.0);
+		} else {
+			EVDS_Vector_Set(&derivative->force,EVDS_VECTOR_FORCE,object,0.0,0.0,0.0);
+		}*/
+	//} else {
+		//EVDS_Vector_Set(&derivative->force,EVDS_VECTOR_FORCE,object,0.0,0.0,0.0);
+	//}
+	EVDS_Vector_Set(&derivative->force,EVDS_VECTOR_FORCE,object,-100.0,0.0,0.0);
+	EVDS_Vector_SetPosition(&derivative->force,object,0.0,0.0,0.0);
+	return EVDS_OK;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// @brief Initialize solver
+////////////////////////////////////////////////////////////////////////////////
+int EVDS_InternalRocketEngine_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVDS_OBJECT* object) {
+	EVDS_REAL mass = 1.0;
+	EVDS_SOLVER_ENGINE_USERDATA* userdata;
+	if (EVDS_Object_CheckType(object,"rocket_engine") != EVDS_OK) return EVDS_IGNORE_OBJECT; 
+
+	//Create userdata
+	userdata = (EVDS_SOLVER_ENGINE_USERDATA*)malloc(sizeof(EVDS_SOLVER_ENGINE_USERDATA));
+	memset(userdata,0,sizeof(EVDS_SOLVER_ENGINE_USERDATA));
+	EVDS_ERRCHECK(EVDS_Object_SetSolverdata(object,userdata));
+
+	//Add variables
+	EVDS_Object_AddVariable(object,"key",EVDS_VARIABLE_TYPE_STRING,&userdata->key);
+	EVDS_Object_AddVariable(object,"force",EVDS_VARIABLE_TYPE_FLOAT,&userdata->force);
+
+	//Generate geometry for the rocket engine
+	EVDS_InternalRocketEngine_GenerateGeometry(object);
+	return EVDS_CLAIM_OBJECT;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// @brief Deinitialize engine solver
+////////////////////////////////////////////////////////////////////////////////
+int EVDS_InternalRocketEngine_Deinitialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVDS_OBJECT* object) {
+	EVDS_SOLVER_ENGINE_USERDATA* userdata;
+	EVDS_ERRCHECK(EVDS_Object_GetSolverdata(object,(void**)&userdata));
+	free(userdata);
+	return EVDS_OK;
+}
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+EVDS_SOLVER EVDS_Solver_RocketEngine = {
+	EVDS_InternalRocketEngine_Initialize, //OnInitialize
+	EVDS_InternalRocketEngine_Deinitialize, //OnDeinitialize
+	EVDS_InternalRocketEngine_Solve, //OnSolve
+	EVDS_InternalRocketEngine_Integrate, //OnIntegrate
+	0, //OnStateSave
+	0, //OnStateLoad
+	0, //OnStartup
+	0, //OnShutdown
+};
+////////////////////////////////////////////////////////////////////////////////
+/// @brief Register engine solver
+///
+/// @param[in] system Pointer to EVDS_SYSTEM
+///
+/// @returns Error code
+/// @retval EVDS_OK Successfully completed
+/// @retval EVDS_ERROR_BAD_PARAMETER "system" is null
+/// @retval EVDS_ERROR_BAD_STATE Cannot register solvers in current state
+////////////////////////////////////////////////////////////////////////////////
+int EVDS_RocketEngine_Register(EVDS_SYSTEM* system) {
+	return EVDS_Solver_Register(system,&EVDS_Solver_RocketEngine);
+}

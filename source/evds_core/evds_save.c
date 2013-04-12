@@ -1,0 +1,270 @@
+////////////////////////////////////////////////////////////////////////////////
+/// @file
+////////////////////////////////////////////////////////////////////////////////
+/// Copyright (C) 2012-2013, Black Phoenix
+/// All rights reserved.
+///
+/// Redistribution and use in source and binary forms, with or without
+/// modification, are permitted provided that the following conditions are met:
+///   - Redistributions of source code must retain the above copyright
+///     notice, this list of conditions and the following disclaimer.
+///   - Redistributions in binary form must reproduce the above copyright
+///     notice, this list of conditions and the following disclaimer in the
+///     documentation and/or other materials provided with the distribution.
+///   - Neither the name of the author nor the names of the contributors may
+///     be used to endorse or promote products derived from this software without
+///     specific prior written permission.
+///
+/// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+/// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+/// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+/// DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDERS BE LIABLE FOR ANY
+/// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+/// (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+/// LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+/// ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+/// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+/// SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+////////////////////////////////////////////////////////////////////////////////
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "evds.h"
+#include "sim_xml.h"
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// @brief Write a single variable
+////////////////////////////////////////////////////////////////////////////////
+int EVDS_Internal_SaveVariable(EVDS_VARIABLE* variable, SIMC_XML_DOCUMENT* doc, 
+							   SIMC_XML_ELEMENT* root, EVDS_VARIABLE* parent, int is_attribute) {
+	SIMC_XML_ELEMENT* element;
+	SIMC_LIST_ENTRY* entry;
+	EVDS_VARIABLE* child;
+	char buffer[1024] = { 0 };
+
+	//Create entry for this object
+	if (!is_attribute) {
+		if (parent) {
+			SIMC_XML_AddElement(doc,root,&element,variable->name);
+		} else {
+			SIMC_XML_AddElement(doc,root,&element,"parameter");
+			SIMC_XML_AddAttribute(doc,element,"name",variable->name);
+		}
+	}
+
+	//Save value
+	if (variable->type == EVDS_VARIABLE_TYPE_STRING) {
+		EVDS_Variable_GetString(variable,buffer,1023,0); //FIXME: remove arbitrary limit
+	} else if (variable->type == EVDS_VARIABLE_TYPE_FLOAT) {
+		EVDS_REAL value;
+		EVDS_Variable_GetReal(variable,&value);
+		if ((value > EVDS_EPS) || (value < -EVDS_EPS) || (!parent)) { //Only write non-null values (unless a parameter)
+			snprintf(buffer,1023,"%.15g",value);
+		}
+		//EVDS_Variable_SetReal(variable,real_value);
+	} else if (variable->type == EVDS_VARIABLE_TYPE_VECTOR) {
+		EVDS_VECTOR value;
+		EVDS_Variable_GetVector(variable,&value);
+		snprintf(buffer,1023,"%.15g %.15g %.15g",value.x,value.y,value.z);
+	} else if (variable->type == EVDS_VARIABLE_TYPE_QUATERNION) {
+		EVDS_QUATERNION value;
+		EVDS_Variable_GetQuaternion(variable,&value);
+		snprintf(buffer,1023,"%.15g %.15g %.15g %.15g",value.q[0],value.q[1],value.q[2],value.q[3]);
+	}
+
+	//Add text value if not tested
+	if (variable->type != EVDS_VARIABLE_TYPE_NESTED) {
+		if (!is_attribute) {
+			SIMC_XML_SetText(doc,element,buffer);
+
+			//Check if variable value is like a float/quaternion/vector
+			if (variable->type == EVDS_VARIABLE_TYPE_STRING) {
+				char *end, *end_x, *end_y, *end_z, *end_w;
+				end = buffer+strlen(buffer); //FIXME
+	
+				strtod(buffer,&end_x);
+				strtod(end_x,&end_y);
+				strtod(end_y,&end_z);
+				strtod(end_z,&end_w);
+				if ((end_x == end) || (end_y == end) ||
+					(end_z == end) || (end_w == end)) {
+					SIMC_XML_AddAttribute(doc,element,"type","string");
+				}
+			}
+		} else {
+			SIMC_XML_AddAttribute(doc,root,variable->name,buffer);
+		}
+	}
+
+	if (!is_attribute) {
+		//Save all attributes
+		if (variable->attributes) {
+			entry = SIMC_List_GetFirst(variable->attributes);
+			while (entry) {
+				child = (EVDS_VARIABLE*)SIMC_List_GetData(variable->attributes,entry);
+				EVDS_ERRCHECK(EVDS_Internal_SaveVariable(child,doc,element,variable,1));
+				entry = SIMC_List_GetNext(variable->attributes,entry);
+			}
+		}
+
+		//Save all children variables
+		if (variable->list) {
+			entry = SIMC_List_GetFirst(variable->list);
+			while (entry) {
+				child = (EVDS_VARIABLE*)SIMC_List_GetData(variable->list,entry);
+				EVDS_ERRCHECK(EVDS_Internal_SaveVariable(child,doc,element,variable,0));
+				entry = SIMC_List_GetNext(variable->list,entry);
+			}
+		}
+	}
+
+	return EVDS_OK;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// @brief Write a single object
+////////////////////////////////////////////////////////////////////////////////
+int EVDS_Internal_SaveObject(EVDS_OBJECT* object, SIMC_XML_DOCUMENT* doc,
+							 SIMC_XML_ELEMENT* root, EVDS_OBJECT_SAVEEX* info) {
+	SIMC_XML_ELEMENT* element;
+	SIMC_LIST_ENTRY* entry;
+	EVDS_OBJECT* child;
+	EVDS_VARIABLE* child_variable;
+	EVDS_STATE_VECTOR vector;
+	double pitch,yaw,roll;
+
+	//Skip objects generated by modifier
+	//if (object->modifier && (!(info->flags & EVDS_OBJECT_SAVEEX_SAVE_COPIES))) return EVDS_OK;
+
+	//Do not save object itself if applies
+	if (info && (info->flags & EVDS_OBJECT_SAVEEX_ONLY_CHILDREN)) goto skip_object;
+
+	//Create entry for this object
+	EVDS_ERRCHECK(SIMC_XML_AddElement(doc,root,&element,"object"));
+	EVDS_ERRCHECK(SIMC_XML_AddAttribute(doc,element,"name",object->name));
+	EVDS_ERRCHECK(SIMC_XML_AddAttribute(doc,element,"type",object->type));
+	if (info && (info->flags & EVDS_OBJECT_SAVEEX_SAVE_UIDS)) {
+		EVDS_ERRCHECK(SIMC_XML_AddAttributeDouble(doc,element,"uid",object->uid));
+	}
+
+	//Write position/orientation
+	EVDS_Object_GetStateVector(object,&vector);
+	EVDS_Quaternion_GetEuler(&vector.orientation,vector.orientation.coordinate_system,&roll,&pitch,&yaw);
+	EVDS_ERRCHECK(SIMC_XML_AddAttributeDouble(doc,element,"x",vector.position.x));
+	EVDS_ERRCHECK(SIMC_XML_AddAttributeDouble(doc,element,"y",vector.position.y));
+	EVDS_ERRCHECK(SIMC_XML_AddAttributeDouble(doc,element,"z",vector.position.z));
+	EVDS_ERRCHECK(SIMC_XML_AddAttributeDouble(doc,element,"vx",vector.velocity.x));
+	EVDS_ERRCHECK(SIMC_XML_AddAttributeDouble(doc,element,"vy",vector.velocity.y));
+	EVDS_ERRCHECK(SIMC_XML_AddAttributeDouble(doc,element,"vz",vector.velocity.z));
+	EVDS_ERRCHECK(SIMC_XML_AddAttributeDouble(doc,element,"pitch",EVDS_DEG(pitch)));
+	EVDS_ERRCHECK(SIMC_XML_AddAttributeDouble(doc,element,"yaw",EVDS_DEG(yaw)));
+	EVDS_ERRCHECK(SIMC_XML_AddAttributeDouble(doc,element,"roll",EVDS_DEG(roll)));
+	if (info->flags & EVDS_OBJECT_SAVEEX_SAVE_FULL_STATE) {
+		EVDS_ERRCHECK(SIMC_XML_AddAttributeDouble(doc,element,"time",vector.time));
+		EVDS_ERRCHECK(SIMC_XML_AddAttributeDouble(doc,element,"q0",vector.orientation.q[0]));
+		EVDS_ERRCHECK(SIMC_XML_AddAttributeDouble(doc,element,"q1",vector.orientation.q[1]));
+		EVDS_ERRCHECK(SIMC_XML_AddAttributeDouble(doc,element,"q2",vector.orientation.q[2]));
+		EVDS_ERRCHECK(SIMC_XML_AddAttributeDouble(doc,element,"q3",vector.orientation.q[3]));
+		EVDS_ERRCHECK(SIMC_XML_AddAttributeDouble(doc,element,"ax",vector.acceleration.x));
+		EVDS_ERRCHECK(SIMC_XML_AddAttributeDouble(doc,element,"ay",vector.acceleration.y));
+		EVDS_ERRCHECK(SIMC_XML_AddAttributeDouble(doc,element,"az",vector.acceleration.z));
+		EVDS_ERRCHECK(SIMC_XML_AddAttributeDouble(doc,element,"ang_ax",vector.angular_acceleration.x));
+		EVDS_ERRCHECK(SIMC_XML_AddAttributeDouble(doc,element,"ang_ay",vector.angular_acceleration.y));
+		EVDS_ERRCHECK(SIMC_XML_AddAttributeDouble(doc,element,"ang_az",vector.angular_acceleration.z));
+		EVDS_ERRCHECK(SIMC_XML_AddAttributeDouble(doc,element,"ang_vx",vector.angular_velocity.x));
+		EVDS_ERRCHECK(SIMC_XML_AddAttributeDouble(doc,element,"ang_vy",vector.angular_velocity.y));
+		EVDS_ERRCHECK(SIMC_XML_AddAttributeDouble(doc,element,"ang_vz",vector.angular_velocity.z));
+	}
+
+	//Add all variables
+	entry = SIMC_List_GetFirst(object->variables);
+	while (entry) {
+		child_variable = (EVDS_VARIABLE*)SIMC_List_GetData(object->variables,entry);
+		EVDS_ERRCHECK(EVDS_Internal_SaveVariable(child_variable,doc,element,0,0));
+		entry = SIMC_List_GetNext(object->variables,entry);
+	}
+
+skip_object:
+	if (info && (info->flags & EVDS_OBJECT_SAVEEX_ONLY_CHILDREN)) {
+		info->flags = info->flags & (~EVDS_OBJECT_SAVEEX_ONLY_CHILDREN);
+		element = root;
+	}
+
+	//Create all children objects
+	entry = SIMC_List_GetFirst(object->raw_children);
+	while (entry) {
+		child = (EVDS_OBJECT*)SIMC_List_GetData(object->raw_children,entry);
+		EVDS_ERRCHECK(EVDS_Internal_SaveObject(child,doc,element,info));
+		entry = SIMC_List_GetNext(object->raw_children,entry);
+	}
+
+	return EVDS_OK;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// @brief Save object and its children to file
+////////////////////////////////////////////////////////////////////////////////
+int EVDS_Object_SaveToFile(EVDS_OBJECT* object, const char* filename) {
+	SIMC_XML_DOCUMENT* doc;
+	SIMC_XML_ELEMENT* root;
+	if (!object) return EVDS_ERROR_BAD_PARAMETER;
+	if (!filename) return EVDS_ERROR_BAD_PARAMETER;
+
+	EVDS_ERRCHECK(SIMC_XML_Create(&doc));
+	EVDS_ERRCHECK(SIMC_XML_AddRootElement(doc,&root,"EVDS"));
+	EVDS_ERRCHECK(EVDS_Internal_SaveObject(object,doc,root,0));
+	EVDS_ERRCHECK(SIMC_XML_Save(doc,filename));
+	EVDS_ERRCHECK(SIMC_XML_Close(doc));
+	return EVDS_OK;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// @brief Save object and return its description
+////////////////////////////////////////////////////////////////////////////////
+int EVDS_Object_SaveToString(EVDS_OBJECT* object, char** description) {
+	SIMC_XML_DOCUMENT* doc;
+	SIMC_XML_ELEMENT* root;
+	if (!object) return EVDS_ERROR_BAD_PARAMETER;
+	if (!description) return EVDS_ERROR_BAD_PARAMETER;
+
+	EVDS_ERRCHECK(SIMC_XML_Create(&doc));
+	EVDS_ERRCHECK(SIMC_XML_AddRootElement(doc,&root,"EVDS"));
+	EVDS_ERRCHECK(EVDS_Internal_SaveObject(object,doc,root,0));
+	EVDS_ERRCHECK(SIMC_XML_SaveString(doc,description));
+	EVDS_ERRCHECK(SIMC_XML_Close(doc));
+	return EVDS_OK;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// @brief Empty data for EVDS_Object_SaveEx()
+////////////////////////////////////////////////////////////////////////////////
+EVDS_OBJECT_SAVEEX EVDS_Internal_SaveEx = { 0 };
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// @brief Save object
+////////////////////////////////////////////////////////////////////////////////
+int EVDS_Object_SaveEx(EVDS_OBJECT* object, const char* filename, EVDS_OBJECT_SAVEEX* info) {
+	SIMC_XML_DOCUMENT* doc;
+	SIMC_XML_ELEMENT* root;
+	if (!object) return EVDS_ERROR_BAD_PARAMETER;
+	if (!info) info = &EVDS_Internal_SaveEx;
+	if ((!info) && (!filename)) return EVDS_ERROR_BAD_PARAMETER;
+
+	EVDS_ERRCHECK(SIMC_XML_Create(&doc));
+	EVDS_ERRCHECK(SIMC_XML_AddRootElement(doc,&root,"EVDS"));
+	EVDS_ERRCHECK(EVDS_Internal_SaveObject(object,doc,root,info));
+	if (!filename) {
+		EVDS_ERRCHECK(SIMC_XML_SaveString(doc,&info->description));
+	} else {
+		EVDS_ERRCHECK(SIMC_XML_Save(doc,filename));
+	}
+	EVDS_ERRCHECK(SIMC_XML_Close(doc));
+	return EVDS_OK;
+}
