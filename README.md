@@ -1,3 +1,10 @@
+Status
+--------------------------------------------------------------------------------
+This is a pre-release repository. It's not yet fully ready for use in real applications,
+but can be already used for familiarization.
+
+Information
+--------------------------------------------------------------------------------
 EVDS is an open-source aerospace physics simulation library (flight dynamics library, FDM)
 written in C. It's designed for realtime and non-realtime, multithreaded simulation
 of vessel dynamics. In the context of this library, "vessel" means any object to be
