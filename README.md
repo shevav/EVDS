@@ -86,16 +86,7 @@ void main() {
 	EVDS_Object_Initialize(earth,1);
 
 	//Load satellite
-	EVDS_Object_LoadFromString(inertial_system,
-"<EVDS>"
-"  <object type=\"vessel\" name=\"Satellite\">"
-"    <parameter name=\"mass\">1000</parameter>"
-"    <parameter name=\"ixx\">100</parameter>"
-"    <parameter name=\"iyy\">1000</parameter>"
-"    <parameter name=\"izz\">500</parameter>"
-"    <parameter name=\"cm\">1.0 0.0 -0.5</parameter>"
-"  </object>"
-"</EVDS>",&satellite);
+	EVDS_Object_LoadFromFile(inertial_system,"satellite.evds",&satellite);
 	EVDS_Object_SetPosition(satellite,inertial_system,6728e3,0,0);
 	EVDS_Object_SetVelocity(satellite,inertial_system,0,7700,0);
 	EVDS_Object_Initialize(satellite,1);
