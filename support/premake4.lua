@@ -64,7 +64,7 @@ project "evds"
                  "../external/simc/include" }
    files { "../source/evds_core/**",
            "../source/evds_common/**",
-           "../include" }
+           "../include/**" }
    defines { "EVDS_LIBRARY", "SIMC_LIBRARY" }
    links { "simc" }
 
@@ -81,7 +81,7 @@ project "evds_tutorials"
    files { "../source/evds_tutorials/evds_tutorials.c" }
    links { "evds" } --, "glfw" }
    
-   configuration { "windows" }
-     links { "opengl32" }
+--   configuration { "windows" }
+--     links { "opengl32" }
    configuration { "not windows" }
       links { "simc", "tinyxml" }
