@@ -679,9 +679,10 @@ WARN_LOGFILE           =
 # with spaces.
 
 INPUT                  = ./../doc \
+						 ./../include \
                          ./../source/evds_core \
                          ./../source/evds_common \
-                         ./../source/evds_addons
+                         ./../addons
 
 # This tag can be used to specify the character encoding of the source files 
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding, which is 
