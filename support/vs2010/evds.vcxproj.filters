@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="evds_core">
+      <UniqueIdentifier>{F29E0CD9-4785-BE48-8C44-79BC350531D5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="evds_common">
+      <UniqueIdentifier>{9B2827EE-5A6A-904E-BEE3-6A3B7B6C050E}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\source\evds_common\evds_database.xml">
+      <Filter>evds_common</Filter>
+    </None>
+    <None Include="..\..\include" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\source\evds_core\evds_env.c">
+      <Filter>evds_core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\evds_core\evds_load.c">
+      <Filter>evds_core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\evds_core\evds_math.c">
+      <Filter>evds_core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\evds_core\evds_mesh.c">
+      <Filter>evds_core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\evds_core\evds_modifier.c">
+      <Filter>evds_core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\evds_core\evds_object.c">
+      <Filter>evds_core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\evds_core\evds_save.c">
+      <Filter>evds_core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\evds_core\evds_system.c">
+      <Filter>evds_core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\evds_core\evds_variable.c">
+      <Filter>evds_core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\evds_common\evds_body.c">
+      <Filter>evds_common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\evds_common\evds_database.c">
+      <Filter>evds_common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\evds_common\evds_engine.c">
+      <Filter>evds_common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\evds_common\evds_fueltank.c">
+      <Filter>evds_common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\evds_common\evds_prop_heun.c">
+      <Filter>evds_common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\evds_common\evds_prop_rk4.c">
+      <Filter>evds_common</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
