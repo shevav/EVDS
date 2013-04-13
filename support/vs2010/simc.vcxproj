@@ -67,7 +67,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{B6945481-0D87-A94F-B763-142BDB824E1F}</ProjectGuid>
+    <ProjectGuid>{7D688FDD-4D41-9A41-9E7E-1D6E59A10C9C}</ProjectGuid>
     <RootNamespace>simc</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>

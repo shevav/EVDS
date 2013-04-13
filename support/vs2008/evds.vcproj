@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="evds"
-	ProjectGUID="{CB27EA8D-BFF1-6941-B908-3541876EA86F}"
+	ProjectGUID="{EE4E6F16-F056-1746-B855-ADA3599F7386}"
 	RootNamespace="evds"
 	Keyword="Win32Proj"
 	>
@@ -1416,10 +1416,27 @@
 				>
 			</File>
 		</Filter>
-		<File
-			RelativePath="..\..\include"
+		<Filter
+			Name="include"
+			Filter=""
 			>
-		</File>
+			<File
+				RelativePath="..\..\include\evds.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\evds_common.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\evds_database.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\evds_internal.h"
+				>
+			</File>
+		</Filter>
 	</Files>
 	<Globals>
 	</Globals>

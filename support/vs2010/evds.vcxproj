@@ -67,7 +67,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{28615970-3848-AD4B-8E0D-D939BE104E71}</ProjectGuid>
+    <ProjectGuid>{B5DD5EE2-582A-E747-9992-2D2E84877D64}</ProjectGuid>
     <RootNamespace>evds</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
@@ -728,6 +728,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\include\evds.h" />
+    <ClInclude Include="..\..\include\evds_common.h" />
+    <ClInclude Include="..\..\include\evds_database.h" />
+    <ClInclude Include="..\..\include\evds_internal.h" />
+  </ItemGroup>
+  <ItemGroup>
     <ClCompile Include="..\..\source\evds_core\evds_env.c">
     </ClCompile>
     <ClCompile Include="..\..\source\evds_core\evds_load.c">
@@ -761,11 +767,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\source\evds_common\evds_database.xml" />
-    <None Include="..\..\include" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="simc.vcxproj">
-      <Project>{B6945481-0D87-A94F-B763-142BDB824E1F}</Project>
+      <Project>{7D688FDD-4D41-9A41-9E7E-1D6E59A10C9C}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -2,17 +2,33 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="evds_core">
-      <UniqueIdentifier>{F29E0CD9-4785-BE48-8C44-79BC350531D5}</UniqueIdentifier>
+      <UniqueIdentifier>{CFD93594-C468-4349-913B-9B63842E357B}</UniqueIdentifier>
     </Filter>
     <Filter Include="evds_common">
-      <UniqueIdentifier>{9B2827EE-5A6A-904E-BEE3-6A3B7B6C050E}</UniqueIdentifier>
+      <UniqueIdentifier>{F8EF7B4A-65EC-D044-BF4D-DBC460B566E5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include">
+      <UniqueIdentifier>{C6F46AE0-8CD3-E74A-A0BF-5A706FEA3A11}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\source\evds_common\evds_database.xml">
       <Filter>evds_common</Filter>
     </None>
-    <None Include="..\..\include" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\include\evds.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\evds_common.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\evds_database.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\evds_internal.h">
+      <Filter>include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\source\evds_core\evds_env.c">

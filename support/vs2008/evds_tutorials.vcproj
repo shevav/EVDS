@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="evds_tutorials"
-	ProjectGUID="{62B42A67-FA99-9943-9234-3B8B83FC6BE8}"
+	ProjectGUID="{740FC406-98AF-B54D-B226-CAF40650FF1E}"
 	RootNamespace="evds_tutorials"
 	Keyword="Win32Proj"
 	>
@@ -68,7 +68,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="..\..\bin\evdsd32.lib opengl32.lib"
+				AdditionalDependencies="..\..\bin\evdsd32.lib"
 				OutputFile="$(OutDir)\evds_tutorialsd32.exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories=""
@@ -154,7 +154,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="..\..\bin\evdsd.lib opengl32.lib"
+				AdditionalDependencies="..\..\bin\evdsd.lib"
 				OutputFile="$(OutDir)\evds_tutorialsd.exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories=""
@@ -238,7 +238,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="..\..\bin\evds32.lib opengl32.lib"
+				AdditionalDependencies="..\..\bin\evds32.lib"
 				OutputFile="$(OutDir)\evds_tutorials32.exe"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=""
@@ -325,7 +325,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="..\..\bin\evds.lib opengl32.lib"
+				AdditionalDependencies="..\..\bin\evds.lib"
 				OutputFile="$(OutDir)\evds_tutorials.exe"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=""
@@ -412,7 +412,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="..\..\bin\evdsd32.lib opengl32.lib"
+				AdditionalDependencies="..\..\bin\evdsd32.lib"
 				OutputFile="$(OutDir)\evds_tutorialsd32.exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories=""
@@ -498,7 +498,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="..\..\bin\evdsd.lib opengl32.lib"
+				AdditionalDependencies="..\..\bin\evdsd.lib"
 				OutputFile="$(OutDir)\evds_tutorialsd.exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories=""
@@ -582,7 +582,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="..\..\bin\evds32.lib opengl32.lib"
+				AdditionalDependencies="..\..\bin\evds32.lib"
 				OutputFile="$(OutDir)\evds_tutorials32.exe"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=""
@@ -669,7 +669,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="..\..\bin\evds.lib opengl32.lib"
+				AdditionalDependencies="..\..\bin\evds.lib"
 				OutputFile="$(OutDir)\evds_tutorials.exe"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=""
@@ -756,7 +756,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="..\..\bin\evds_std32.lib opengl32.lib"
+				AdditionalDependencies="..\..\bin\evds_std32.lib"
 				OutputFile="$(OutDir)\evds_tutorials_std32.exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories=""
@@ -842,7 +842,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="..\..\bin\evds_std.lib opengl32.lib"
+				AdditionalDependencies="..\..\bin\evds_std.lib"
 				OutputFile="$(OutDir)\evds_tutorials_std.exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories=""
@@ -926,7 +926,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="..\..\bin\evds_st32.lib opengl32.lib"
+				AdditionalDependencies="..\..\bin\evds_st32.lib"
 				OutputFile="$(OutDir)\evds_tutorials_st32.exe"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=""
@@ -1013,7 +1013,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="..\..\bin\evds_st.lib opengl32.lib"
+				AdditionalDependencies="..\..\bin\evds_st.lib"
 				OutputFile="$(OutDir)\evds_tutorials_st.exe"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=""
@@ -1100,7 +1100,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="..\..\bin\evds_std32.lib opengl32.lib"
+				AdditionalDependencies="..\..\bin\evds_std32.lib"
 				OutputFile="$(OutDir)\evds_tutorials_std32.exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories=""
@@ -1186,7 +1186,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="..\..\bin\evds_std.lib opengl32.lib"
+				AdditionalDependencies="..\..\bin\evds_std.lib"
 				OutputFile="$(OutDir)\evds_tutorials_std.exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories=""
@@ -1270,7 +1270,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="..\..\bin\evds_st32.lib opengl32.lib"
+				AdditionalDependencies="..\..\bin\evds_st32.lib"
 				OutputFile="$(OutDir)\evds_tutorials_st32.exe"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=""
@@ -1357,7 +1357,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="..\..\bin\evds_st.lib opengl32.lib"
+				AdditionalDependencies="..\..\bin\evds_st.lib"
 				OutputFile="$(OutDir)\evds_tutorials_st.exe"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=""

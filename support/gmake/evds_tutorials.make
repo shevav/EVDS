@@ -30,16 +30,16 @@ endif
 ifeq ($(config),debug32)
   OBJDIR     = obj/x32/Debug/evds_tutorials
   TARGETDIR  = ../../bin
-  TARGET     = $(TARGETDIR)/evds_tutorialsd32.exe
-  DEFINES   += -DDEBUG -D_CRT_SECURE_NO_WARNINGS -DWIN32
+  TARGET     = $(TARGETDIR)/evds_tutorialsd32
+  DEFINES   += -DDEBUG
   INCLUDES  += -I../../include -I../../external/simc/include -I../../source/evds_tutorials
   CPPFLAGS  += -MMD -MP $(DEFINES) $(INCLUDES)
   CFLAGS    += $(CPPFLAGS) $(ARCH) -g -m32
   CXXFLAGS  += $(CFLAGS) 
-  LDFLAGS   += -L../../bin -m32 -L/usr/lib32
+  LDFLAGS   += -L../../bin -m32 -L/usr/lib32 -lstdc++
   RESFLAGS  += $(DEFINES) $(INCLUDES) 
-  LIBS      += ../../bin/libevdsd32.a -lopengl32
-  LDDEPS    += ../../bin/libevdsd32.a
+  LIBS      += ../../bin/libevdsd32.a ../../bin/libsimcd32.a -lm -lpthread -ltinyxml
+  LDDEPS    += ../../bin/libevdsd32.a ../../bin/libsimcd32.a
   LINKCMD    = $(CC) -o $(TARGET) $(OBJECTS) $(RESOURCES) $(ARCH) $(LIBS) $(LDFLAGS)
   define PREBUILDCMDS
   endef
@@ -52,16 +52,16 @@ endif
 ifeq ($(config),release32)
   OBJDIR     = obj/x32/Release/evds_tutorials
   TARGETDIR  = ../../bin
-  TARGET     = $(TARGETDIR)/evds_tutorials32.exe
-  DEFINES   += -D_CRT_SECURE_NO_WARNINGS -DWIN32
+  TARGET     = $(TARGETDIR)/evds_tutorials32
+  DEFINES   += 
   INCLUDES  += -I../../include -I../../external/simc/include -I../../source/evds_tutorials
   CPPFLAGS  += -MMD -MP $(DEFINES) $(INCLUDES)
   CFLAGS    += $(CPPFLAGS) $(ARCH) -O2 -g -m32
   CXXFLAGS  += $(CFLAGS) 
-  LDFLAGS   += -L../../bin -m32 -L/usr/lib32
+  LDFLAGS   += -L../../bin -m32 -L/usr/lib32 -lstdc++
   RESFLAGS  += $(DEFINES) $(INCLUDES) 
-  LIBS      += ../../bin/libevds32.a -lopengl32
-  LDDEPS    += ../../bin/libevds32.a
+  LIBS      += ../../bin/libevds32.a ../../bin/libsimc32.a -lm -lpthread -ltinyxml
+  LDDEPS    += ../../bin/libevds32.a ../../bin/libsimc32.a
   LINKCMD    = $(CC) -o $(TARGET) $(OBJECTS) $(RESOURCES) $(ARCH) $(LIBS) $(LDFLAGS)
   define PREBUILDCMDS
   endef
@@ -74,16 +74,16 @@ endif
 ifeq ($(config),debugdynamic32)
   OBJDIR     = obj/x32/DebugDynamic/evds_tutorials
   TARGETDIR  = ../../bin
-  TARGET     = $(TARGETDIR)/evds_tutorialsd32.exe
-  DEFINES   += -DDEBUG -DEVDS_DYNAMIC -DIVSS_DYNAMIC -DRDRS_DYNAMIC -DSIMC_DYNAMIC -D_CRT_SECURE_NO_WARNINGS -DWIN32
+  TARGET     = $(TARGETDIR)/evds_tutorialsd32
+  DEFINES   += -DDEBUG -DEVDS_DYNAMIC -DIVSS_DYNAMIC -DRDRS_DYNAMIC -DSIMC_DYNAMIC
   INCLUDES  += -I../../include -I../../external/simc/include -I../../source/evds_tutorials
   CPPFLAGS  += -MMD -MP $(DEFINES) $(INCLUDES)
   CFLAGS    += $(CPPFLAGS) $(ARCH) -g -m32
   CXXFLAGS  += $(CFLAGS) 
-  LDFLAGS   += -L../../bin -m32 -L/usr/lib32
+  LDFLAGS   += -L../../bin -m32 -L/usr/lib32 -lstdc++
   RESFLAGS  += $(DEFINES) $(INCLUDES) 
-  LIBS      += -levdsd32 -lopengl32
-  LDDEPS    += ../../bin/libevdsd32.a
+  LIBS      += -levdsd32 ../../bin/libsimcd32.a -lm -lpthread -ltinyxml
+  LDDEPS    += ../../bin/libevdsd32.so ../../bin/libsimcd32.a
   LINKCMD    = $(CC) -o $(TARGET) $(OBJECTS) $(RESOURCES) $(ARCH) $(LIBS) $(LDFLAGS)
   define PREBUILDCMDS
   endef
@@ -96,16 +96,16 @@ endif
 ifeq ($(config),releasedynamic32)
   OBJDIR     = obj/x32/ReleaseDynamic/evds_tutorials
   TARGETDIR  = ../../bin
-  TARGET     = $(TARGETDIR)/evds_tutorials32.exe
-  DEFINES   += -DEVDS_DYNAMIC -DIVSS_DYNAMIC -DRDRS_DYNAMIC -DSIMC_DYNAMIC -D_CRT_SECURE_NO_WARNINGS -DWIN32
+  TARGET     = $(TARGETDIR)/evds_tutorials32
+  DEFINES   += -DEVDS_DYNAMIC -DIVSS_DYNAMIC -DRDRS_DYNAMIC -DSIMC_DYNAMIC
   INCLUDES  += -I../../include -I../../external/simc/include -I../../source/evds_tutorials
   CPPFLAGS  += -MMD -MP $(DEFINES) $(INCLUDES)
   CFLAGS    += $(CPPFLAGS) $(ARCH) -O2 -g -m32
   CXXFLAGS  += $(CFLAGS) 
-  LDFLAGS   += -L../../bin -m32 -L/usr/lib32
+  LDFLAGS   += -L../../bin -m32 -L/usr/lib32 -lstdc++
   RESFLAGS  += $(DEFINES) $(INCLUDES) 
-  LIBS      += -levds32 -lopengl32
-  LDDEPS    += ../../bin/libevds32.a
+  LIBS      += -levds32 ../../bin/libsimc32.a -lm -lpthread -ltinyxml
+  LDDEPS    += ../../bin/libevds32.so ../../bin/libsimc32.a
   LINKCMD    = $(CC) -o $(TARGET) $(OBJECTS) $(RESOURCES) $(ARCH) $(LIBS) $(LDFLAGS)
   define PREBUILDCMDS
   endef
@@ -118,16 +118,16 @@ endif
 ifeq ($(config),debugsinglethread32)
   OBJDIR     = obj/x32/DebugSingleThread/evds_tutorials
   TARGETDIR  = ../../bin
-  TARGET     = $(TARGETDIR)/evds_tutorials_std32.exe
-  DEFINES   += -DDEBUG -DEVDS_SINGLETHREADED -DIVSS_SINGLETHREADED -DRDRS_SINGLETHREADED -DSIMC_SINGLETHREADED -D_CRT_SECURE_NO_WARNINGS -DWIN32
+  TARGET     = $(TARGETDIR)/evds_tutorials_std32
+  DEFINES   += -DDEBUG -DEVDS_SINGLETHREADED -DIVSS_SINGLETHREADED -DRDRS_SINGLETHREADED -DSIMC_SINGLETHREADED
   INCLUDES  += -I../../include -I../../external/simc/include -I../../source/evds_tutorials
   CPPFLAGS  += -MMD -MP $(DEFINES) $(INCLUDES)
   CFLAGS    += $(CPPFLAGS) $(ARCH) -g -m32
   CXXFLAGS  += $(CFLAGS) 
-  LDFLAGS   += -L../../bin -m32 -L/usr/lib32
+  LDFLAGS   += -L../../bin -m32 -L/usr/lib32 -lstdc++
   RESFLAGS  += $(DEFINES) $(INCLUDES) 
-  LIBS      += ../../bin/libevds_std32.a -lopengl32
-  LDDEPS    += ../../bin/libevds_std32.a
+  LIBS      += ../../bin/libevds_std32.a ../../bin/libsimc_std32.a -lm -lpthread -ltinyxml
+  LDDEPS    += ../../bin/libevds_std32.a ../../bin/libsimc_std32.a
   LINKCMD    = $(CC) -o $(TARGET) $(OBJECTS) $(RESOURCES) $(ARCH) $(LIBS) $(LDFLAGS)
   define PREBUILDCMDS
   endef
@@ -140,16 +140,16 @@ endif
 ifeq ($(config),releasesinglethread32)
   OBJDIR     = obj/x32/ReleaseSingleThread/evds_tutorials
   TARGETDIR  = ../../bin
-  TARGET     = $(TARGETDIR)/evds_tutorials_st32.exe
-  DEFINES   += -DEVDS_SINGLETHREADED -DIVSS_SINGLETHREADED -DRDRS_SINGLETHREADED -DSIMC_SINGLETHREADED -D_CRT_SECURE_NO_WARNINGS -DWIN32
+  TARGET     = $(TARGETDIR)/evds_tutorials_st32
+  DEFINES   += -DEVDS_SINGLETHREADED -DIVSS_SINGLETHREADED -DRDRS_SINGLETHREADED -DSIMC_SINGLETHREADED
   INCLUDES  += -I../../include -I../../external/simc/include -I../../source/evds_tutorials
   CPPFLAGS  += -MMD -MP $(DEFINES) $(INCLUDES)
   CFLAGS    += $(CPPFLAGS) $(ARCH) -O2 -g -m32
   CXXFLAGS  += $(CFLAGS) 
-  LDFLAGS   += -L../../bin -m32 -L/usr/lib32
+  LDFLAGS   += -L../../bin -m32 -L/usr/lib32 -lstdc++
   RESFLAGS  += $(DEFINES) $(INCLUDES) 
-  LIBS      += ../../bin/libevds_st32.a -lopengl32
-  LDDEPS    += ../../bin/libevds_st32.a
+  LIBS      += ../../bin/libevds_st32.a ../../bin/libsimc_st32.a -lm -lpthread -ltinyxml
+  LDDEPS    += ../../bin/libevds_st32.a ../../bin/libsimc_st32.a
   LINKCMD    = $(CC) -o $(TARGET) $(OBJECTS) $(RESOURCES) $(ARCH) $(LIBS) $(LDFLAGS)
   define PREBUILDCMDS
   endef
@@ -162,16 +162,16 @@ endif
 ifeq ($(config),debugsinglethreaddynamic32)
   OBJDIR     = obj/x32/DebugSingleThreadDynamic/evds_tutorials
   TARGETDIR  = ../../bin
-  TARGET     = $(TARGETDIR)/evds_tutorials_std32.exe
-  DEFINES   += -DDEBUG -DEVDS_DYNAMIC -DIVSS_DYNAMIC -DRDRS_DYNAMIC -DSIMC_DYNAMIC -DEVDS_SINGLETHREADED -DIVSS_SINGLETHREADED -DRDRS_SINGLETHREADED -DSIMC_SINGLETHREADED -D_CRT_SECURE_NO_WARNINGS -DWIN32
+  TARGET     = $(TARGETDIR)/evds_tutorials_std32
+  DEFINES   += -DDEBUG -DEVDS_DYNAMIC -DIVSS_DYNAMIC -DRDRS_DYNAMIC -DSIMC_DYNAMIC -DEVDS_SINGLETHREADED -DIVSS_SINGLETHREADED -DRDRS_SINGLETHREADED -DSIMC_SINGLETHREADED
   INCLUDES  += -I../../include -I../../external/simc/include -I../../source/evds_tutorials
   CPPFLAGS  += -MMD -MP $(DEFINES) $(INCLUDES)
   CFLAGS    += $(CPPFLAGS) $(ARCH) -g -m32
   CXXFLAGS  += $(CFLAGS) 
-  LDFLAGS   += -L../../bin -m32 -L/usr/lib32
+  LDFLAGS   += -L../../bin -m32 -L/usr/lib32 -lstdc++
   RESFLAGS  += $(DEFINES) $(INCLUDES) 
-  LIBS      += -levds_std32 -lopengl32
-  LDDEPS    += ../../bin/libevds_std32.a
+  LIBS      += -levds_std32 ../../bin/libsimc_std32.a -lm -lpthread -ltinyxml
+  LDDEPS    += ../../bin/libevds_std32.so ../../bin/libsimc_std32.a
   LINKCMD    = $(CC) -o $(TARGET) $(OBJECTS) $(RESOURCES) $(ARCH) $(LIBS) $(LDFLAGS)
   define PREBUILDCMDS
   endef
@@ -184,16 +184,16 @@ endif
 ifeq ($(config),releasesinglethreaddynamic32)
   OBJDIR     = obj/x32/ReleaseSingleThreadDynamic/evds_tutorials
   TARGETDIR  = ../../bin
-  TARGET     = $(TARGETDIR)/evds_tutorials_st32.exe
-  DEFINES   += -DEVDS_DYNAMIC -DIVSS_DYNAMIC -DRDRS_DYNAMIC -DSIMC_DYNAMIC -DEVDS_SINGLETHREADED -DIVSS_SINGLETHREADED -DRDRS_SINGLETHREADED -DSIMC_SINGLETHREADED -D_CRT_SECURE_NO_WARNINGS -DWIN32
+  TARGET     = $(TARGETDIR)/evds_tutorials_st32
+  DEFINES   += -DEVDS_DYNAMIC -DIVSS_DYNAMIC -DRDRS_DYNAMIC -DSIMC_DYNAMIC -DEVDS_SINGLETHREADED -DIVSS_SINGLETHREADED -DRDRS_SINGLETHREADED -DSIMC_SINGLETHREADED
   INCLUDES  += -I../../include -I../../external/simc/include -I../../source/evds_tutorials
   CPPFLAGS  += -MMD -MP $(DEFINES) $(INCLUDES)
   CFLAGS    += $(CPPFLAGS) $(ARCH) -O2 -g -m32
   CXXFLAGS  += $(CFLAGS) 
-  LDFLAGS   += -L../../bin -m32 -L/usr/lib32
+  LDFLAGS   += -L../../bin -m32 -L/usr/lib32 -lstdc++
   RESFLAGS  += $(DEFINES) $(INCLUDES) 
-  LIBS      += -levds_st32 -lopengl32
-  LDDEPS    += ../../bin/libevds_st32.a
+  LIBS      += -levds_st32 ../../bin/libsimc_st32.a -lm -lpthread -ltinyxml
+  LDDEPS    += ../../bin/libevds_st32.so ../../bin/libsimc_st32.a
   LINKCMD    = $(CC) -o $(TARGET) $(OBJECTS) $(RESOURCES) $(ARCH) $(LIBS) $(LDFLAGS)
   define PREBUILDCMDS
   endef
@@ -206,16 +206,16 @@ endif
 ifeq ($(config),debug64)
   OBJDIR     = obj/x64/Debug/evds_tutorials
   TARGETDIR  = ../../bin
-  TARGET     = $(TARGETDIR)/evds_tutorialsd.exe
-  DEFINES   += -DDEBUG -D_CRT_SECURE_NO_WARNINGS -DWIN32 -DWIN64
+  TARGET     = $(TARGETDIR)/evds_tutorialsd
+  DEFINES   += -DDEBUG
   INCLUDES  += -I../../include -I../../external/simc/include -I../../source/evds_tutorials
   CPPFLAGS  += -MMD -MP $(DEFINES) $(INCLUDES)
   CFLAGS    += $(CPPFLAGS) $(ARCH) -g -m64
   CXXFLAGS  += $(CFLAGS) 
-  LDFLAGS   += -L../../bin -m64 -L/usr/lib64
+  LDFLAGS   += -L../../bin -m64 -L/usr/lib64 -lstdc++
   RESFLAGS  += $(DEFINES) $(INCLUDES) 
-  LIBS      += ../../bin/libevdsd.a -lopengl32
-  LDDEPS    += ../../bin/libevdsd.a
+  LIBS      += ../../bin/libevdsd.a ../../bin/libsimcd.a -lm -lpthread -ltinyxml
+  LDDEPS    += ../../bin/libevdsd.a ../../bin/libsimcd.a
   LINKCMD    = $(CC) -o $(TARGET) $(OBJECTS) $(RESOURCES) $(ARCH) $(LIBS) $(LDFLAGS)
   define PREBUILDCMDS
   endef
@@ -228,16 +228,16 @@ endif
 ifeq ($(config),release64)
   OBJDIR     = obj/x64/Release/evds_tutorials
   TARGETDIR  = ../../bin
-  TARGET     = $(TARGETDIR)/evds_tutorials.exe
-  DEFINES   += -D_CRT_SECURE_NO_WARNINGS -DWIN32 -DWIN64
+  TARGET     = $(TARGETDIR)/evds_tutorials
+  DEFINES   += 
   INCLUDES  += -I../../include -I../../external/simc/include -I../../source/evds_tutorials
   CPPFLAGS  += -MMD -MP $(DEFINES) $(INCLUDES)
   CFLAGS    += $(CPPFLAGS) $(ARCH) -O2 -g -m64
   CXXFLAGS  += $(CFLAGS) 
-  LDFLAGS   += -L../../bin -m64 -L/usr/lib64
+  LDFLAGS   += -L../../bin -m64 -L/usr/lib64 -lstdc++
   RESFLAGS  += $(DEFINES) $(INCLUDES) 
-  LIBS      += ../../bin/libevds.a -lopengl32
-  LDDEPS    += ../../bin/libevds.a
+  LIBS      += ../../bin/libevds.a ../../bin/libsimc.a -lm -lpthread -ltinyxml
+  LDDEPS    += ../../bin/libevds.a ../../bin/libsimc.a
   LINKCMD    = $(CC) -o $(TARGET) $(OBJECTS) $(RESOURCES) $(ARCH) $(LIBS) $(LDFLAGS)
   define PREBUILDCMDS
   endef
@@ -250,16 +250,16 @@ endif
 ifeq ($(config),debugdynamic64)
   OBJDIR     = obj/x64/DebugDynamic/evds_tutorials
   TARGETDIR  = ../../bin
-  TARGET     = $(TARGETDIR)/evds_tutorialsd.exe
-  DEFINES   += -DDEBUG -DEVDS_DYNAMIC -DIVSS_DYNAMIC -DRDRS_DYNAMIC -DSIMC_DYNAMIC -D_CRT_SECURE_NO_WARNINGS -DWIN32 -DWIN64
+  TARGET     = $(TARGETDIR)/evds_tutorialsd
+  DEFINES   += -DDEBUG -DEVDS_DYNAMIC -DIVSS_DYNAMIC -DRDRS_DYNAMIC -DSIMC_DYNAMIC
   INCLUDES  += -I../../include -I../../external/simc/include -I../../source/evds_tutorials
   CPPFLAGS  += -MMD -MP $(DEFINES) $(INCLUDES)
   CFLAGS    += $(CPPFLAGS) $(ARCH) -g -m64
   CXXFLAGS  += $(CFLAGS) 
-  LDFLAGS   += -L../../bin -m64 -L/usr/lib64
+  LDFLAGS   += -L../../bin -m64 -L/usr/lib64 -lstdc++
   RESFLAGS  += $(DEFINES) $(INCLUDES) 
-  LIBS      += -levdsd -lopengl32
-  LDDEPS    += ../../bin/libevdsd.a
+  LIBS      += -levdsd ../../bin/libsimcd.a -lm -lpthread -ltinyxml
+  LDDEPS    += ../../bin/libevdsd.so ../../bin/libsimcd.a
   LINKCMD    = $(CC) -o $(TARGET) $(OBJECTS) $(RESOURCES) $(ARCH) $(LIBS) $(LDFLAGS)
   define PREBUILDCMDS
   endef
@@ -272,16 +272,16 @@ endif
 ifeq ($(config),releasedynamic64)
   OBJDIR     = obj/x64/ReleaseDynamic/evds_tutorials
   TARGETDIR  = ../../bin
-  TARGET     = $(TARGETDIR)/evds_tutorials.exe
-  DEFINES   += -DEVDS_DYNAMIC -DIVSS_DYNAMIC -DRDRS_DYNAMIC -DSIMC_DYNAMIC -D_CRT_SECURE_NO_WARNINGS -DWIN32 -DWIN64
+  TARGET     = $(TARGETDIR)/evds_tutorials
+  DEFINES   += -DEVDS_DYNAMIC -DIVSS_DYNAMIC -DRDRS_DYNAMIC -DSIMC_DYNAMIC
   INCLUDES  += -I../../include -I../../external/simc/include -I../../source/evds_tutorials
   CPPFLAGS  += -MMD -MP $(DEFINES) $(INCLUDES)
   CFLAGS    += $(CPPFLAGS) $(ARCH) -O2 -g -m64
   CXXFLAGS  += $(CFLAGS) 
-  LDFLAGS   += -L../../bin -m64 -L/usr/lib64
+  LDFLAGS   += -L../../bin -m64 -L/usr/lib64 -lstdc++
   RESFLAGS  += $(DEFINES) $(INCLUDES) 
-  LIBS      += -levds -lopengl32
-  LDDEPS    += ../../bin/libevds.a
+  LIBS      += -levds ../../bin/libsimc.a -lm -lpthread -ltinyxml
+  LDDEPS    += ../../bin/libevds.so ../../bin/libsimc.a
   LINKCMD    = $(CC) -o $(TARGET) $(OBJECTS) $(RESOURCES) $(ARCH) $(LIBS) $(LDFLAGS)
   define PREBUILDCMDS
   endef
@@ -294,16 +294,16 @@ endif
 ifeq ($(config),debugsinglethread64)
   OBJDIR     = obj/x64/DebugSingleThread/evds_tutorials
   TARGETDIR  = ../../bin
-  TARGET     = $(TARGETDIR)/evds_tutorials_std.exe
-  DEFINES   += -DDEBUG -DEVDS_SINGLETHREADED -DIVSS_SINGLETHREADED -DRDRS_SINGLETHREADED -DSIMC_SINGLETHREADED -D_CRT_SECURE_NO_WARNINGS -DWIN32 -DWIN64
+  TARGET     = $(TARGETDIR)/evds_tutorials_std
+  DEFINES   += -DDEBUG -DEVDS_SINGLETHREADED -DIVSS_SINGLETHREADED -DRDRS_SINGLETHREADED -DSIMC_SINGLETHREADED
   INCLUDES  += -I../../include -I../../external/simc/include -I../../source/evds_tutorials
   CPPFLAGS  += -MMD -MP $(DEFINES) $(INCLUDES)
   CFLAGS    += $(CPPFLAGS) $(ARCH) -g -m64
   CXXFLAGS  += $(CFLAGS) 
-  LDFLAGS   += -L../../bin -m64 -L/usr/lib64
+  LDFLAGS   += -L../../bin -m64 -L/usr/lib64 -lstdc++
   RESFLAGS  += $(DEFINES) $(INCLUDES) 
-  LIBS      += ../../bin/libevds_std.a -lopengl32
-  LDDEPS    += ../../bin/libevds_std.a
+  LIBS      += ../../bin/libevds_std.a ../../bin/libsimc_std.a -lm -lpthread -ltinyxml
+  LDDEPS    += ../../bin/libevds_std.a ../../bin/libsimc_std.a
   LINKCMD    = $(CC) -o $(TARGET) $(OBJECTS) $(RESOURCES) $(ARCH) $(LIBS) $(LDFLAGS)
   define PREBUILDCMDS
   endef
@@ -316,16 +316,16 @@ endif
 ifeq ($(config),releasesinglethread64)
   OBJDIR     = obj/x64/ReleaseSingleThread/evds_tutorials
   TARGETDIR  = ../../bin
-  TARGET     = $(TARGETDIR)/evds_tutorials_st.exe
-  DEFINES   += -DEVDS_SINGLETHREADED -DIVSS_SINGLETHREADED -DRDRS_SINGLETHREADED -DSIMC_SINGLETHREADED -D_CRT_SECURE_NO_WARNINGS -DWIN32 -DWIN64
+  TARGET     = $(TARGETDIR)/evds_tutorials_st
+  DEFINES   += -DEVDS_SINGLETHREADED -DIVSS_SINGLETHREADED -DRDRS_SINGLETHREADED -DSIMC_SINGLETHREADED
   INCLUDES  += -I../../include -I../../external/simc/include -I../../source/evds_tutorials
   CPPFLAGS  += -MMD -MP $(DEFINES) $(INCLUDES)
   CFLAGS    += $(CPPFLAGS) $(ARCH) -O2 -g -m64
   CXXFLAGS  += $(CFLAGS) 
-  LDFLAGS   += -L../../bin -m64 -L/usr/lib64
+  LDFLAGS   += -L../../bin -m64 -L/usr/lib64 -lstdc++
   RESFLAGS  += $(DEFINES) $(INCLUDES) 
-  LIBS      += ../../bin/libevds_st.a -lopengl32
-  LDDEPS    += ../../bin/libevds_st.a
+  LIBS      += ../../bin/libevds_st.a ../../bin/libsimc_st.a -lm -lpthread -ltinyxml
+  LDDEPS    += ../../bin/libevds_st.a ../../bin/libsimc_st.a
   LINKCMD    = $(CC) -o $(TARGET) $(OBJECTS) $(RESOURCES) $(ARCH) $(LIBS) $(LDFLAGS)
   define PREBUILDCMDS
   endef
@@ -338,16 +338,16 @@ endif
 ifeq ($(config),debugsinglethreaddynamic64)
   OBJDIR     = obj/x64/DebugSingleThreadDynamic/evds_tutorials
   TARGETDIR  = ../../bin
-  TARGET     = $(TARGETDIR)/evds_tutorials_std.exe
-  DEFINES   += -DDEBUG -DEVDS_DYNAMIC -DIVSS_DYNAMIC -DRDRS_DYNAMIC -DSIMC_DYNAMIC -DEVDS_SINGLETHREADED -DIVSS_SINGLETHREADED -DRDRS_SINGLETHREADED -DSIMC_SINGLETHREADED -D_CRT_SECURE_NO_WARNINGS -DWIN32 -DWIN64
+  TARGET     = $(TARGETDIR)/evds_tutorials_std
+  DEFINES   += -DDEBUG -DEVDS_DYNAMIC -DIVSS_DYNAMIC -DRDRS_DYNAMIC -DSIMC_DYNAMIC -DEVDS_SINGLETHREADED -DIVSS_SINGLETHREADED -DRDRS_SINGLETHREADED -DSIMC_SINGLETHREADED
   INCLUDES  += -I../../include -I../../external/simc/include -I../../source/evds_tutorials
   CPPFLAGS  += -MMD -MP $(DEFINES) $(INCLUDES)
   CFLAGS    += $(CPPFLAGS) $(ARCH) -g -m64
   CXXFLAGS  += $(CFLAGS) 
-  LDFLAGS   += -L../../bin -m64 -L/usr/lib64
+  LDFLAGS   += -L../../bin -m64 -L/usr/lib64 -lstdc++
   RESFLAGS  += $(DEFINES) $(INCLUDES) 
-  LIBS      += -levds_std -lopengl32
-  LDDEPS    += ../../bin/libevds_std.a
+  LIBS      += -levds_std ../../bin/libsimc_std.a -lm -lpthread -ltinyxml
+  LDDEPS    += ../../bin/libevds_std.so ../../bin/libsimc_std.a
   LINKCMD    = $(CC) -o $(TARGET) $(OBJECTS) $(RESOURCES) $(ARCH) $(LIBS) $(LDFLAGS)
   define PREBUILDCMDS
   endef
@@ -360,16 +360,16 @@ endif
 ifeq ($(config),releasesinglethreaddynamic64)
   OBJDIR     = obj/x64/ReleaseSingleThreadDynamic/evds_tutorials
   TARGETDIR  = ../../bin
-  TARGET     = $(TARGETDIR)/evds_tutorials_st.exe
-  DEFINES   += -DEVDS_DYNAMIC -DIVSS_DYNAMIC -DRDRS_DYNAMIC -DSIMC_DYNAMIC -DEVDS_SINGLETHREADED -DIVSS_SINGLETHREADED -DRDRS_SINGLETHREADED -DSIMC_SINGLETHREADED -D_CRT_SECURE_NO_WARNINGS -DWIN32 -DWIN64
+  TARGET     = $(TARGETDIR)/evds_tutorials_st
+  DEFINES   += -DEVDS_DYNAMIC -DIVSS_DYNAMIC -DRDRS_DYNAMIC -DSIMC_DYNAMIC -DEVDS_SINGLETHREADED -DIVSS_SINGLETHREADED -DRDRS_SINGLETHREADED -DSIMC_SINGLETHREADED
   INCLUDES  += -I../../include -I../../external/simc/include -I../../source/evds_tutorials
   CPPFLAGS  += -MMD -MP $(DEFINES) $(INCLUDES)
   CFLAGS    += $(CPPFLAGS) $(ARCH) -O2 -g -m64
   CXXFLAGS  += $(CFLAGS) 
-  LDFLAGS   += -L../../bin -m64 -L/usr/lib64
+  LDFLAGS   += -L../../bin -m64 -L/usr/lib64 -lstdc++
   RESFLAGS  += $(DEFINES) $(INCLUDES) 
-  LIBS      += -levds_st -lopengl32
-  LDDEPS    += ../../bin/libevds_st.a
+  LIBS      += -levds_st ../../bin/libsimc_st.a -lm -lpthread -ltinyxml
+  LDDEPS    += ../../bin/libevds_st.so ../../bin/libsimc_st.a
   LINKCMD    = $(CC) -o $(TARGET) $(OBJECTS) $(RESOURCES) $(ARCH) $(LIBS) $(LDFLAGS)
   define PREBUILDCMDS
   endef

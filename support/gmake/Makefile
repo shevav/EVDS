@@ -20,7 +20,7 @@ evds: simc
 	@echo "==== Building evds ($(config)) ===="
 	@${MAKE} --no-print-directory -C . -f evds.make
 
-evds_tutorials: evds
+evds_tutorials: evds simc
 	@echo "==== Building evds_tutorials ($(config)) ===="
 	@${MAKE} --no-print-directory -C . -f evds_tutorials.make
 
