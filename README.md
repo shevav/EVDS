@@ -1,7 +1,10 @@
 Status
 --------------------------------------------------------------------------------
 This is a pre-release repository. It's not yet fully ready for use in real applications,
-but can be already used for familiarization.
+but it can already be used for familiarization.
+
+The build files for platforms other than VS2008 may be inconsistent/invalid. Please
+refer to compilation guide on how to generate new ones.
 
 Information
 --------------------------------------------------------------------------------
@@ -53,8 +56,41 @@ The main version of EVDS is 64-bit, but it is also available in a 32-bit version
 EVDS supports the following platforms at the moment:
  - Windows (32-bit and 64-bit)
  - Linux (32-bit and 64-bit)
+
+Compiling
+--------------------------------------------------------------------------------
+All the EVDS dependencies (SIMC, TinyXML) should be downloaded automatically
+with the Git repository, otherwise use the following command to include submodules:
+```
+git clone --recursive https://github.com/FoxWorks/EVDS.git
+```
+
+The EVDS library contains build files for various platforms in the `support`
+folder:
+ - `vs2008` - Visual Studio 2008
+ - `vs2010` - Visual Studio 2010
+ - `gmake` - Makefiles
  
-Example
+If build files must be generated from scratch or a local copy of documentation
+is needed, [Premake4](http://industriousone.com/premake) must be used:
+```
+cd support
+premake4 vs2008
+premake4 vs2010
+premake4 gmake
+premake4 evdsdoc
+```
+
+Use the generated `sln` files under Windows. They will include all required
+dependencies (which are present as submodules in repository).
+
+Use makefiles under Linux or other platforms:
+```
+cd support/gmake
+make
+```
+ 
+Documentation and Example
 --------------------------------------------------------------------------------
 [Documentation for the EVDS library is available here](http://evds.wireos.com/).
 
