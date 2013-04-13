@@ -185,19 +185,18 @@ int EVDS_Environment_GetGravitationalField(EVDS_SYSTEM* system, EVDS_VECTOR* pos
 		EVDS_Vector_Convert(&G0,&planet_state.position,target_coordinates);
 
 		//Get planets parameters
-		if (EVDS_Object_GetVariable(planet,"mu",&mu_var) == EVDS_OK)		EVDS_Variable_GetReal(mu_var,&mu);
-		else																mu_var = 0;
-		if (EVDS_Object_GetVariable(planet,"j2",&j2_var) == EVDS_OK)		EVDS_Variable_GetReal(j2_var,&j2);
-		else																j2_var = 0;
-		if (EVDS_Object_GetVariable(planet,"mass",&mass_var) == EVDS_OK)	EVDS_Variable_GetReal(mass_var,&mass);
-		else																mass_var = 0;
-		if (EVDS_Object_GetVariable(planet,"radius",&radius_var) == EVDS_OK)EVDS_Variable_GetReal(radius_var,&radius);
-		else																radius_var = 0;
-		if (EVDS_Object_GetVariable(planet,"rs",&mass_var) == EVDS_OK)		EVDS_Variable_GetReal(rs_var,&rs);
-		else																rs_var = 0;
+		EVDS_Object_GetRealVariable(planet,"mu",&mu,&mu_var);
+		EVDS_Object_GetRealVariable(planet,"j2",&j2,&j2_var);
+		EVDS_Object_GetRealVariable(planet,"mass",&mass,&mass_var);
+		EVDS_Object_GetRealVariable(planet,"radius",&radius,&radius_var);
+		EVDS_Object_GetRealVariable(planet,"rs",&rs,&rs_var);
+
+		//Get custom gravitational field callback
 		if (EVDS_Object_GetVariable(planet,"gravitational_field",&callback_var) == EVDS_OK) {
 			EVDS_Variable_GetFunctionPointer(callback_var,(void**)(&callback));
-		} else callback = 0;
+		} else {
+			callback = 0;
+		}
 
 		//Calculate radius-vector
 		EVDS_Vector_Subtract(&Gr,position,&G0);

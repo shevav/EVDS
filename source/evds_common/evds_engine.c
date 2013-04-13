@@ -62,7 +62,6 @@ typedef struct EVDS_SOLVER_ENGINE_USERDATA_TAG {
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_InternalRocketEngine_GenerateGeometry(EVDS_OBJECT* object) {
 	EVDS_VARIABLE* geometry;
-	EVDS_VARIABLE* variable;
 
 	//Default values
 	EVDS_REAL exit_radius = 0;
@@ -78,13 +77,13 @@ int EVDS_InternalRocketEngine_GenerateGeometry(EVDS_OBJECT* object) {
 	}
 	EVDS_Object_AddVariable(object,"csection_geometry",EVDS_VARIABLE_TYPE_NESTED,&geometry);
 
-	//Get engine parameters (FIXME: use userdata)	
-	if (EVDS_Object_GetVariable(object,"exit_radius",&variable) == EVDS_OK)			EVDS_Variable_GetReal(variable,&exit_radius);
-	if (EVDS_Object_GetVariable(object,"chamber_radius",&variable) == EVDS_OK)		EVDS_Variable_GetReal(variable,&chamber_radius);
-	if (EVDS_Object_GetVariable(object,"chamber_length",&variable) == EVDS_OK)		EVDS_Variable_GetReal(variable,&chamber_length);
-	if (EVDS_Object_GetVariable(object,"area_ratio",&variable) == EVDS_OK)			EVDS_Variable_GetReal(variable,&area_ratio);
-	if (EVDS_Object_GetVariable(object,"nozzle_length",&variable) == EVDS_OK)		EVDS_Variable_GetReal(variable,&nozzle_length);
-	if (EVDS_Object_GetVariable(object,"divergence_angle",&variable) == EVDS_OK)	EVDS_Variable_GetReal(variable,&divergence_angle);
+	//Get engine parameters (FIXME: use userdata)
+	EVDS_Object_GetRealVariable(object,"exit_radius",&exit_radius,0);
+	EVDS_Object_GetRealVariable(object,"chamber_radius",&chamber_radius,0);
+	EVDS_Object_GetRealVariable(object,"chamber_length",&chamber_length,0);
+	EVDS_Object_GetRealVariable(object,"area_ratio",&area_ratio,0);
+	EVDS_Object_GetRealVariable(object,"nozzle_length",&nozzle_length,0);
+	EVDS_Object_GetRealVariable(object,"divergence_angle",&divergence_angle,0);
 
 	//Sanity checks and limits for inputs
 	if (divergence_angle > 0.0) {

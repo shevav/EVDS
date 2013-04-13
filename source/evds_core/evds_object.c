@@ -1425,6 +1425,48 @@ int EVDS_Object_GetVariable(EVDS_OBJECT* object, const char* name, EVDS_VARIABLE
 
 
 ////////////////////////////////////////////////////////////////////////////////
+/// @brief Get floating-point variable by name. @evds_limited_init
+///
+/// This function will return null pointer for the variable and write 0.0 to value
+/// if the variable does not exist.
+///
+/// @param[in] object Pointer to object
+/// @param[in] name Variable name (only first 256 characters are compared)
+/// @param[out] value Value of the variable will be written here
+/// @param[out] p_variable Variable pointer is written here
+///
+/// @returns Error code, pointer to EVDS_VARIABLE
+/// @retval EVDS_OK Successfully completed
+/// @retval EVDS_ERROR_NOT_FOUND Variable not found in object
+/// @retval EVDS_ERROR_BAD_PARAMETER "object" is null
+/// @retval EVDS_ERROR_BAD_PARAMETER "name" is null
+/// @retval EVDS_ERROR_INVALID_OBJECT Object was destroyed
+/// @retval EVDS_ERROR_INTERTHREAD_CALL The function can only be called from thread that is initializing the object 
+///  (or thread that has created the object before initializer was called)
+////////////////////////////////////////////////////////////////////////////////
+int EVDS_Object_GetRealVariable(EVDS_OBJECT* object, const char* name, EVDS_REAL* value, EVDS_VARIABLE** p_variable) {
+	EVDS_VARIABLE* variable;
+	if (!object) return EVDS_ERROR_BAD_PARAMETER;
+	if (!name) return EVDS_ERROR_BAD_PARAMETER;
+#ifndef EVDS_SINGLETHREADED
+	if (object->destroyed) return EVDS_ERROR_INVALID_OBJECT;
+	if (!object->initialized &&
+		(object->create_thread != SIMC_Thread_GetUniqueID()) &&
+		(object->initialize_thread != SIMC_Thread_GetUniqueID())) return EVDS_ERROR_INTERTHREAD_CALL;
+#endif
+
+	if (EVDS_Object_GetVariable(object,name,&variable) == EVDS_OK) {
+		if (value) EVDS_Variable_GetReal(variable,value);
+		if (p_variable) *p_variable = variable;
+	} else {
+		if (value) *value = 0.0;
+		if (p_variable) *p_variable = 0;
+	}
+	return EVDS_OK;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
 /// @brief Get list of all variables. @evds_limited_init
 ///
 /// See SIMC_LIST documentation for an example on iterating through list. The

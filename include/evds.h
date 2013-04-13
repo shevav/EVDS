@@ -909,6 +909,8 @@ EVDS_API int EVDS_Object_GetName(EVDS_OBJECT* object, char* name, size_t max_len
 EVDS_API int EVDS_Object_GetVariable(EVDS_OBJECT* object, const char* name, EVDS_VARIABLE** p_variable);
 // Get all variables (only after initialized OR only in initializers thread)
 EVDS_API int EVDS_Object_GetVariables(EVDS_OBJECT* object, SIMC_LIST** p_list);
+// Get floating-point variable by name (only after initialized OR only in initializers thread)
+EVDS_API int EVDS_Object_GetRealVariable(EVDS_OBJECT* object, const char* name, EVDS_REAL* value, EVDS_VARIABLE** p_variable);
 
 // Query a variable by data reference
 EVDS_API int EVDS_Object_QueryVariable(EVDS_OBJECT* root, const char* query, EVDS_VARIABLE** p_variable);

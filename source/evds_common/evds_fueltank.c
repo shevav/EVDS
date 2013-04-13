@@ -41,18 +41,17 @@
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_InternalFuelTank_GenerateGeometry(EVDS_OBJECT* object) {
 	EVDS_VARIABLE* geometry;
-	EVDS_VARIABLE* variable;
 	EVDS_REAL upper_radius = 0.0;
 	EVDS_REAL lower_radius = 0.0;
 	EVDS_REAL outer_radius = 0.0;
 	EVDS_REAL inner_radius = 0.0;
 	EVDS_REAL middle_length = 0.0;
-
-	if (EVDS_Object_GetVariable(object,"upper_radius",&variable) == EVDS_OK)	EVDS_Variable_GetReal(variable,&upper_radius);
-	if (EVDS_Object_GetVariable(object,"lower_radius",&variable) == EVDS_OK)	EVDS_Variable_GetReal(variable,&lower_radius);
-	if (EVDS_Object_GetVariable(object,"outer_radius",&variable) == EVDS_OK)	EVDS_Variable_GetReal(variable,&outer_radius);
-	if (EVDS_Object_GetVariable(object,"inner_radius",&variable) == EVDS_OK)	EVDS_Variable_GetReal(variable,&inner_radius);
-	if (EVDS_Object_GetVariable(object,"middle_length",&variable) == EVDS_OK)	EVDS_Variable_GetReal(variable,&middle_length);
+	
+	EVDS_Object_GetRealVariable(object,"upper_radius",&upper_radius,0);
+	EVDS_Object_GetRealVariable(object,"lower_radius",&lower_radius,0);
+	EVDS_Object_GetRealVariable(object,"outer_radius",&outer_radius,0);
+	EVDS_Object_GetRealVariable(object,"inner_radius",&inner_radius,0);
+	EVDS_Object_GetRealVariable(object,"middle_length",&middle_length,0);
 
 	if ((upper_radius == 0.0) &&
 		(lower_radius == 0.0) &&
