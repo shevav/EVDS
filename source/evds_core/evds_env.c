@@ -201,8 +201,19 @@ int EVDS_Environment_GetGravitationalField(EVDS_SYSTEM* system, EVDS_VECTOR* pos
 		//Calculate radius-vector
 		EVDS_Vector_Subtract(&Gr,position,&G0);
 		EVDS_Vector_Dot(&r2,&Gr,&Gr);
-		if (r2 == 0.0) r2 = EVDS_EPS;
 		r = sqrtf(r2);
+
+		//Check if inside the planet itself
+		if (radius_var && (r < radius)) {
+			entry = SIMC_List_GetNext(planets,entry);
+			continue; //Too close to the planet
+		}
+
+		//Check if position of source vector matches with planets position
+		if (r2 < EVDS_EPS) {
+			entry = SIMC_List_GetNext(planets,entry);
+			continue; //Planets dont pull themselves
+		}
 
 		//Check if outside of sphere of influence
 		if (rs_var && (r2 > rs*rs)) {

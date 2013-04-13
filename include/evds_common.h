@@ -48,9 +48,8 @@ extern "C" {
 ///		Default fuel tank object, provides basic model of a fuel tank with
 ///		a variable center of mass and sloshing support.
 /// - @subpage EVDS_Solver_Planet "'planet'"
-///		Planet or moon with built-in coordinate systems. Planetary positions must
-///		be updated manually from an ephemeris - otherwise their motion will be
-///		physically simulated.
+///		Planet or moon with built-in coordinate systems. Planetary position can be
+///		updated from an ephemeris, orbital information, or be physically simulated.
 ///
 /// The following propagators are available:
 /// - @subpage EVDS_Propagator_RK4 "'propagator_rk4'":
@@ -95,7 +94,9 @@ EVDS_API int EVDS_FuelTank_Register(EVDS_SYSTEM* system);
 
 
 // Planet (represents a planetary body or a star)
-//EVDS_API int EVDS_Planet_Register(EVDS_SYSTEM* system);
+EVDS_API int EVDS_Planet_Register(EVDS_SYSTEM* system);
+// Find the nearest planetary body
+EVDS_API int EVDS_Planet_GetNearest(EVDS_OBJECT* object, EVDS_OBJECT** p_planet);
 
 
 // Heun propagator-corrector solver
@@ -114,6 +115,7 @@ EVDS_API int EVDS_Common_LoadDatabase(EVDS_SYSTEM* system);
 EVDS_RigidBody_Register(system); \
 EVDS_RocketEngine_Register(system); \
 EVDS_FuelTank_Register(system); \
+EVDS_Planet_Register(system); \
 EVDS_Propagator_Heun_Register(system); \
 EVDS_Propagator_RK4_Register(system);
 ////////////////////////////////////////////////////////////////////////////////

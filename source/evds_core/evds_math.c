@@ -699,14 +699,14 @@ void EVDS_Vector_FromGeographicCoordinates(EVDS_OBJECT* object, EVDS_VECTOR* tar
 
 		//Output coordinates
 		r = altitude + radius;
-		x = cos(EVDS_RAD(longitude))*cos(EVDS_RAD(latitude));
-		y = sin(EVDS_RAD(longitude))*cos(EVDS_RAD(latitude));
-		z = cos(EVDS_RAD(latitude));
+		x = r*cos(EVDS_RAD(longitude))*cos(EVDS_RAD(latitude));
+		y = r*sin(EVDS_RAD(longitude))*cos(EVDS_RAD(latitude));
+		z = r*cos(EVDS_RAD(latitude));
 	} else {
 		r = altitude;
-		x = cos(EVDS_RAD(longitude))*cos(EVDS_RAD(latitude));
-		y = sin(EVDS_RAD(longitude))*cos(EVDS_RAD(latitude));
-		z = cos(EVDS_RAD(latitude));
+		x = r*cos(EVDS_RAD(longitude))*cos(EVDS_RAD(latitude));
+		y = r*sin(EVDS_RAD(longitude))*cos(EVDS_RAD(latitude));
+		z = r*cos(EVDS_RAD(latitude));
 	}
 	
 	//Set vector in target coordinates

@@ -1129,7 +1129,6 @@ int EVDS_Object_SetName(EVDS_OBJECT* object, const char* name) {
 /// @retval EVDS_OK Successfully completed
 /// @retval EVDS_ERROR_BAD_PARAMETER "object" is null
 /// @retval EVDS_ERROR_BAD_PARAMETER "name" is null
-/// @retval EVDS_ERROR_BAD_PARAMETER "p_variable" is null
 /// @retval EVDS_ERROR_BAD_STATE Object was already initialized
 /// @retval EVDS_ERROR_INVALID_OBJECT Object was destroyed
 /// @retval EVDS_ERROR_INTERTHREAD_CALL The function can only be called from thread that is initializing the object 
@@ -1138,6 +1137,7 @@ int EVDS_Object_SetName(EVDS_OBJECT* object, const char* name) {
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_Object_AddVariable(EVDS_OBJECT* object, const char* name, EVDS_VARIABLE_TYPE type, EVDS_VARIABLE** p_variable) {
 	int error_code;
+	EVDS_VARIABLE* variable;
 	if (!object) return EVDS_ERROR_BAD_PARAMETER;
 	if (!name) return EVDS_ERROR_BAD_PARAMETER;
 	if (!p_variable) return EVDS_ERROR_BAD_PARAMETER;
@@ -1149,17 +1149,20 @@ int EVDS_Object_AddVariable(EVDS_OBJECT* object, const char* name, EVDS_VARIABLE
 #endif
 
 	//Get variable
-	error_code = EVDS_Object_GetVariable(object,name,p_variable);
+	error_code = EVDS_Object_GetVariable(object,name,&variable);
 	if (error_code == EVDS_ERROR_NOT_FOUND) {
-		error_code = EVDS_Variable_Create(object->system,name,type,p_variable);
+		error_code = EVDS_Variable_Create(object->system,name,type,&variable);
 	}
 
 	//Set parameters
-	if ((error_code == EVDS_OK) && (!(*p_variable)->object)) {
-		(*p_variable)->parent = 0;
-		(*p_variable)->object = object;
-		(*p_variable)->list_entry = SIMC_List_Append(object->variables,*p_variable);
+	if ((error_code == EVDS_OK) && (!variable->object)) {
+		variable->parent = 0;
+		variable->object = object;
+		variable->list_entry = SIMC_List_Append(object->variables,variable);
 	}
+
+	//Write back variable
+	if (p_variable) *p_variable = variable;
 	return error_code;
 }
 
