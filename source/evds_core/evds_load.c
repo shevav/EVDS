@@ -435,7 +435,7 @@ int EVDS_Internal_ParseFile(EVDS_OBJECT* parent, SIMC_XML_DOCUMENT* doc,
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// @brief Load object from file and return the first object in file.
+/// @brief Load object from XML file and return the first object in file.
 ///
 /// The first returned object will not be initialized. All following objects (if file
 /// contains more than one object) will be automatically initialized in a non-blocking
@@ -494,15 +494,21 @@ EVDS_OBJECT_LOADEX EVDS_Internal_LoadEx = {
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// @brief Load objects from file or description string.
+/// @brief Load objects from file or description string in XML format.
 ///
 /// This function is used to load multiple objects from a file. All objects must
 /// be manually initialized by the user inside the callback.
 /// If null pointer is passed for info structure, no objects will be automatically
 /// initialized. A valid parent object must be passed into the function.
 ///
-/// This function is used to load multiple objects, for example:
+/// @c OnLoadObject callback will be called for every object stored directly in the loaded
+/// description (it is only called for objects under EVDS XML tag - but not for these objects
+/// children).
 ///
+/// @c OnSyntaxError callback is called if the description contains XML syntax errors.
+///
+/// This function is used to load multiple objects, for example:
+/// ~~~{.c}
 ///		int EVDS_Internal_OnLoadObject(EVDS_SYSTEM* system, EVDS_OBJECT_LOADEX* info, EVDS_OBJECT* object) {
 ///			EVDS_Object_Initialize(object,1);
 ///			return EVDS_OK;
@@ -513,6 +519,7 @@ EVDS_OBJECT_LOADEX EVDS_Internal_LoadEx = {
 ///		}
 ///		EVDS_OBJECT_LOADEX info = { OnLoadFile, OnSyntaxError, 0, "sat_test.evds" };
 ///		EVDS_Object_LoadEx(inertial_system,"sat_test.evds",&info);
+///	~~~
 ///
 /// @param[in] parent Parent object
 /// @param[in] filename Pointer to a null-terminated filename (or null if loading from description)
@@ -545,7 +552,7 @@ int EVDS_Object_LoadEx(EVDS_OBJECT* parent, const char* filename, EVDS_OBJECT_LO
 
 
 ///////////////////////////////////////////////////////////////////////////////
-/// @brief Load objects from string and return the first object loaded.
+/// @brief Load objects from an XML string and return the first object loaded.
 ///
 /// The first returned object will not be initialized. All following objects (if file
 /// contains more than one object) will be automatically initialized in a non-blocking
