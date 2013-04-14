@@ -6,6 +6,19 @@ but it can already be used for familiarization.
 The build files for platforms other than VS2008 may be inconsistent/invalid. Please
 refer to compilation guide on how to generate new ones.
 
+Quick Reference
+--------------------------------------------------------------------------------
+Links:
+ - [EVDS Documentation (http://evds.wireos.com)](http://evds.wireos.com/).
+ - [Black Phoenix (phoenix@uol.ua)](mailto:phoenix@uol.ua).
+ - [Black Phoenix's Website (http://brain.wireos.com)](http://brain.wireos.com/).
+
+Community:
+ - None yet.
+ - IRC: #x-plane @ irc.x-plane.org
+ - IRC: ##aerospace @ irc.freenode.org
+
+
 Information
 --------------------------------------------------------------------------------
 EVDS is an open-source aerospace physics simulation library (flight dynamics library, FDM)
@@ -144,6 +157,8 @@ Development Plans
 --------------------------------------------------------------------------------
 These are the features that are yet to be implemented in the core EVDS library or
 addons:
+- Find some interesting people to discuss various function names and variable
+ names with to finalize the API before first release.
 - Support for interpolation of data tables based on interpolation equation. This
  should make it much easier to specify things like material parameters as a function
  of many variables.
@@ -152,3 +167,7 @@ addons:
 - A way to specify explicitly which variables are interpolated by.
 - Modifiers that allow creating patterns of objects must be created as normal
  EVDS objects
+- If variable already exists with wrong type, many functions will silently fail
+ without any way to find out exact reason
+- Fix the lack of unit tests
+- Add additional debug asserts in various code points to avoid common errors.

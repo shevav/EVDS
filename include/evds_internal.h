@@ -52,7 +52,7 @@ extern "C" {
 /// @struct EVDS_VARIABLE
 /// @brief Single variable inside an object or an entry in a data structure.
 ///
-/// Variables can only be created before object is initialized. Here's an example:
+/// Variables can only be created or removed before the object is initialized. For example:
 /// ~~~{.c}
 ///		EVDS_OBJECT* object;
 ///		EVDS_VARIABLE* variable;
@@ -62,13 +62,13 @@ extern "C" {
 /// ~~~
 ///
 /// If variable already exists when adding, the function simply returns that variable (and does not change
-/// its value or create a new one).
+/// its value or create a new one), otherwise creates the variable with the default value.
 ///
 /// All work with variables (before object is initialized) must be done from the initializing thread.
 /// If the initalizing thread must be changed in runtime (for example to pass an uninitialized object
 /// to another thread) the EVDS_Object_TransferInitialization() call can be used.
 ///
-/// A variable may have one of the following types:
+/// A variable may have be of one of the following types:
 /// Type								| Description
 /// ------------------------------------|--------------------------------------
 /// @c EVDS_VARIABLE_TYPE_FLOAT			| Floating point value
@@ -78,11 +78,60 @@ extern "C" {
 /// @c EVDS_VARIABLE_TYPE_NESTED		| Data structure (contains a list of nested variables, list of attributes)
 /// @c EVDS_VARIABLE_TYPE_DATA			| Stores pointer to custom data (some C structure)
 /// @c EVDS_VARIABLE_TYPE_FUNCTION		| Stores a function/callback pointer. Function signature depends on variable name
+/// @c EVDS_VARIABLE_TYPE_TABLE1D		| One-dimensional function defined as a table
+/// @c EVDS_VARIABLE_TYPE_TABLE2D		| Two-dimensional function defined as a table
+///	@c EVDS_VARIABLE_TYPE_POLYNOMIAL	| Piecewise interpolation function defined by polynomial coefficients
 ///
-/// The EVDS_VARIABLE_TYPE_NESTED variable type may contain nested variables and
-/// nested attributes inside it. This variable type is used to load complex data structures
-/// from the XML files. The best approach is to create a new variable of EVDS_VARIABLE_TYPE_DATA type,
-/// which will store parsed data from EVDS_VARIABLE_TYPE_NESTED in the vessel initializer.
+/// Interpolated functions
+/// --------------------------------------------------------------------------------
+/// EVDS provides support for specifying functions for variables. These functions can either be defined
+/// by a table of values (using linear interpolation between them), or as a set of piecewise polynomials.
+///
+/// Tables can be used to define 1D or 2D functions. Polynomials can be used to define 1D, 2D, 3D functions.
+///
+/// Nested variables
+/// --------------------------------------------------------------------------------
+/// @c EVDS_VARIABLE_TYPE_NESTED type is stored for using arbitrary data structures. It may contain other 
+/// nested variables or attributes inside it.
+///
+/// If the data structure represents some higher level data structure, the solve can create
+/// a new variable of EVDS_VARIABLE_TYPE_DATA type during initialization to store a low-level data
+/// structure that will represent data from EVDS_VARIABLE_TYPE_NESTED.
+///
+/// Here's an example of a nested data structure (geometry information for the tessellator):
+/// ~~~{.xml}
+///	<parameter name="csection_geometry">
+///		<section type="ellipse" add_offset="1" rx="1.9" offset="0.5" />
+///		<section type="ellipse" add_offset="1" rx="2" />
+///		<section type="ellipse" offset="10.4" add_offset="1" rx="2" />
+///		<section type="ellipse" offset="0.4" add_offset="1" rx="1.6" />
+///		<section type="ellipse" add_offset="1" rx="1.5" />
+///		<section type="ellipse" offset="-0.3" add_offset="1" rx="1.5" />
+///	</parameter>
+/// ~~~
+///
+/// Here's an example of a more complicated material entry which contains varied types of
+/// custom data:
+/// ~~~{.xml}
+///	<entry name="Gravimol" class="thermal_soak_shielding">
+///	<information>
+///		<country>Russia</country>
+///		<manufacturer>NII "Graphit", VIAM, NPO "Molniya"</manufacturer>
+///	</information>
+///	<parameter name="density">1850 kg/m3</parameter>
+///	<parameter name="heat_capacity">800 J/(kg K)</parameter>
+///	<parameter name="thermal_conductivity">25 W/(m s K)</parameter>
+///	<parameter name="melting_point">1925 K</parameter>
+///	<parameter name="thermal_expansion_ratio">
+///		<data1d x="  20 C">3E-6</data1d>
+///		<data1d x="2000 C">5E-6</data1d>
+///	</parameter>
+///	<parameter name="bend_strength">100 MPa</parameter>
+///	<parameter name="compressive_strength">90 MPa</parameter>
+///	<parameter name="shear_strength">100 MPa</parameter>
+///	<parameter name="tensile_strength">35 MPa</parameter>
+///	</entry>
+/// ~~~
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef DOXYGEN_INTERNAL_STRUCTS
 typedef struct EVDS_VARIABLE_TABLE1D_ENTRY_TAG {

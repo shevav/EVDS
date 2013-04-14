@@ -453,10 +453,14 @@ int EVDS_Variable_AddFloatAttribute(EVDS_VARIABLE* parent_variable, const char* 
 	}
 #endif
 
-	error_code = EVDS_Variable_AddAttribute(parent_variable,name,EVDS_VARIABLE_TYPE_FLOAT,&variable);
-	if (error_code != EVDS_OK) return error_code;
-	error_code = EVDS_Variable_SetReal(variable,value);
-	if (error_code != EVDS_OK) return error_code;
+	//Get variable
+	error_code = EVDS_Variable_GetAttribute(parent_variable,name,&variable);
+	if (error_code == EVDS_ERROR_NOT_FOUND) {
+		error_code = EVDS_Variable_AddAttribute(parent_variable,name,EVDS_VARIABLE_TYPE_FLOAT,&variable);
+		if (error_code != EVDS_OK) return error_code;
+		error_code = EVDS_Variable_SetReal(variable,value);
+		if (error_code != EVDS_OK) return error_code;
+	}
 
 	if (p_variable) *p_variable = variable;
 	return EVDS_OK;

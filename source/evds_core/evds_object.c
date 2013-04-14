@@ -1210,10 +1210,14 @@ int EVDS_Object_AddFloatVariable(EVDS_OBJECT* object, const char* name, EVDS_REA
 		(object->initialize_thread != SIMC_Thread_GetUniqueID())) return EVDS_ERROR_INTERTHREAD_CALL;
 #endif
 
-	error_code = EVDS_Object_AddVariable(object,name,EVDS_VARIABLE_TYPE_FLOAT,&variable);
-	if (error_code != EVDS_OK) return error_code;
-	error_code = EVDS_Variable_SetReal(variable,value);
-	if (error_code != EVDS_OK) return error_code;
+	//Get variable
+	error_code = EVDS_Object_GetVariable(object,name,&variable);
+	if (error_code == EVDS_ERROR_NOT_FOUND) {
+		error_code = EVDS_Object_AddVariable(object,name,EVDS_VARIABLE_TYPE_FLOAT,&variable);
+		if (error_code != EVDS_OK) return error_code;
+		error_code = EVDS_Variable_SetReal(variable,value);
+		if (error_code != EVDS_OK) return error_code;
+	}
 
 	if (p_variable) *p_variable = variable;
 	return EVDS_OK;
