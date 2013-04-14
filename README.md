@@ -139,3 +139,16 @@ void main() {
 	EVDS_System_Destroy(system);
 }
 ```
+
+Development Plans
+--------------------------------------------------------------------------------
+These are the features that are yet to be implemented in the core EVDS library or
+addons:
+- Support for interpolation of data tables based on interpolation equation. This
+ should make it much easier to specify things like material parameters as a function
+ of many variables.
+- Support for piecewise interpolation for interpolation equations.
+- Support for 2D tables for use with linear interpolation.
+- A way to specify explicitly which variables are interpolated by.
+- Modifiers that allow creating patterns of objects must be created as normal
+ EVDS objects
