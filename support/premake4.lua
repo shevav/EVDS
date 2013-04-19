@@ -58,6 +58,7 @@ if _ACTION == "evdsdb" then return end
 -- External Vessel Dynamics Simulator
 --------------------------------------------------------------------------------
 project "evds"
+   uuid "EE4E6F16-F056-1746-B855-ADA3599F7386"
    library()
    language "C"
    includedirs { "../include",
@@ -73,6 +74,7 @@ project "evds"
 -- Tutorials
 --------------------------------------------------------------------------------
 project "evds_tutorials"
+   uuid "740FC406-98AF-B54D-B226-CAF40650FF1E"
    kind "ConsoleApp"
    language "C"
    includedirs { "../include",
