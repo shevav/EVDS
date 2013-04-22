@@ -72,14 +72,14 @@ int EVDS_Variable_Create(EVDS_SYSTEM* system, const char* name, EVDS_VARIABLE_TY
 			SIMC_List_Create(&variable->attributes,0);
 			SIMC_List_Create(&variable->list,0);
 		break;
-		case EVDS_VARIABLE_TYPE_DATA:
-		case EVDS_VARIABLE_TYPE_FUNCTION:
+		case EVDS_VARIABLE_TYPE_DATA_PTR:
+		case EVDS_VARIABLE_TYPE_FUNCTION_PTR:
 			variable->value_size = 0;
 			variable->value = 0;
 		break;
-		case EVDS_VARIABLE_TYPE_TABLE1D:
-			variable->value_size = sizeof(EVDS_VARIABLE_TABLE1D);
-			variable->value = (EVDS_VARIABLE_TABLE1D*)malloc(sizeof(EVDS_VARIABLE_TABLE1D));
+		case EVDS_VARIABLE_TYPE_FUNCTION:
+			variable->value_size = sizeof(EVDS_VARIABLE_FUNCTION);
+			variable->value = (EVDS_VARIABLE_FUNCTION*)malloc(sizeof(EVDS_VARIABLE_FUNCTION));
 		break;
 	}
 
@@ -156,11 +156,11 @@ int EVDS_Variable_Copy(EVDS_VARIABLE* source, EVDS_VARIABLE* variable) {
 				entry = SIMC_List_GetNext(source->list,entry);
 			}
 		} break;
-		case EVDS_VARIABLE_TYPE_DATA:
-		case EVDS_VARIABLE_TYPE_FUNCTION: {
+		case EVDS_VARIABLE_TYPE_DATA_PTR:
+		case EVDS_VARIABLE_TYPE_FUNCTION_PTR: {
 			variable->value = source->value;
 		} break;
-		case EVDS_VARIABLE_TYPE_TABLE1D: {
+		case EVDS_VARIABLE_TYPE_FUNCTION: {
 			//FIXME
 		} break;
 	}
@@ -222,13 +222,11 @@ int EVDS_InternalVariable_DestroyData(EVDS_VARIABLE* variable) {
 			case EVDS_VARIABLE_TYPE_QUATERNION:
 				free(variable->value);
 			break;
-			case EVDS_VARIABLE_TYPE_DATA:
-			case EVDS_VARIABLE_TYPE_FUNCTION:
+			case EVDS_VARIABLE_TYPE_DATA_PTR:
+			case EVDS_VARIABLE_TYPE_FUNCTION_PTR:
 			break;
-			case EVDS_VARIABLE_TYPE_TABLE1D:
-				if (((EVDS_VARIABLE_TABLE1D*)variable->value)->data_fast) {
-					free(((EVDS_VARIABLE_TABLE1D*)variable->value)->data_fast);
-				}
+			case EVDS_VARIABLE_TYPE_FUNCTION:
+				//FIXME
 				free(variable->value);
 			break;
 		}
@@ -313,7 +311,7 @@ int EVDS_Variable_MoveInList(EVDS_VARIABLE* variable, EVDS_VARIABLE* head) {
 ////////////////////////////////////////////////////////////////////////////////
 /// @brief Add a nested variable. @evds_init_only
 ///
-/// Arbitrary typed variables (type is EVDS_VARIABLE_TYPE_DATA) may have another
+/// Arbitrary typed variables (type is EVDS_VARIABLE_TYPE_NESTED) may have another
 /// variables inside them. This can be used to represent table and matrix data.
 ///
 /// @param[in] parent_variable Variable, to which a new one must be added
@@ -773,7 +771,7 @@ int EVDS_Variable_GetReal(EVDS_VARIABLE* variable, EVDS_REAL* value) {
 	if (!variable) return EVDS_ERROR_BAD_PARAMETER;
 	if (!value) return EVDS_ERROR_BAD_PARAMETER;
 	if ((variable->type != EVDS_VARIABLE_TYPE_FLOAT) &&
-		(variable->type != EVDS_VARIABLE_TYPE_TABLE1D))return EVDS_ERROR_BAD_STATE;
+		(variable->type != EVDS_VARIABLE_TYPE_FUNCTION))return EVDS_ERROR_BAD_STATE;
 #ifndef EVDS_SINGLETHREADED
 	if (variable->object && variable->object->destroyed) return EVDS_ERROR_INVALID_OBJECT;
 #endif
@@ -781,7 +779,7 @@ int EVDS_Variable_GetReal(EVDS_VARIABLE* variable, EVDS_REAL* value) {
 	if (variable->type == EVDS_VARIABLE_TYPE_FLOAT) {
 		*value = *((double*)variable->value);
 	} else {
-		*value = ((EVDS_VARIABLE_TABLE1D*)variable->value)->constant;
+		*value = ((EVDS_VARIABLE_FUNCTION*)variable->value)->data0d;
 	}
 	return EVDS_OK;
 }
@@ -1004,12 +1002,12 @@ int EVDS_Variable_SetQuaternion(EVDS_VARIABLE* variable, EVDS_QUATERNION* value)
 ///
 /// @returns Error code
 /// @retval EVDS_OK Successfully completed
-/// @retval EVDS_ERROR_BAD_STATE Variable type invalid (must be EVDS_VARIABLE_TYPE_DATA)
+/// @retval EVDS_ERROR_BAD_STATE Variable type invalid (must be EVDS_VARIABLE_TYPE_DATA_PTR)
 /// @retval EVDS_ERROR_BAD_PARAMETER "variable" is null
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_Variable_SetDataPointer(EVDS_VARIABLE* variable, void* data) {
 	if (!variable) return EVDS_ERROR_BAD_PARAMETER;
-	if (variable->type != EVDS_VARIABLE_TYPE_DATA) return EVDS_ERROR_BAD_STATE;
+	if (variable->type != EVDS_VARIABLE_TYPE_DATA_PTR) return EVDS_ERROR_BAD_STATE;
 #ifndef EVDS_SINGLETHREADED
 	if (variable->object && variable->object->destroyed) return EVDS_ERROR_INVALID_OBJECT;
 #endif
@@ -1026,14 +1024,14 @@ int EVDS_Variable_SetDataPointer(EVDS_VARIABLE* variable, void* data) {
 ///
 /// @returns Error code, pointer to userdata
 /// @retval EVDS_OK Successfully completed
-/// @retval EVDS_ERROR_BAD_STATE Variable type invalid (must be EVDS_VARIABLE_TYPE_DATA)
+/// @retval EVDS_ERROR_BAD_STATE Variable type invalid (must be EVDS_VARIABLE_TYPE_DATA_PTR)
 /// @retval EVDS_ERROR_BAD_PARAMETER "variable" is null
 /// @retval EVDS_ERROR_BAD_PARAMETER "data" is null
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_Variable_GetDataPointer(EVDS_VARIABLE* variable, void** data) {
 	if (!variable) return EVDS_ERROR_BAD_PARAMETER;
 	if (!data) return EVDS_ERROR_BAD_PARAMETER;
-	if (variable->type != EVDS_VARIABLE_TYPE_DATA) return EVDS_ERROR_BAD_STATE;
+	if (variable->type != EVDS_VARIABLE_TYPE_DATA_PTR) return EVDS_ERROR_BAD_STATE;
 #ifndef EVDS_SINGLETHREADED
 	if (variable->object && variable->object->destroyed) return EVDS_ERROR_INVALID_OBJECT;
 #endif
@@ -1054,12 +1052,12 @@ int EVDS_Variable_GetDataPointer(EVDS_VARIABLE* variable, void** data) {
 ///
 /// @returns Error code
 /// @retval EVDS_OK Successfully completed
-/// @retval EVDS_ERROR_BAD_STATE Variable type invalid (must be EVDS_VARIABLE_TYPE_FUNCTION)
+/// @retval EVDS_ERROR_BAD_STATE Variable type invalid (must be EVDS_VARIABLE_TYPE_FUNCTION_PTR)
 /// @retval EVDS_ERROR_BAD_PARAMETER "variable" is null
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_Variable_SetFunctionPointer(EVDS_VARIABLE* variable, void* data) {
 	if (!variable) return EVDS_ERROR_BAD_PARAMETER;
-	if (variable->type != EVDS_VARIABLE_TYPE_FUNCTION) return EVDS_ERROR_BAD_STATE;
+	if (variable->type != EVDS_VARIABLE_TYPE_FUNCTION_PTR) return EVDS_ERROR_BAD_STATE;
 #ifndef EVDS_SINGLETHREADED
 	if (variable->object && variable->object->destroyed) return EVDS_ERROR_INVALID_OBJECT;
 #endif
@@ -1076,14 +1074,14 @@ int EVDS_Variable_SetFunctionPointer(EVDS_VARIABLE* variable, void* data) {
 ///
 /// @returns Error code, pointer to userdata
 /// @retval EVDS_OK Successfully completed
-/// @retval EVDS_ERROR_BAD_STATE Variable type invalid (must be EVDS_VARIABLE_TYPE_FUNCTION)
+/// @retval EVDS_ERROR_BAD_STATE Variable type invalid (must be EVDS_VARIABLE_TYPE_FUNCTION_PTR)
 /// @retval EVDS_ERROR_BAD_PARAMETER "variable" is null
 /// @retval EVDS_ERROR_BAD_PARAMETER "data" is null
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_Variable_GetFunctionPointer(EVDS_VARIABLE* variable, void** data) {
 	if (!variable) return EVDS_ERROR_BAD_PARAMETER;
 	if (!data) return EVDS_ERROR_BAD_PARAMETER;
-	if (variable->type != EVDS_VARIABLE_TYPE_FUNCTION) return EVDS_ERROR_BAD_STATE;
+	if (variable->type != EVDS_VARIABLE_TYPE_FUNCTION_PTR) return EVDS_ERROR_BAD_STATE;
 #ifndef EVDS_SINGLETHREADED
 	if (variable->object && variable->object->destroyed) return EVDS_ERROR_INVALID_OBJECT;
 #endif
@@ -1097,11 +1095,11 @@ int EVDS_Variable_GetFunctionPointer(EVDS_VARIABLE* variable, void** data) {
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_Variable_GetInterpolated1D(EVDS_VARIABLE* variable, EVDS_REAL x, EVDS_REAL* p_value) {
 	int i;
-	EVDS_VARIABLE_TABLE1D* table;
+	EVDS_VARIABLE_FUNCTION* table;
 	if (!variable) return EVDS_ERROR_BAD_PARAMETER;
 	if (!p_value) return EVDS_ERROR_BAD_PARAMETER;
 	if ((variable->type != EVDS_VARIABLE_TYPE_FLOAT) &&
-		(variable->type != EVDS_VARIABLE_TYPE_TABLE1D))return EVDS_ERROR_BAD_STATE;
+		(variable->type != EVDS_VARIABLE_TYPE_FUNCTION))return EVDS_ERROR_BAD_STATE;
 #ifndef EVDS_SINGLETHREADED
 	if (variable->object && variable->object->destroyed) return EVDS_ERROR_INVALID_OBJECT;
 #endif
@@ -1113,31 +1111,31 @@ int EVDS_Variable_GetInterpolated1D(EVDS_VARIABLE* variable, EVDS_REAL x, EVDS_R
 	}
 
 	//Get table
-	table = (EVDS_VARIABLE_TABLE1D*)variable->value;
+	table = (EVDS_VARIABLE_FUNCTION*)variable->value;
 
 	//Check for special cases
-	if (table->count == 0) {
-		*p_value = table->constant;
+	if (table->data1d_count == 0) {
+		*p_value = table->data0d;
 		return EVDS_OK;
 	}
 
 	//Check for edge cases
-	if (table->count == 1) {
-		*p_value = table->data[0].f;
+	if (table->data1d_count == 1) {
+		*p_value = table->data1d[0].f;
 		return EVDS_OK;
 	}
-	if (x <= table->data[0].x) {
-		*p_value = table->data[0].f;
+	if (x <= table->data1d[0].x) {
+		*p_value = table->data1d[0].f;
 		return EVDS_OK;
 	}
-	if (x >= table->data[table->count-1].x) {
-		*p_value = table->data[table->count-1].f;
+	if (x >= table->data1d[table->data1d_count-1].x) {
+		*p_value = table->data1d[table->data1d_count-1].f;
 		return EVDS_OK;
 	}
 
 	//Find interpolation segment
-	for (i = table->count-1; i >= 0; i--) {
-		if (x > table->data[i].x) {
+	for (i = table->data1d_count-1; i >= 0; i--) {
+		if (x > table->data1d[i].x) {
 			break;
 		}
 	}
@@ -1145,9 +1143,9 @@ int EVDS_Variable_GetInterpolated1D(EVDS_VARIABLE* variable, EVDS_REAL x, EVDS_R
 	//Linear interpolation
 #if (defined(_MSC_VER) && (_MSC_VER >= 1500) && (_MSC_VER < 1600))
 	{
-		double A = (table->data[i+1].x - table->data[i].x);
-		double B = (x - table->data[i].x) / A;
-		*p_value = table->data[i].f  + (table->data[i+1].f - table->data[i].f) * B;
+		double A = (table->data1d[i+1].x - table->data1d[i].x);
+		double B = (x - table->data1d[i].x) / A;
+		*p_value = table->data1d[i].f  + (table->data1d[i+1].f - table->data1d[i].f) * B;
 
 		//*p_value = table->data[i].f  + (table->data[i+1].f - table->data[i].f) * 
 			//((x - table->data[i].x) / A);
@@ -1155,90 +1153,8 @@ int EVDS_Variable_GetInterpolated1D(EVDS_VARIABLE* variable, EVDS_REAL x, EVDS_R
 			//((x - table->data[i].x) / (table->data[i+1].x - table->data[i].x));
 	}
 #else
-	*p_value = table->data[i].f  + (table->data[i+1].f - table->data[i].f) *
-		((x - table->data[i].x) / (table->data[i+1].x - table->data[i].x));
+	*p_value = table->data1d[i].f  + (table->data1d[i+1].f - table->data1d[i].f) *
+		((x - table->data1d[i].x) / (table->data1d[i+1].x - table->data1d[i].x));
 #endif
-	return EVDS_OK;
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-/// @brief Get value from a table-defined 1D function (faster approximate version)
-////////////////////////////////////////////////////////////////////////////////
-int EVDS_Variable_GetFastInterpolated1D(EVDS_VARIABLE* variable, EVDS_REAL x, EVDS_REAL* p_value) {
-	int i;
-	EVDS_VARIABLE_TABLE1D* table;
-	if (!variable) return EVDS_ERROR_BAD_PARAMETER;
-	if (!p_value) return EVDS_ERROR_BAD_PARAMETER;
-	if ((variable->type != EVDS_VARIABLE_TYPE_FLOAT) &&
-		(variable->type != EVDS_VARIABLE_TYPE_TABLE1D))return EVDS_ERROR_BAD_STATE;
-#ifndef EVDS_SINGLETHREADED
-	if (variable->object && variable->object->destroyed) return EVDS_ERROR_INVALID_OBJECT;
-#endif
-
-	//Float constants are accepted as zero-size tables
-	if (variable->type == EVDS_VARIABLE_TYPE_FLOAT) {
-		*p_value = *((double*)variable->value);
-		return EVDS_OK;
-	}
-
-	//Get table
-	table = (EVDS_VARIABLE_TABLE1D*)variable->value;
-
-	//Check for special cases
-	if (table->count == 0) {
-		*p_value = table->constant;
-		return EVDS_OK;
-	}
-
-	//Check if data was pre-computed
-	if (!table->data_fast) {
-		if (table->count == 1) { //Only one variabled defined
-			table->data_fast_count = 1;
-			table->data_fast = (EVDS_REAL*)malloc(sizeof(EVDS_REAL));
-			*table->data_fast = table->data[0].f;
-		} else {
-			table->data_fast_count = 5000;
-			table->data_fast = (EVDS_REAL*)malloc(sizeof(EVDS_REAL)*table->data_fast_count);
-			for (i = 0; i < table->data_fast_count; i++) {
-				EVDS_REAL x = table->data_min + 
-					(((EVDS_REAL)i)/((EVDS_REAL)table->data_fast_count-1))*table->data_length;
-				EVDS_REAL value = 0.0;
-
-				EVDS_ERRCHECK(EVDS_Variable_GetInterpolated1D(variable,x,&value));
-				table->data_fast[i] = value;
-			}
-		}
-	}
-
-	//Check for general edge cases (fixes invalid behavior with very extremely tight ranges)
-	if (table->count == 1) {
-		*p_value = table->data[0].f;
-		return EVDS_OK;
-	}
-	if (x <= table->data[0].x) {
-		*p_value = table->data[0].f;
-		return EVDS_OK;
-	}
-	if (x >= table->data[table->count-1].x) {
-		*p_value = table->data[table->count-1].f;
-		return EVDS_OK;
-	}
-
-	//Return nearest neighbour
-	i = (int)(((EVDS_REAL)table->data_fast_count)*(x-table->data_min)*table->data_length1);
-
-	//Check for edge cases (sanity-checks)
-	if (i < 0) {
-		*p_value = table->data_fast[0];
-		return EVDS_OK;
-	}
-	if (i >= table->data_fast_count) {
-		*p_value = table->data_fast[table->data_fast_count-1];
-		return EVDS_OK;
-	}
-
-	//Get value
-	*p_value = table->data_fast[i];
 	return EVDS_OK;
 }

@@ -70,11 +70,9 @@ extern "C" {
 /// @c EVDS_VARIABLE_TYPE_VECTOR		| Vector
 /// @c EVDS_VARIABLE_TYPE_QUATERNION	| Quaternion
 /// @c EVDS_VARIABLE_TYPE_NESTED		| Data structure (contains a list of nested variables, list of attributes)
-/// @c EVDS_VARIABLE_TYPE_DATA			| Stores pointer to custom data (some C structure)
-/// @c EVDS_VARIABLE_TYPE_FUNCTION		| Stores a function/callback pointer. Function signature depends on variable name
-/// @c EVDS_VARIABLE_TYPE_TABLE1D		| One-dimensional function defined as a table
-/// @c EVDS_VARIABLE_TYPE_TABLE2D		| Two-dimensional function defined as a table
-///	@c EVDS_VARIABLE_TYPE_POLYNOMIAL	| Piecewise interpolation function defined by polynomial coefficients
+/// @c EVDS_VARIABLE_TYPE_DATA_PTR		| Stores pointer to custom data (some C structure)
+/// @c EVDS_VARIABLE_TYPE_FUNCTION_PTR	| Stores a function/callback pointer. Function signature depends on variable name
+/// @c EVDS_VARIABLE_TYPE_FUNCTION		| Multi-dimensional pre-defined function
 ///
 /// Interpolated functions
 /// --------------------------------------------------------------------------------
@@ -89,7 +87,7 @@ extern "C" {
 /// nested variables or attributes inside it.
 ///
 /// If the data structure represents some higher level data structure, the solve can create
-/// a new variable of EVDS_VARIABLE_TYPE_DATA type during initialization to store a low-level data
+/// a new variable of EVDS_VARIABLE_TYPE_DATA_PTR type during initialization to store a low-level data
 /// structure that will represent data from EVDS_VARIABLE_TYPE_NESTED.
 ///
 /// Here's an example of a nested data structure (geometry information for the tessellator):
@@ -128,46 +126,75 @@ extern "C" {
 /// ~~~
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef DOXYGEN_INTERNAL_STRUCTS
-typedef struct EVDS_VARIABLE_TABLE1D_ENTRY_TAG {
+typedef struct EVDS_VARIABLE_TVALUE_ENTRY_TAG {
 	EVDS_REAL x;						//X value
 	EVDS_REAL f;						//Variable value
-} EVDS_VARIABLE_TABLE1D_ENTRY;  
+} EVDS_VARIABLE_TVALUE_ENTRY;
 
-typedef struct EVDS_VARIABLE_TABLE1D_TAG {
-	EVDS_REAL constant;					//Constant representing this table
-	EVDS_VARIABLE_TABLE1D_ENTRY* data;	//Table of values
-	int count;							//Size of the values table
+/*typedef struct EVDS_VARIABLE_PVALUE4_ENTRY_TAG {
+	EVDS_REAL x_min;					//X min value
+	EVDS_REAL x_max;					//X max value
+	EVDS_REAL polynomial[4];			//Polynomial coefficients
+} EVDS_VARIABLE_PVALUE4_ENTRY;
 
-	EVDS_REAL data_min;					//Min X value in the table
-	EVDS_REAL data_max;					//Max X value in the table
-	EVDS_REAL data_length;				//= data_max - data_min
-	EVDS_REAL data_length1;				//= 1.0/data_length
+typedef struct EVDS_VARIABLE_PVALUE16_ENTRY_TAG {
+	EVDS_REAL x_min;					//X min value
+	EVDS_REAL y_min;					//Y min value
+	EVDS_REAL x_max;					//X max value
+	EVDS_REAL y_max;					//Y max value
+	EVDS_REAL polynomial[16];			//Polynomial coefficients
+} EVDS_VARIABLE_PVALUE16_ENTRY;
 
-	EVDS_REAL* data_fast;				//Pre-calculated table of interpolated values
-	int data_fast_count;				//Size of the pre-calculated table
-} EVDS_VARIABLE_TABLE1D;
+typedef struct EVDS_VARIABLE_PVALUE4_ENTRY_TAG {
+	EVDS_REAL x_min;					//X min value
+	EVDS_REAL y_min;					//Y min value
+	EVDS_REAL z_min;					//Z min value
+	EVDS_REAL x_max;					//X max value
+	EVDS_REAL y_max;					//Y max value
+	EVDS_REAL z_max;					//Z max value
+	EVDS_REAL polynomial[64];			//Polynomial coefficients
+} EVDS_VARIABLE_PVALUE64_ENTRY;*/
+
+typedef struct EVDS_VARIABLE_FUNCTION_TAG {
+	//0D functions
+	EVDS_REAL data0d;						//Constant value of the function (default value)
+
+	//1D functions
+	EVDS_VARIABLE_TVALUE_ENTRY* data1d;		//Table of values
+	int data1d_count;						//Size of the values table
+	//EVDS_VARIABLE_PVALUE4_ENTRY* poly1d;	//Table of polynomials and ranges
+	int poly1d_count;						//Size of the polynomials table
+
+	//2D functions
+	//EVDS_VARIABLE_PVALUE4_ENTRY* poly2d;	//Table of polynomials and ranges
+	int poly2d_count;						//Size of the polynomials table
+
+	//3D functions
+	//EVDS_VARIABLE_PVALUE4_ENTRY* poly3d;	//Table of polynomials and ranges
+	int poly3d_count;						//Size of the polynomials table
+} EVDS_VARIABLE_FUNCTION;
 
 struct EVDS_VARIABLE_TAG {
 #ifndef EVDS_SINGLETHREADED
-	SIMC_LOCK_ID lock;					//Read/write lock (only for non-float variables)
+	SIMC_LOCK_ID lock;						//Read/write lock (only for non-float variables)
 #endif
 
-	char name[64];						//Parameter name
-	EVDS_VARIABLE_TYPE type;			//Variable type
-	void* value;						//Variable value
-	size_t value_size;					//Size of variable (size of string if string variable)
+	char name[64];							//Parameter name
+	EVDS_VARIABLE_TYPE type;				//Variable type
+	void* value;							//Variable value
+	size_t value_size;						//Size of variable (size of string if string variable)
 
 	//EVDS_OBJECT* modifier;				//Reference to modifier this variable belongs to
 	//EVDS_VARIABLE* source_variable;		//Source variable, used instead of original one if the object is not unique
 
-	SIMC_LIST* attributes;				//Attributes of this variable (for arbitrary data only)
-	SIMC_LIST* list;					//List of nested variables
-	SIMC_LIST_ENTRY* attribute_entry;	//Entry in parent variables attributes list
-	SIMC_LIST_ENTRY* list_entry;		//Entry in parent variables nested list (or objects variables list)
+	SIMC_LIST* attributes;					//Attributes of this variable (for arbitrary data only)
+	SIMC_LIST* list;						//List of nested variables
+	SIMC_LIST_ENTRY* attribute_entry;		//Entry in parent variables attributes list
+	SIMC_LIST_ENTRY* list_entry;			//Entry in parent variables nested list (or objects variables list)
 
-	EVDS_VARIABLE* parent;				//Variable this variable belongs to (if nested)
-	EVDS_OBJECT* object;				//Object this parameter belongs to (0 if not a parameter)
-	EVDS_SYSTEM* system;				//System this variable belongs to
+	EVDS_VARIABLE* parent;					//Variable this variable belongs to (if nested)
+	EVDS_OBJECT* object;					//Object this parameter belongs to (0 if not a parameter)
+	EVDS_SYSTEM* system;					//System this variable belongs to
 
 	// User-defined data
 	void* userdata;

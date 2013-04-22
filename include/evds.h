@@ -664,15 +664,11 @@ typedef int EVDS_Callback_GetRadiationData(EVDS_OBJECT* object, EVDS_VECTOR* r, 
 /// Data structure (contains a list of nested variables, list of attributes)
 #define EVDS_VARIABLE_TYPE_NESTED		4
 /// Stores pointer to custom data (some C structure)
-#define EVDS_VARIABLE_TYPE_DATA			5
-/// Stores a function/callback pointer. Function signature depends on variable name
-#define EVDS_VARIABLE_TYPE_FUNCTION		6
-/// Numerical function of one variable interpolated from a table of values
-#define EVDS_VARIABLE_TYPE_TABLE1D		7
-/// Numerical function of two variables interpolated from a table of values
-//#define EVDS_VARIABLE_TYPE_TABLE2D		8
-/// Numerical function defined by piecewise polynomials
-//#define EVDS_VARIABLE_TYPE_POLYNOMIAL		9
+#define EVDS_VARIABLE_TYPE_DATA_PTR		5
+/// Stores a C function/callback pointer. Function signature depends on variable name
+#define EVDS_VARIABLE_TYPE_FUNCTION_PTR	6
+/// Multi-dimensional interpolated function defined by polynomials or a table
+#define EVDS_VARIABLE_TYPE_FUNCTION		7
 
 /// @}
 ////////////////////////////////////////////////////////////////////////////////
@@ -1039,19 +1035,11 @@ EVDS_API int EVDS_Variable_SetFunctionPointer(EVDS_VARIABLE* variable, void* dat
 // Get pointer to callback function
 EVDS_API int EVDS_Variable_GetFunctionPointer(EVDS_VARIABLE* variable, void** data);
 // Get value from a 1D function 
-EVDS_API int EVDS_Variable_GetInterpolated1D(EVDS_VARIABLE* variable, EVDS_REAL x, EVDS_REAL* p_value);
-//EVDS_API int EVDS_Variable_GetInterpolated1D(EVDS_VARIABLE* variable, const char* x_name, EVDS_REAL x, EVDS_REAL* p_value);
-// Get value from a 1D function (faster approximate version)
-EVDS_API int EVDS_Variable_GetFastInterpolated1D(EVDS_VARIABLE* variable, EVDS_REAL x, EVDS_REAL* p_value);
+EVDS_API int EVDS_Variable_GetFunction1D(EVDS_VARIABLE* variable, EVDS_REAL x, EVDS_REAL* p_value);
 // Get value from a 2D function 
-//EVDS_API int EVDS_Variable_GetInterpolated2D(EVDS_VARIABLE* variable, EVDS_REAL x, EVDS_REAL y, EVDS_REAL* p_value);
-//EVDS_API int EVDS_Variable_GetInterpolated2D(EVDS_VARIABLE* variable, const char* x_name, const char* y_name,
-//											   EVDS_REAL x, EVDS_REAL y, EVDS_REAL* p_value);
-// Get value from a 2D function (faster approximate version)
-//EVDS_API int EVDS_Variable_GetFastInterpolated2D(EVDS_VARIABLE* variable, EVDS_REAL x, EVDS_REAL y, EVDS_REAL* p_value);
+//EVDS_API int EVDS_Variable_GetFunction2D(EVDS_VARIABLE* variable, EVDS_REAL x, EVDS_REAL y, EVDS_REAL* p_value);
 // Get value from a 3D function
-//EVDS_API int EVDS_Variable_GetInterpolated3D(EVDS_VARIABLE* variable, const char* x_name, const char* y_name, const char* z_name,
-//											   EVDS_REAL x, EVDS_REAL y, EVDS_REAL z, EVDS_REAL* p_value);
+//EVDS_API int EVDS_Variable_GetFunction3D(EVDS_VARIABLE* variable, EVDS_REAL x, EVDS_REAL y, EVDS_REAL z, EVDS_REAL* p_value);
 
 // Query a variable by data reference
 //EVDS_API int EVDS_Variable_QueryVariable(EVDS_VARIABLE* root, const char* query, EVDS_VARIABLE** p_variable);

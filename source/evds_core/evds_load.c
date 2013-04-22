@@ -32,7 +32,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 /// @brief Compare two 1D table entries
 ////////////////////////////////////////////////////////////////////////////////
-int EVDS_Internal_CompareTableEntries(const EVDS_VARIABLE_TABLE1D_ENTRY* v1, const EVDS_VARIABLE_TABLE1D_ENTRY* v2) {
+int EVDS_Internal_CompareTableEntries(const EVDS_VARIABLE_TVALUE_ENTRY* v1, const EVDS_VARIABLE_TVALUE_ENTRY* v2) {
 	if (v1->x > v2->x) return 1;
 	if (v1->x < v2->x) return -1;
     return 0;
@@ -105,9 +105,9 @@ int EVDS_Internal_LoadParameter(EVDS_OBJECT* object, EVDS_VARIABLE* parent_varia
 	
 	//Try to guess if it's a table of values (especially if it looks like a float)
 	if (element) {
-		EVDS_ERRCHECK(SIMC_XML_GetElement(doc,element,&nested_element,"data1d"));
+		EVDS_ERRCHECK(SIMC_XML_GetElement(doc,element,&nested_element,"data"));
 		if (nested_element) {
-			type = EVDS_VARIABLE_TYPE_TABLE1D;
+			type = EVDS_VARIABLE_TYPE_FUNCTION;
 		}
 	}
 
@@ -153,16 +153,16 @@ int EVDS_Internal_LoadParameter(EVDS_OBJECT* object, EVDS_VARIABLE* parent_varia
 		q.q[3] = w;
 		q.coordinate_system = object;
 		EVDS_Variable_SetQuaternion(variable,&q);
-	} else if (type == EVDS_VARIABLE_TYPE_TABLE1D) {
-		int i;
-		EVDS_VARIABLE_TABLE1D* table = (EVDS_VARIABLE_TABLE1D*)variable->value;
+	} else if (type == EVDS_VARIABLE_TYPE_FUNCTION) {
+		/*int i;
+		EVDS_VARIABLE_FUNCTION* table = (EVDS_VARIABLE_FUNCTION*)variable->value;
 
 		//Get count of items in 1D table
 		table->count = 0;
-		EVDS_ERRCHECK(SIMC_XML_GetElement(doc,element,&nested_element,"data1d"));
+		EVDS_ERRCHECK(SIMC_XML_GetElement(doc,element,&nested_element,"data"));
 		while (nested_element) {
 			table->count++;
-			EVDS_ERRCHECK(SIMC_XML_Iterate(doc,element,&nested_element,"data1d"));
+			EVDS_ERRCHECK(SIMC_XML_Iterate(doc,element,&nested_element,"data"));
 		}
 
 		//Allocate 1D table
@@ -216,7 +216,7 @@ int EVDS_Internal_LoadParameter(EVDS_OBJECT* object, EVDS_VARIABLE* parent_varia
 			table->data_length = table->data_max - table->data_min;
 			if (fabs(table->data_length) < EVDS_EPS) table->data_length = EVDS_EPS;
 			table->data_length1 = 1.0/table->data_length;
-		}
+		}*/
 	} else if (element) {
 		//Load all nested parameters
 		EVDS_ERRCHECK(SIMC_XML_GetElement(doc,element,&nested_element,0));
