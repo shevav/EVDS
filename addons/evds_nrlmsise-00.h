@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 /// @file
 ///
-/// @brief External Vessel Dynamics Simulator - RDRS Antenna Addon
+/// @brief External Vessel Dynamics Simulator - NRLMSISE-00 Earth Atmospheric Model
 ////////////////////////////////////////////////////////////////////////////////
 /// Copyright (C) 2012-2013, Black Phoenix
 ///
@@ -22,8 +22,8 @@
 /// Further information about the GNU Lesser General Public License can also be found on
 /// the world wide web at http://www.gnu.org.
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef EVDS_ANTENNA_H
-#define EVDS_ANTENNA_H
+#ifndef EVDS_NRLMSISE_00_H
+#define EVDS_NRLMSISE_00_H
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -34,8 +34,8 @@ extern "C" {
 /// @{
 ////////////////////////////////////////////////////////////////////////////////
 
-// RDRS radio antenna
-EVDS_API int EVDS_Antenna_Register(EVDS_SYSTEM* system);
+// Atmospheric data callback
+int EVDS_NRLMSISE_00_GetAtmosphericData(EVDS_OBJECT* earth, EVDS_VECTOR* r, EVDS_ENVIRONMENT_ATMOSPHERE* atmosphere);
 
 ////////////////////////////////////////////////////////////////////////////////
 /// @}

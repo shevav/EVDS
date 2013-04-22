@@ -1091,9 +1091,9 @@ int EVDS_Variable_GetFunctionPointer(EVDS_VARIABLE* variable, void** data) {
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// @brief Get value from a table-defined 1D function 
+/// @brief Get value from a 1D function 
 ////////////////////////////////////////////////////////////////////////////////
-int EVDS_Variable_GetInterpolated1D(EVDS_VARIABLE* variable, EVDS_REAL x, EVDS_REAL* p_value) {
+int EVDS_Variable_GetFunction1D(EVDS_VARIABLE* variable, EVDS_REAL x, EVDS_REAL* p_value) {
 	int i;
 	EVDS_VARIABLE_FUNCTION* table;
 	if (!variable) return EVDS_ERROR_BAD_PARAMETER;
@@ -1110,13 +1110,10 @@ int EVDS_Variable_GetInterpolated1D(EVDS_VARIABLE* variable, EVDS_REAL x, EVDS_R
 		return EVDS_OK;
 	}
 
-	//Get table
+	//Get table and check if a lesser dimension function must be used
 	table = (EVDS_VARIABLE_FUNCTION*)variable->value;
-
-	//Check for special cases
 	if (table->data1d_count == 0) {
-		*p_value = table->data0d;
-		return EVDS_OK;
+		return EVDS_Variable_GetReal(variable,p_value);
 	}
 
 	//Check for edge cases

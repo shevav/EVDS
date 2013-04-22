@@ -194,7 +194,7 @@ int EVDS_InternalFuelTank_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, E
 
 				//Get density
 				if (EVDS_Variable_GetNested(material,"density",&variable) == EVDS_OK) {
-					EVDS_Variable_GetInterpolated1D(variable,fuel_temperature,&fuel_density);
+					EVDS_Variable_GetFunction1D(variable,fuel_temperature,&fuel_density);
 				}
 			}
 
