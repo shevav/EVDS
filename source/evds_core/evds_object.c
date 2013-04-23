@@ -472,6 +472,8 @@ void EVDS_InternalThread_Initialize_Object(EVDS_OBJECT* object) {
 /// destroyed and the pointer will become invalid. All children will be removed as in the multithreading
 /// case.
 ///
+/// @todo Fix EVDS_ST documentation about reference counter
+///
 /// @param[in] object Object to be destroyed
 ///
 /// @returns Always returns successfully
@@ -540,7 +542,8 @@ int EVDS_Object_Destroy(EVDS_OBJECT* object) {
 	//Add object to list of objects to destroy
 	SIMC_List_Append(object->system->deleted_objects,object);
 #else
-	EVDS_InternalObject_DestroyData(object);
+	//Delete object if no more references remain
+	if (object->stored_counter == 0) EVDS_InternalObject_DestroyData(object);
 #endif
 
 	return EVDS_OK;
@@ -960,6 +963,8 @@ int EVDS_Object_IsInitialized(EVDS_OBJECT* object, int* is_initialized) {
 ///
 /// @evds_st Does not have any effect
 ///
+/// @todo Fix EVDS_ST documentation about reference counter
+///
 /// @param[in] object Object to be stored
 ///
 /// @returns Error code
@@ -971,9 +976,13 @@ int EVDS_Object_Store(EVDS_OBJECT* object) {
 	if (!object) return EVDS_ERROR_BAD_PARAMETER;
 #ifndef EVDS_SINGLETHREADED
 	if (object->destroyed) return EVDS_ERROR_BAD_STATE;
-#ifdef _WIN32
+#	ifdef _WIN32
 	InterlockedIncrement(&object->stored_counter);
-#endif
+#	else
+	__sync_fetch_and_add(&object->stored_counter,1);
+#	endif
+#else
+	object->stored_counter++;
 #endif
 	return EVDS_OK;
 }
@@ -987,6 +996,8 @@ int EVDS_Object_Store(EVDS_OBJECT* object) {
 ///
 /// The function will return an error if objects reference counter is already zero.
 ///
+/// @todo Fix EVDS_ST documentation about reference counter
+///
 /// @param[in] object Object to be released
 ///
 /// @returns Error code
@@ -997,17 +1008,21 @@ int EVDS_Object_Store(EVDS_OBJECT* object) {
 int EVDS_Object_Release(EVDS_OBJECT* object) {
 	if (!object) return EVDS_ERROR_BAD_PARAMETER;
 #ifndef EVDS_SINGLETHREADED
-#ifdef _WIN32
+#	ifdef _WIN32
 	if (InterlockedDecrement(&object->stored_counter) < 0) {
 		InterlockedIncrement(&object->stored_counter);
 		return EVDS_ERROR_INVALID_OBJECT;
     }
-#else
+#	else
 	if (__sync_fetch_and_add(&object->stored_counter,-1) < 0) {
         __sync_fetch_and_add(&object->stored_counter,1);
         return EVDS_ERROR_INVALID_OBJECT;
     }
-#endif
+#	endif
+#else
+	object->stored_counter--;
+	if (object->stored_counter < 0) return EVDS_ERROR_INVALID_OBJECT;
+	if (object->stored_counter == 0) EVDS_InternalObject_DestroyData(object);
 #endif
 	return EVDS_OK;
 }
