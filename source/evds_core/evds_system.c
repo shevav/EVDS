@@ -425,7 +425,7 @@ int EVDS_System_GetObjectsByType(EVDS_SYSTEM* system, const char* type, SIMC_LIS
 /// @retval EVDS_ERROR_BAD_PARAMETER "system" is null
 /// @retval EVDS_ERROR_BAD_PARAMETER "p_list" is null
 ////////////////////////////////////////////////////////////////////////////////
-int EVDS_System_GetDatabaseList(EVDS_SYSTEM* system, SIMC_LIST** p_list) {
+int EVDS_System_GetDatabasesList(EVDS_SYSTEM* system, SIMC_LIST** p_list) {
 	if (!system) return EVDS_ERROR_BAD_PARAMETER;
 	if (!p_list) return EVDS_ERROR_BAD_PARAMETER;
 

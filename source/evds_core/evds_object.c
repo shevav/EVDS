@@ -548,13 +548,13 @@ int EVDS_Object_Destroy(EVDS_OBJECT* object) {
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// @brief Check if object is valid (still exists).
+/// @brief Check if object is destroyed.
 ///
 /// @evds_mt Object will no longer be considered valid if it stops existing. The function
 ///  returns 1 if object was destroyed. A thread that is actively using this object must
 ///  release it and stop working with it as soon as it can detect it becoming invalid.
 ///
-/// @evds_st Always returns 1 (object is valid).
+/// @evds_st Always returns 0 (object is valid/not destroyed).
 ///
 /// This function must only be used when it is guranteed that objects will not be cleaned up
 /// before it may be called, for example if object is marked as stored.
@@ -566,12 +566,12 @@ int EVDS_Object_Destroy(EVDS_OBJECT* object) {
 /// @retval EVDS_OK "object" pointer is not null
 /// @retval EVDS_ERROR_BAD_PARAMETER "object" pointer is null
 ////////////////////////////////////////////////////////////////////////////////
-int EVDS_Object_IsValid(EVDS_OBJECT* object, int* is_valid) {
+int EVDS_Object_IsDestroyed(EVDS_OBJECT* object, int* is_destroyed) {
 	if (!object) return EVDS_ERROR_BAD_PARAMETER;
 #ifndef EVDS_SINGLETHREADED
-	*is_valid = (!object->destroyed);
+	*is_destroyed = object->destroyed;
 #else
-	*is_valid = 1;
+	*is_destroyed = 0;
 #endif
 	return EVDS_OK;
 }

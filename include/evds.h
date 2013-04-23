@@ -784,11 +784,6 @@ EVDS_API int EVDS_System_GetObjectByName(EVDS_SYSTEM* system, const char* name, 
 // Cleanup objects (multithreaded only)
 EVDS_API int EVDS_System_CleanupObjects(EVDS_SYSTEM* system);
 
-// Set userdata
-EVDS_API int EVDS_System_SetUserdata(EVDS_SYSTEM* system, void* userdata);
-// Get userdata
-EVDS_API int EVDS_System_GetUserdata(EVDS_SYSTEM* system, void** p_userdata);
-
 // Load database from a file
 EVDS_API int EVDS_System_DatabaseFromFile(EVDS_SYSTEM* system, const char* filename);
 // Load database from a string
@@ -796,7 +791,7 @@ EVDS_API int EVDS_System_DatabaseFromString(EVDS_SYSTEM* system, const char* des
 // Get database by name
 EVDS_API int EVDS_System_GetDatabaseByName(EVDS_SYSTEM* system, const char* name, EVDS_VARIABLE** p_database);
 // Get list of all databases
-EVDS_API int EVDS_System_GetDatabaseList(EVDS_SYSTEM* system, SIMC_LIST** p_list);
+EVDS_API int EVDS_System_GetDatabasesList(EVDS_SYSTEM* system, SIMC_LIST** p_list);
 // Get list of all entries in database
 EVDS_API int EVDS_System_GetDatabaseEntries(EVDS_SYSTEM* system, const char* name, SIMC_LIST** p_list);
 // Get an entry from a database by name and object name
@@ -804,6 +799,12 @@ EVDS_API int EVDS_System_QueryDatabase(EVDS_SYSTEM* system, const char* query, E
 
 // Set global initialization callback
 EVDS_API int EVDS_System_SetCallback_OnInitialize(EVDS_SYSTEM* system, EVDS_Callback_Initialize* p_callback);
+//FIXME EVDS_API int EVDS_System_SetBaseSolver(EVDS_SYSTEM* system, EVDS_SOLVER* solver)
+
+// Set userdata
+EVDS_API int EVDS_System_SetUserdata(EVDS_SYSTEM* system, void* userdata);
+// Get userdata
+EVDS_API int EVDS_System_GetUserdata(EVDS_SYSTEM* system, void** p_userdata);
 
 
 // Convert a null-terminated string to an EVDS_REAL (parses units from input string, value is in metric units)
@@ -867,22 +868,22 @@ EVDS_API int EVDS_Object_SaveToFile(EVDS_OBJECT* object, const char* filename);
 EVDS_API int EVDS_Object_SaveToString(EVDS_OBJECT* object, char** description);
 // Save object. Extra information specified by info structure
 EVDS_API int EVDS_Object_SaveEx(EVDS_OBJECT* object, const char* filename, EVDS_OBJECT_SAVEEX* info);
+// Destroy object (the data may remain in memory until object is free'd in other threads too)
+EVDS_API int EVDS_Object_Destroy(EVDS_OBJECT* object);
 
 // Initialize object and start working with it
 EVDS_API int EVDS_Object_Initialize(EVDS_OBJECT* object, int is_blocking);
-// Destroy object (the data may remain in memory until object is free'd in other threads too)
-EVDS_API int EVDS_Object_Destroy(EVDS_OBJECT* object);
 // Check if object is initialized
 EVDS_API int EVDS_Object_IsInitialized(EVDS_OBJECT* object, int* is_initialized);
 // Transfer initialization ownership to current thread (current thread becomes responsible for initializing object)
 EVDS_API int EVDS_Object_TransferInitialization(EVDS_OBJECT* object);
 
-// Signal that object is stored (somewhere). Automatically stored when "Create" is called
+// Signal that object is stored somewhere
 EVDS_API int EVDS_Object_Store(EVDS_OBJECT* object);
-// Signal that objects is no longer stored (somewhere). Automatically deleted when "Destroy" is called
+// Signal that objects is no longer stored somewhere
 EVDS_API int EVDS_Object_Release(EVDS_OBJECT* object);
-// Is the object valid (it may be invalid when destroyed - the data will not be cleared to avoid any exceptions)
-EVDS_API int EVDS_Object_IsValid(EVDS_OBJECT* object, int* is_valid);
+// Is the object destroyed (the data will not be cleared to avoid any exceptions)
+EVDS_API int EVDS_Object_IsDestroyed(EVDS_OBJECT* object, int* is_destroyed);
 
 // Solve object
 EVDS_API int EVDS_Object_Solve(EVDS_OBJECT* object, EVDS_REAL delta_time);
