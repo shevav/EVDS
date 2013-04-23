@@ -851,6 +851,18 @@ int EVDS_Object_CopySingle(EVDS_OBJECT* source, EVDS_OBJECT* parent, EVDS_OBJECT
 
 
 ////////////////////////////////////////////////////////////////////////////////
+/// @brief Create a new object by origin object or return an already existing object.
+///
+/// @todo Add documentation
+////////////////////////////////////////////////////////////////////////////////
+int EVDS_Object_CreateBy(EVDS_OBJECT* origin, const char* sub_name, EVDS_OBJECT* parent, EVDS_OBJECT** p_object) {
+	if (!origin) return EVDS_ERROR_BAD_PARAMETER;
+	if (!sub_name) return EVDS_ERROR_BAD_PARAMETER;
+	//FIXME
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
 /// @brief Initialize the object.
 ///
 /// This will finalize the object structure (no new variables may be added after this call).
@@ -1102,6 +1114,24 @@ int EVDS_Object_SetName(EVDS_OBJECT* object, const char* name) {
 #endif
 
 	strncpy(object->name,name,256);
+	return EVDS_OK;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// @brief Set objects name to a unique string.
+/// @todo Add documentation
+////////////////////////////////////////////////////////////////////////////////
+int EVDS_Object_SetUniqueName(EVDS_OBJECT* object) {
+	if (!object) return EVDS_ERROR_BAD_PARAMETER;
+	if (object->initialized) return EVDS_ERROR_BAD_STATE;
+#ifndef EVDS_SINGLETHREADED
+	if (object->destroyed) return EVDS_ERROR_INVALID_OBJECT;
+	if ((object->create_thread != SIMC_Thread_GetUniqueID()) &&
+		(object->initialize_thread != SIMC_Thread_GetUniqueID())) return EVDS_ERROR_INTERTHREAD_CALL;
+#endif
+
+	snprintf(object->name,256,"@%4X%4X",rand(),rand()); //FIXME: better unique name
 	return EVDS_OK;
 }
 

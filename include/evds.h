@@ -852,6 +852,8 @@ EVDS_API int EVDS_Solver_Register(EVDS_SYSTEM* system, EVDS_SOLVER* solver);
 
 // Create new object
 EVDS_API int EVDS_Object_Create(EVDS_SYSTEM* system, EVDS_OBJECT* parent, EVDS_OBJECT** p_object);
+// Create new object by another object or return already existing object (used for objects created by solvers)
+EVDS_API int EVDS_Object_CreateBy(EVDS_OBJECT* origin, const char* sub_name, EVDS_OBJECT* parent, EVDS_OBJECT** p_object);
 // Load object variables from a file. Will only return first pointer of all loaded vessels (other vessels will be initialized)
 EVDS_API int EVDS_Object_LoadFromFile(EVDS_OBJECT* parent, const char* filename, EVDS_OBJECT** p_object);
 // Load object variables from a configuration string. Same behaviour as previous function
@@ -896,6 +898,8 @@ EVDS_API int EVDS_Object_Integrate(EVDS_OBJECT* object, EVDS_REAL delta_time, EV
 EVDS_API int EVDS_Object_SetType(EVDS_OBJECT* object, const char* type);
 // Set object name
 EVDS_API int EVDS_Object_SetName(EVDS_OBJECT* object, const char* name);
+// Set objects name to a unique string
+EVDS_API int EVDS_Object_SetUniqueName(EVDS_OBJECT* object);
 // Add a new variable
 EVDS_API int EVDS_Object_AddVariable(EVDS_OBJECT* object, const char* name, EVDS_VARIABLE_TYPE type, EVDS_VARIABLE** p_variable);
 // Add a new variable (floating point value, can accept 0 as p_variable)

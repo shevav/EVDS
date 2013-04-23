@@ -172,4 +172,5 @@ addons:
 - Fix the lack of unit tests
 - Add additional debug asserts in various code points to avoid common errors.
 - Modifiers that are actually EVDS objects. Support for saving and loading runtime
-  objects.
+  objects
+- Unique identifiers must be made truly unique
