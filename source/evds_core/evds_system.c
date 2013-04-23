@@ -168,6 +168,9 @@ int EVDS_System_Create(EVDS_SYSTEM** p_system)
 	system->cleanup_working = SIMC_Lock_Create();
 #endif
 
+	//Set system to realtime by default
+	system->time = EVDS_REALTIME;
+
 	//Data structures
 	SIMC_List_Create(&system->object_types,1);
 	SIMC_List_Create(&system->objects,1);
@@ -272,6 +275,33 @@ int EVDS_System_Destroy(EVDS_SYSTEM* system)
 	SIMC_Thread_Deinitialize();
 #endif
 	free(system);
+	return EVDS_OK;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// @brief Set system global time (in MJD).
+////////////////////////////////////////////////////////////////////////////////
+int EVDS_System_SetTime(EVDS_SYSTEM* system, EVDS_REAL time) {
+	if (!system) return EVDS_ERROR_BAD_PARAMETER;
+	system->time = time;
+	return EVDS_OK;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// @brief Get system global time (in MJD).
+////////////////////////////////////////////////////////////////////////////////
+int EVDS_System_GetTime(EVDS_SYSTEM* system, EVDS_REAL* time) {
+	if (!system) return EVDS_ERROR_BAD_PARAMETER;
+	if (!time) return EVDS_ERROR_BAD_PARAMETER;
+
+	//Return real time or system time
+	if (system->time == EVDS_REALTIME) {
+		*time = SIMC_Thread_GetMJDTime();
+	} else {
+		*time = system->time;
+	}
 	return EVDS_OK;
 }
 

@@ -361,11 +361,10 @@ struct EVDS_SYSTEM_TAG {
 	// Global callbacks
 	EVDS_Callback_Initialize* OnInitialize;		// Global initialization callback
 
-	// Unique ID counter (for objects without a defined UID)
-	unsigned int uid_counter;
-
-	// Root inertial space
-	EVDS_OBJECT* inertial_space;
+	// Various special variables
+	unsigned int uid_counter;					// Unique ID counter (for objects without a defined UID)
+	EVDS_OBJECT* inertial_space;				// Root inertial space
+	EVDS_REAL time;								// Global system time
 
 	// User-defined data
 	void* userdata;

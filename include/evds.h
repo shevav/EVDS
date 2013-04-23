@@ -84,6 +84,9 @@ typedef unsigned int EVDS_VARIABLE_TYPE;
 /// Macro to convert angle from radians to degrees
 #define EVDS_DEG(x) (180.0*(x)/EVDS_PI)
 
+/// Special MJD date that makes EVDS system run realtime
+#define EVDS_REALTIME -1.0
+
 ////////////////////////////////////////////////////////////////////////////////
 /// @}
 ////////////////////////////////////////////////////////////////////////////////
@@ -764,16 +767,22 @@ EVDS_API int EVDS_System_Create(EVDS_SYSTEM** p_system);
 // Destroy EVDS system and all resources. All threads must be shutdown first!
 EVDS_API int EVDS_System_Destroy(EVDS_SYSTEM* system);
 
+// Set EVDS system global time (MJD)
+EVDS_API int EVDS_System_SetTime(EVDS_SYSTEM* system, EVDS_REAL time);
+// Get EVDS system global time (MJD)
+EVDS_API int EVDS_System_GetTime(EVDS_SYSTEM* system, EVDS_REAL* time);
+
+// Get root inertial space object
+EVDS_API int EVDS_System_GetRootInertialSpace(EVDS_SYSTEM* system, EVDS_OBJECT** p_object);
 // Get objects by type
 EVDS_API int EVDS_System_GetObjectsByType(EVDS_SYSTEM* system, const char* type, SIMC_LIST** p_list);
-// Cleanup objects (multithreaded only)
-EVDS_API int EVDS_System_CleanupObjects(EVDS_SYSTEM* system);
 // Get object by UID (can search in children of a given object)
 EVDS_API int EVDS_System_GetObjectByUID(EVDS_SYSTEM* system, unsigned int uid, EVDS_OBJECT* parent, EVDS_OBJECT** p_object);
 // Get object by name (can search in children of a given object)
 EVDS_API int EVDS_System_GetObjectByName(EVDS_SYSTEM* system, const char* name, EVDS_OBJECT* parent, EVDS_OBJECT** p_object);
-// Get root inertial space object
-EVDS_API int EVDS_System_GetRootInertialSpace(EVDS_SYSTEM* system, EVDS_OBJECT** p_object);
+
+// Cleanup objects (multithreaded only)
+EVDS_API int EVDS_System_CleanupObjects(EVDS_SYSTEM* system);
 
 // Set userdata
 EVDS_API int EVDS_System_SetUserdata(EVDS_SYSTEM* system, void* userdata);

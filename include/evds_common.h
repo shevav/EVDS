@@ -38,6 +38,9 @@ extern "C" {
 /// - @subpage EVDS_Solver_RocketEngine "'rocket_engine'":
 ///		Default rocket engine object, supports a variety of rocket engine
 ///		parameters. Calculates physics from shape or shape from physics parameters.
+/// - @subpage EVDS_Solver_Gimbal "'gimbal'"
+///		Gimballing platform that allows controlled movement/rotation of children
+///		objects.
 /// - @subpage EVDS_Solver_FuelTank "'fuel_tank'":
 ///		Default fuel tank object, provides basic model of a fuel tank with
 ///		a variable center of mass and sloshing support.
@@ -89,6 +92,9 @@ EVDS_API int EVDS_RocketEngine_Register(EVDS_SYSTEM* system);
 
 // Fuel tank (stores fuel)
 EVDS_API int EVDS_FuelTank_Register(EVDS_SYSTEM* system);
+
+// Gimbal platform (allows turning position of set of objects in space)
+EVDS_API int EVDS_Gimbal_Register(EVDS_SYSTEM* system);
 
 
 // Planet (represents a planetary body or a star)
