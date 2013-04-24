@@ -119,6 +119,7 @@ EVDS_API int EVDS_Common_LoadDatabase(EVDS_SYSTEM* system);
 EVDS_RigidBody_Register(system); \
 EVDS_RocketEngine_Register(system); \
 EVDS_FuelTank_Register(system); \
+EVDS_Gimbal_Register(system); \
 EVDS_Planet_Register(system); \
 EVDS_Propagator_Heun_Register(system); \
 EVDS_Propagator_RK4_Register(system);

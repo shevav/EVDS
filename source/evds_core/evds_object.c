@@ -394,8 +394,19 @@ void EVDS_InternalThread_Initialize_Object(EVDS_OBJECT* object) {
 #ifndef EVDS_SINGLETHREADED
 		child->initialize_thread = SIMC_Thread_GetUniqueID();
 #endif
+		SIMC_List_Stop(object->raw_children,entry); //Stop iterator so initializer can change list of children
 		EVDS_InternalThread_Initialize_Object(child); //Blocking initialization
-		entry = SIMC_List_GetNext(object->raw_children,entry);
+		
+		//Find next un-initialized child
+		entry = SIMC_List_GetFirst(object->raw_children);
+		while (entry) {
+			EVDS_OBJECT* child = (EVDS_OBJECT*)SIMC_List_GetData(object->raw_children,entry);
+			if (child->initialized) {
+				entry = SIMC_List_GetNext(object->raw_children,entry);
+			} else {
+				break;
+			}
+		}
 	}
 
 	//Check every solver if it wants to claim the object
@@ -856,9 +867,21 @@ int EVDS_Object_CopySingle(EVDS_OBJECT* source, EVDS_OBJECT* parent, EVDS_OBJECT
 /// @todo Add documentation
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_Object_CreateBy(EVDS_OBJECT* origin, const char* sub_name, EVDS_OBJECT* parent, EVDS_OBJECT** p_object) {
+	char full_name[257] = { 0 };
 	if (!origin) return EVDS_ERROR_BAD_PARAMETER;
 	if (!sub_name) return EVDS_ERROR_BAD_PARAMETER;
-	//FIXME
+	if (!p_object) return EVDS_ERROR_BAD_PARAMETER;
+
+	//Get full name of the sub-object
+	snprintf(full_name,256,"%s [%s]",origin->name,sub_name);
+
+	//Find this object inside parent or inside the entire system, or create new one
+	if (EVDS_System_GetObjectByName(origin->system,full_name,parent,p_object) != EVDS_OK) {
+		EVDS_ERRCHECK(EVDS_Object_Create(origin->system,parent,p_object));
+		EVDS_ERRCHECK(EVDS_Object_SetName(*p_object,full_name));
+		return EVDS_OK;
+	}
+	return EVDS_OK;
 }
 
 

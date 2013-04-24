@@ -52,10 +52,13 @@ int EVDS_InternalGimbal_Integrate(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVDS
 /// @brief Initialize solver
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_InternalGimbal_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVDS_OBJECT* object) {
+	EVDS_OBJECT* parent;
+	EVDS_OBJECT* platform;
 	if (EVDS_Object_CheckType(object,"gimbal") != EVDS_OK) return EVDS_IGNORE_OBJECT; 
 
 	//Create child object (static body that will collect forces from underlying bodies)
-
+	EVDS_Object_GetParent(object,&parent);
+	EVDS_Object_CreateBy(object,"Gimbal platform",parent,&platform);
 	return EVDS_CLAIM_OBJECT;
 }
 
