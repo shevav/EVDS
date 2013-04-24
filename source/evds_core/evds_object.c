@@ -771,6 +771,25 @@ int EVDS_Object_Copy(EVDS_OBJECT* source, EVDS_OBJECT* parent, EVDS_OBJECT** p_o
 
 
 ////////////////////////////////////////////////////////////////////////////////
+/// @brief Create a copy of source objects children under a new parent.
+///
+/// @todo Add documentation.
+////////////////////////////////////////////////////////////////////////////////
+int EVDS_Object_CopyChildren(EVDS_OBJECT* source_parent, EVDS_OBJECT* parent) {
+	SIMC_LIST_ENTRY* entry;
+	if (!source_parent) return EVDS_ERROR_BAD_PARAMETER;
+
+	//Copy children
+	entry = SIMC_List_GetFirst(source_parent->raw_children);
+	while (entry) {	
+		EVDS_Object_Copy((EVDS_OBJECT*)SIMC_List_GetData(source_parent->raw_children,entry),parent,0);
+		entry = SIMC_List_GetNext(source_parent->raw_children,entry);
+	}
+	return EVDS_OK;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
 /// @brief Create new object as a copy of a different object, but do not copy its children.
 ///
 /// Creates a new object using EVDS_Object_Create and copies all internal data (excluding children)
@@ -879,7 +898,7 @@ int EVDS_Object_CreateBy(EVDS_OBJECT* origin, const char* sub_name, EVDS_OBJECT*
 	if (EVDS_System_GetObjectByName(origin->system,full_name,parent,p_object) != EVDS_OK) {
 		EVDS_ERRCHECK(EVDS_Object_Create(origin->system,parent,p_object));
 		EVDS_ERRCHECK(EVDS_Object_SetName(*p_object,full_name));
-		return EVDS_OK;
+		return EVDS_ERROR_NOT_FOUND;
 	}
 	return EVDS_OK;
 }

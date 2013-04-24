@@ -35,6 +35,8 @@
 /// @brief Update planet position and state
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_InternalGimbal_Solve(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVDS_OBJECT* object, EVDS_REAL delta_time) {
+	EVDS_OBJECT* platform;
+	EVDS_Object_GetSolverdata(object,(void*)&platform);
 	return EVDS_OK;
 }
 
@@ -44,6 +46,8 @@ int EVDS_InternalGimbal_Solve(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVDS_OBJ
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_InternalGimbal_Integrate(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVDS_OBJECT* object,
 								  EVDS_REAL delta_time, EVDS_STATE_VECTOR* state, EVDS_STATE_VECTOR_DERIVATIVE* derivative) {
+	EVDS_OBJECT* platform;
+	EVDS_Object_GetSolverdata(object,(void*)&platform);
 	return EVDS_OK;
 }
 
@@ -58,7 +62,17 @@ int EVDS_InternalGimbal_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVD
 
 	//Create child object (static body that will collect forces from underlying bodies)
 	EVDS_Object_GetParent(object,&parent);
-	EVDS_Object_CreateBy(object,"Gimbal platform",parent,&platform);
+	if (EVDS_Object_CreateBy(object,"Gimbal platform",parent,&platform) == EVDS_ERROR_NOT_FOUND) {
+		//FIXME: copy physics properties of gimbal too
+		EVDS_Object_SetType(platform,"static_body");
+		EVDS_Object_CopyChildren(object,platform);
+	}
+
+	//Remove mass from gimbal object. It will not take part in mass calculations, but the platform will
+	EVDS_Object_AddFloatVariable(object,"mass",0,0);
+
+	//Store platform as the solverdata
+	EVDS_Object_SetSolverdata(object,platform);
 	return EVDS_CLAIM_OBJECT;
 }
 
