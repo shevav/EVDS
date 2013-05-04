@@ -28,10 +28,10 @@
 extern "C" {
 #endif
 
-/// Internal macro to check function for errors
+// Internal macro to check functions for errors
 #define EVDS_ERRCHECK(expr) { int error_code = expr; if (error_code != EVDS_OK) return error_code; }
 
-/// Compatibility with Windows systems
+// Compatibility with Windows systems
 #ifdef _WIN32
 #define snprintf _snprintf
 #define snscanf _snscanf

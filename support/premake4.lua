@@ -67,7 +67,20 @@ project "evds"
            "../source/evds_common/**",
            "../include/**" }
    defines { "EVDS_LIBRARY", "SIMC_LIBRARY" }
-   links { "simc" }
+
+
+--------------------------------------------------------------------------------
+-- EVDS OpenGL Renderer
+--------------------------------------------------------------------------------
+--project "evds_opengl"
+--   uuid "53255589-3143-4E71-864E-967A6DCE1F7C"
+--   library()
+--   language "C"
+--   includedirs { "../include",
+--                 "../external/simc/include" }
+--   files { "../source/evds_opengl/**",
+--           "../include/**" }
+--   defines { "EVDS_LIBRARY", "SIMC_LIBRARY" }
 
 
 --------------------------------------------------------------------------------
@@ -81,9 +94,7 @@ project "evds_tutorials"
                  "../external/simc/include",
                  "../source/evds_tutorials" }
    files { "../source/evds_tutorials/evds_tutorials.c" }
-   links { "evds" } --, "glfw" }
+   links { "evds", "simc" } --, "glfw" }
    
 --   configuration { "windows" }
 --     links { "opengl32" }
-   configuration { "not windows" }
-      links { "simc", "tinyxml" }
