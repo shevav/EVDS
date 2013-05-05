@@ -61,9 +61,17 @@ extern "C" {
 /// If variable already exists when adding, the function simply returns that variable (and does not change
 /// its value or create a new one), otherwise creates the variable with the default value.
 ///
+/// @note If variable already exists but has a mismatching variable type, the function for adding variable
+///       will fail.
+///
 /// All work with variables (before the object is initialized) must be done from the initializing thread.
 /// If the initalizing thread must be changed in runtime (for example to pass an uninitialized object
 /// to another thread) the EVDS_Object_TransferInitialization() call can be used.
+///
+/// @note Only thread that is initializing/creating the object may change lists of variables,
+///       since the raw variable data is not reference counted or tracked in any way. 
+///       Any threads which would retrive pointer to variable in other thread may run into
+///       crash if variable data is removed.
 ///
 /// A variable may have be of one of the following types:
 /// Type								| Description
@@ -83,7 +91,7 @@ extern "C" {
 /// for storing pointers to arbitrary binary data. These variables cannot be saved or loaded and must only
 /// be used in runtime.
 ///
-/// Only the pointer is stored, EVDS will not perform any memory management related operations on the pointer.
+/// @note Only the pointer is stored, EVDS will not perform any memory management related operations on the pointer.
 ///
 /// Interpolated functions
 /// --------------------------------------------------------------------------------
@@ -228,6 +236,15 @@ struct EVDS_VARIABLE_TAG {
 /// when their parent is some specific object type (for example engine nozzles will
 /// only affect behavior of the engine object, and do not have any behavior otherwise).
 ///
+/// @note The object hierarchy as saved to file may not match up with what the simulation
+///       will use for calculations - additional objects may be added, some may be removed.
+///
+/// From EVDS point of view the objects can be in three states:
+///  - Created (after object was just created) - this allows setting up the objects internal
+///    variables.
+///  - Initializing (while object is being initialized by solvers initializer)
+///  - Active/initialized - when object becomes part of the physical world.
+///
 /// Every EVDS object may have some basic dynamic data defined:
 ///  - Mass
 ///  - Moments of inertia tensor
@@ -238,15 +255,26 @@ struct EVDS_VARIABLE_TAG {
 /// and properties of the object. Only some specific solvers (for example rigid body) will
 /// use this information for actual physics.
 ///
+/// Each object contains a list of variables (see EVDS_VARIABLE). These variables represent
+/// objects internal (hidden) state and various object parameters.
+///
+/// @note Only thread that is initializing/creating the object may change lists of variables,
+///       since the raw variable data is not reference counted or tracked in any way. 
+///       Any threads which would retrive pointer to variable in other thread may run into
+///       crash if variable data is removed.
+///
 /// Objects are defined by their type and name. Two objects may not have the same name within
 /// the same parent while they are being initialized.
 /// Two objects may share names globally, but only one of them will be returned when queried.
 ///
-/// Each object has an unique identifier that can be defined by user at any time.
-/// It is preferred that this identifier stays unique amongst the objects, but it is not required.
-/// The objects are assigned a unique identifier automatically when they are created.
+/// @note If two names do in fact have same names under one parent, they will be renamed during initialization.
 ///
-/// Unique identifiers are required to be truly unique for networking features to work properly.
+/// Each object additionally has a numerical identifier that's unique globally. It is used for
+/// identifying objects in a shorter way and also for networking facilities. It can be set by user
+/// before the object is initialized.
+///
+/// @note If initialized object has a unique identifier that's already used, it will be given a new
+///       unique identifier.
 ///
 /// See EVDS_Object_SetName(), EVDS_Object_SetType(), EVDS_Object_SetUID() for more information
 /// about object names, types, unique identifiers.

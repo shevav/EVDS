@@ -390,6 +390,9 @@ void EVDS_InternalThread_Initialize_Object(EVDS_OBJECT* object) {
 	//Make sure all children have unique names
 	//FIXME
 
+	//Make sure all children have unique identifiers
+	//FIXME
+
 	//Initialize all children
 	entry = SIMC_List_GetFirst(object->raw_children);
 	while (entry) {
