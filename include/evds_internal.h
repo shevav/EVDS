@@ -44,9 +44,12 @@ extern "C" {
 ////////////////////////////////////////////////////////////////////////////////
 /// @ingroup EVDS_VARIABLE
 /// @struct EVDS_VARIABLE
-/// @brief Single variable inside an object or an entry in a data structure.
+/// @brief Single variable of an object, or an entry/field in a data structure.
 ///
-/// Variables can only be created or removed before the object is initialized. For example:
+/// Variables are used for storing simulation information and objects internal (hidden) state,
+/// for example fuel tank dimensions and current amount of fuel in the tank.
+///
+/// Variables can only be created or removed before the object is initialized. Example:
 /// ~~~{.c}
 ///		EVDS_OBJECT* object;
 ///		EVDS_VARIABLE* variable;
@@ -58,7 +61,7 @@ extern "C" {
 /// If variable already exists when adding, the function simply returns that variable (and does not change
 /// its value or create a new one), otherwise creates the variable with the default value.
 ///
-/// All work with variables (before object is initialized) must be done from the initializing thread.
+/// All work with variables (before the object is initialized) must be done from the initializing thread.
 /// If the initalizing thread must be changed in runtime (for example to pass an uninitialized object
 /// to another thread) the EVDS_Object_TransferInitialization() call can be used.
 ///
@@ -74,9 +77,17 @@ extern "C" {
 /// @c EVDS_VARIABLE_TYPE_FUNCTION_PTR	| Stores a function/callback pointer. Function signature depends on variable name
 /// @c EVDS_VARIABLE_TYPE_FUNCTION		| Multi-dimensional pre-defined function
 ///
+/// Raw data structure pointers
+/// --------------------------------------------------------------------------------
+/// It is possible to use variable types @c EVDS_VARIABLE_TYPE_FUNCTION_PTR and @c EVDS_VARIABLE_TYPE_DATA_PTR
+/// for storing pointers to arbitrary binary data. These variables cannot be saved or loaded and must only
+/// be used in runtime.
+///
+/// Only the pointer is stored, EVDS will not perform any memory management related operations on the pointer.
+///
 /// Interpolated functions
 /// --------------------------------------------------------------------------------
-/// EVDS provides support for specifying functions for variables. These functions can either be defined
+/// EVDS provides support for specifying functions as variables. These functions can either be defined
 /// by a table of values (using linear interpolation between them), or as a set of piecewise polynomials.
 ///
 /// Tables can be used to define 1D or 2D functions. Polynomials can be used to define 1D, 2D, 3D functions.
@@ -204,46 +215,67 @@ struct EVDS_VARIABLE_TAG {
 ////////////////////////////////////////////////////////////////////////////////
 /// @ingroup EVDS_OBJECT
 /// @struct EVDS_OBJECT
-/// @brief Single object or a coordinate system.
+/// @brief Single object with a coordinate system.
 ///
-/// EVDS object can be used to define:
+/// EVDS objects can be used to define:
 ///  - Propagators (coordinate systems in which children states are propagated)
 ///  - Vessels/moving objects
 ///  - Planets and planet-like bodies
 ///  - Objects which create forces (engines, wings)
-///  - Objects which have special meaning for their parent objects (IVSS objects)
+///  - Special objects which may create additional objects during initialization
 ///
-/// The object behavior depends on its parent. Some objects are only meaningful
+/// The objects behavior depends on its parent. Some objects are only meaningful
 /// when their parent is some specific object type (for example engine nozzles will
 /// only affect behavior of the engine object, and do not have any behavior otherwise).
 ///
-/// Objects are distinct by their type and name.
-/// Two objects may not share the same name.
+/// Every EVDS object may have some basic dynamic data defined:
+///  - Mass
+///  - Moments of inertia tensor
+///  - Center of mass position (without accounting for children objects)
+///  - Cross-sections that define objects geometry
+///
+/// This information is optional and will only be used for representing the physical shape
+/// and properties of the object. Only some specific solvers (for example rigid body) will
+/// use this information for actual physics.
+///
+/// Objects are defined by their type and name. Two objects may not have the same name within
+/// the same parent while they are being initialized.
+/// Two objects may share names globally, but only one of them will be returned when queried.
+///
 /// Each object has an unique identifier that can be defined by user at any time.
-/// It is preferred that this identifier stays unique amongst objects, but it can only
-/// be enforced by the user. By default objects are created with no unique identifier.
+/// It is preferred that this identifier stays unique amongst the objects, but it is not required.
+/// The objects are assigned a unique identifier automatically when they are created.
+///
+/// Unique identifiers are required to be truly unique for networking features to work properly.
 ///
 /// See EVDS_Object_SetName(), EVDS_Object_SetType(), EVDS_Object_SetUID() for more information
 /// about object names, types, unique identifiers.
 ///
-/// Object may contain a pointer to user data (any data structure user wishes to
-/// attach to the object), and a pointer to solver data (any data structure that was
-/// assigned to the object by the solver). Both features work the same way, but
-/// solver data is used exclusively by the objects solver:
+/// Object may contain a pointer to user data (any data structure user wishes to attach to the object),
+/// and a pointer to solver data (any data structure that was assigned to the object by the solver).
+/// API is same for both pointers, but the solver data must be used exclusively by the objects solver:
 /// ~~~{.c}
 ///		void* userdata = malloc(128);
 ///		EVDS_Object_SetUserdata(object,userdata);
 /// ~~~
+/// ~~~{.c}
+///		void* userdata;
+///		EVDS_Object_GetUserdata(object,&userdata);
+///		free(userdata);
+/// ~~~
 ///
-/// Using objects in multithreaded envrionment:
-///  - Objects can be created and destroyed in any threads
-///  - A single object must not be deleted from more than one thread at once
-///  - Objects must be reference counted explicitly by the application using
-///     EVDS_Object_Store() and EVDS_Object_Release()
+/// EVDS contains fast partially-lockless multithreading support for the objects. The following limits apply:
+///  - Objects can be created and destroyed in any threads at any time
+///  - Application must stop using destroyed objects within moments after they have been destroyed.
+///  - If application has to keep object data around for longer, then objects must be reference counted
+///    explicitly by the application using EVDS_Object_Store() and EVDS_Object_Release().
+///  - A single object must not be deleted from more than one thread at once (this will cause race condition
+///    and the EVDS system will enter an interdeterminate state)
 ///  - Object data will be retained in memory until no more references to it exist,
 ///     and physically removed after EVDS_System_CleanupObjects() is called
 ///  - Objects must be initialized after loading. Initialization and all operations which
-///     alter list of variables must be done within the initializing thread.
+///     alter list of variables must be done only within the initializing thread (operations
+///     with list of variables are not thread-safe).
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef DOXYGEN_INTERNAL_STRUCTS
 struct EVDS_OBJECT_TAG {
