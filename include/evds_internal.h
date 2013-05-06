@@ -382,15 +382,21 @@ struct EVDS_OBJECT_TAG {
 /// and object behaviors).
 ///
 /// EVDS system always contains a single "root" object, which represents the inertial space
-/// of the simulated universe.
+/// of the simulated universe. All objects are either children of root object or other objects.
 ///
 /// The tree of objects must not contain any loops. The API does not provide checks against loops,
 /// creating a loop (e.g. root node is a child of an object that's a child of root node) will put
 /// the program into undefined state.
 ///
+/// It is possible to copy objects between two EVDS_SYSTEM objects, see EVDS_Object_Copy() and
+/// EVDS_Object_CopySingle().
+///
+/// @note All application threads still working with EVDS objects must stop before EVDS_SYSTEM is
+///       destroyed, otherwise the data may be deleted while threads are still busy.
+///
 /// Destroying the EVDS_SYSTEM object will clean up all relevant data, including
 /// all EVDS_OBJECT data structures. The following data will not be cleaned up:
-///  - Custom data structures within object variables (must be cleaned up by solvers)
+///  - Pointers to custom data structure variables within objects (must be cleaned up by solvers)
 ///  - All userdata objects must be cleaned up manually by their user
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef DOXYGEN_INTERNAL_STRUCTS
@@ -429,23 +435,6 @@ struct EVDS_SYSTEM_TAG {
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// @ingroup EVDS_SYSTEM
-/// @struct EVDS_MATERIAL
-/// @brief Single material database entry
-///
-////////////////////////////////////////////////////////////////////////////////
-#ifndef DOXYGEN_INTERNAL_STRUCTS
-struct EVDS_MATERIAL_TAG {
-	char name[256];			//Material name
-	char print_name[256];	//Material print name
-	SIMC_LIST* parameters;	//Materials parameters
-};
-#endif
-
-
-
-
-////////////////////////////////////////////////////////////////////////////////
 // Internal API
 ////////////////////////////////////////////////////////////////////////////////
 // Destroy object internal data
@@ -456,8 +445,6 @@ int EVDS_InternalVariable_DestroyData(EVDS_VARIABLE* variable);
 int EVDS_Variable_Create(EVDS_SYSTEM* system, const char* name, EVDS_VARIABLE_TYPE type, EVDS_VARIABLE** p_variable);
 // Creates a new variable as a copy of existing one
 int EVDS_Variable_Copy(EVDS_VARIABLE* source, EVDS_VARIABLE* variable);
-// Destroy a material
-int EVDS_Material_Destroy(EVDS_MATERIAL* material);
 
 #ifndef EVDS_SINGLETHREADED
 // Set private state vector

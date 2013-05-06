@@ -45,7 +45,7 @@ extern "C" {
 #endif
 
 #ifdef _DEBUG
-#define EVDS_ASSERT(what) ((what) ? ((void)0) : printf("Assert failed: " #what " (%s:%d)\n", __FILE__, __LINE__))
+#define EVDS_ASSERT(what) ((what) ? ((void)0) : EVDS_AssertFailed(#what,__FILE__,__LINE__))
 #define EVDS_BREAKPOINT() _asm {int 3}
 #else
 #define EVDS_ASSERT(nothing) ((void)0)
@@ -100,8 +100,6 @@ typedef struct EVDS_OBJECT_TAG EVDS_OBJECT;
 typedef struct EVDS_SYSTEM_TAG EVDS_SYSTEM;
 typedef struct EVDS_MODIFIER_TAG EVDS_MODIFIER;
 typedef struct EVDS_SOLVER_TAG EVDS_SOLVER;
-typedef struct EVDS_MATERIAL_TAG EVDS_MATERIAL;
-typedef struct EVDS_MATERIAL_PARAMETER_TAG EVDS_MATERIAL_PARAMETER;
 typedef struct EVDS_OBJECT_LOADEX_TAG EVDS_OBJECT_LOADEX;
 typedef struct EVDS_OBJECT_SAVEEX_TAG EVDS_OBJECT_SAVEEX;
 typedef struct EVDS_MESH_GENERATEEX_TAG EVDS_MESH_GENERATEEX;
@@ -135,8 +133,14 @@ typedef struct EVDS_MESH_GENERATEEX_TAG EVDS_MESH_GENERATEEX;
 /// @c EVDS_VECTOR_ANGULAR_VELOCITY		| rad/s		| Angular velocity
 /// @c EVDS_VECTOR_ANGULAR_ACCELERATION	| rad/s2	| Angular acceleration
 ///
+/// @note Direction vectors share the vector type with force vectors - so a force vector can be treated as
+///       directional one or vice versa without conversion.
+///
 /// Automatic conversion between these types is possible by some of the functions.
-/// Refer to documentation of the vector/math API for more specific information.
+/// Refer to documentation of the vector/math API for more specific information, for example
+/// EVDS_Vector_Cross().
+///
+/// @note Vectors passed into math library as operands must always be initialized.
 ///
 /// For all vector operations, the resulting vector is in the coordinate system of the first operand:
 /// ~~~{.c}
@@ -147,7 +151,7 @@ typedef struct EVDS_MESH_GENERATEEX_TAG EVDS_MESH_GENERATEEX;
 /// ~~~
 ///
 /// State vectors (see EVDS_STATE_VECTOR) always have their components defined in the coordinate
-/// system of the *arent object (to which the state vector belongs).
+/// system of the parent object (to which the state vector belongs).
 ////////////////////////////////////////////////////////////////////////////////
 typedef struct EVDS_VECTOR_TAG {
 	EVDS_REAL x;								///< X vector component
@@ -181,7 +185,7 @@ typedef struct EVDS_VECTOR_TAG {
 /// for more detailed information.
 ///
 /// State vectors (see EVDS_STATE_VECTOR) always have their components defined in the coordinate
-/// system of the *arent object (to which the state vector belongs).
+/// system of the parent object (to which the state vector belongs).
 ////////////////////////////////////////////////////////////////////////////////
 typedef struct EVDS_QUATERNION_TAG {
 	EVDS_REAL q[4];								///< Quaternion real and imaginary parts
@@ -204,19 +208,22 @@ typedef struct EVDS_QUATERNION_TAG {
 ///		\end{array} \right|
 /// \f]
 ///
-/// If used when rendering object state using OpenGL, there is no need to transpose
-/// the matrix (OpenGL uses left-handed coordinate system, and column-major matrices.
-/// Two transposes cancel eachother out).
+/// @note If used when rendering object state using OpenGL, there is no need to transpose
+///       the matrix (OpenGL uses left-handed coordinate system, and column-major matrices.
+///       Two transposes cancel eachother out).
 ///
 /// Matrices do not have a coordinate system assigned to them, but they can be assumed to
-/// have same coordinate system as the quaternion, from which the matrix was generated.
+/// have the same coordinate system as the quaternion, from which the matrix was generated.
 ////////////////////////////////////////////////////////////////////////////////
 typedef EVDS_REAL EVDS_MATRIX[4*4];
 
 
 ////////////////////////////////////////////////////////////////////////////////
 /// @ingroup EVDS_MATH
-/// @brief A state vector that fully defines current state of the vessel.
+/// @brief A state vector that fully defines current visible state of the vessel.
+///
+/// The state vector represents visible state of the objects - position, velocity, etc.
+/// It does not contain hidden information (internal state of the vessel).
 ///
 /// Acceleration and angular acceleration are not directly part of the state vector,
 /// but they are values of derivatives at time of this state vector.
@@ -241,6 +248,8 @@ typedef struct EVDS_STATE_VECTOR_TAG {
 ////////////////////////////////////////////////////////////////////////////////
 /// @ingroup EVDS_MATH
 /// @brief Derivative of the EVDS_STATE_VECTOR.
+///
+/// Describes derivative at the time specified in the corresponding EVDS_STATE_VECTOR.
 ///
 /// Only contains the state vector derivative, may also contain information about
 /// force or torque. Used in propagators.
@@ -809,6 +818,8 @@ EVDS_API int EVDS_System_GetUserdata(EVDS_SYSTEM* system, void** p_userdata);
 
 // Convert a null-terminated string to an EVDS_REAL (parses units from input string, value is in metric units)
 EVDS_API int EVDS_StringToReal(const char* str, char** str_end, EVDS_REAL* p_value);
+// Signals an assert has failed
+EVDS_API int EVDS_AssertFailed(const char* what, const char* filename, int line);
 ////////////////////////////////////////////////////////////////////////////////
 /// @}
 ////////////////////////////////////////////////////////////////////////////////

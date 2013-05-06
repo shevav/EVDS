@@ -809,3 +809,12 @@ int EVDS_System_SetCallback_OnInitialize(EVDS_SYSTEM* system, EVDS_Callback_Init
 	system->OnInitialize = p_callback;
 	return EVDS_OK;
 }
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// Signals an assert has failed
+////////////////////////////////////////////////////////////////////////////////
+int EVDS_AssertFailed(const char* what, const char* filename, int line) {
+	printf("Assert failed: %s (%s:%d)\n", what, filename, line);
+	return EVDS_OK;
+}
