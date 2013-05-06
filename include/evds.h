@@ -303,11 +303,52 @@ typedef int EVDS_Callback_Integrate(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EV
 /// @ingroup EVDS_SOLVER
 /// @brief Definition of a physics solver.
 ///
+/// A physics solver is a sub-simulation program responsible for calculating a certain
+/// specific kind of object. For example the "rigid body" solver calculates rigid body physics,
+/// accumulates forces and outputs accelerations for the rigid body.
+///
 /// The solvers must be registered with EVDS_Solver_Register() API call. Only
 /// solvers that have been registered before an object was created will be used.
 ///
 /// A solver may omit some of its callbacks. The userdata is usually defined by
 /// the solver during its startup.
+/// The EVDS_SOLVER::OnInitialize callback is required for the solver to be able
+/// to accepts objects during initialization.
+/// 
+/// @note The initialization callback must return EVDS_CLAIM_OBJECT or EVDS_IGNORE_OBJECT. It will be
+///       called for every object created and initialized with EVDS_SYSTEM.
+///
+/// The EVDS_SOLVER::OnStartup callback is called right after the solver was registered with EVDS_SYSTEM.
+/// EVDS_SOLVER::OnShutdown callback will be called when EVDS_SYSTEM is destroyed. The solver may allocate and free
+/// its 'global' resources in these callbacks.
+///
+/// A quick example for a simple solver that does nothing useful:
+/// ~~~{.c}
+///		int EVDS_MetalRod_Solve(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVDS_OBJECT* object, EVDS_REAL delta_time) {
+///			return EVDS_OK;
+///		}
+///		
+///		int EVDS_MetalRod_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVDS_OBJECT* object) {
+///			if (EVDS_Object_CheckType(object,"my_ext.metal_rod") != EVDS_OK) return EVDS_IGNORE_OBJECT; 
+///			return EVDS_CLAIM_OBJECT;
+///		}
+///		
+///		EVDS_SOLVER EVDS_Solver_MetalRod = {
+///			EVDS_MetalRod_Initialize, //OnInitialize
+///			0, //OnDeinitialize
+///			EVDS_MetalRod_Solve, //OnSolve
+///			0, //OnIntegrate
+///			0, //OnStateSave
+///			0, //OnStateLoad
+///			0, //OnStartup
+///			0, //OnShutdown
+///		};
+////
+///		int EVDS_MetalRod_Register(EVDS_SYSTEM* system) {
+///			return EVDS_Solver_Register(system,&EVDS_Solver_MetalRod);
+///		}
+/// ~~~
+///
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef DOXYGEN_INTERNAL_STRUCTS
 struct EVDS_SOLVER_TAG {
@@ -376,18 +417,24 @@ typedef int EVDS_Callback_SyntaxError(EVDS_OBJECT_LOADEX* info, const char* erro
 /// @ingroup EVDS_OBJECT
 /// @brief Information structure for EVDS_Object_LoadEx().
 ///
-/// Additional callbacks may be specified:
+/// Additional callbacks may be specified that will be called during loading:
 ///	Name				| Description
 ///	--------------------|--------------------------
 ///	@c OnLoadObject		| Called for every loaded object.
-/// @c OnSyntaxError	| Called when a parsing syntax error occurs. 
-///						| A human-readable error description will be passed.
+/// @c OnSyntaxError	| Called when a parsing syntax error occurs. A human-readable error description will be passed.
 ///
-/// If "description" is set within the structure, information will be loaded from
-/// description instead of the filename.
+/// If EVDS_OBJECT_LOADEX::description is set within the structure, information will be loaded from
+/// the description string instead of the filename.
 ///
 /// If a syntax error occurs, the syntax error callback will be called just once for
-/// the first error.
+/// the first error in file.
+///
+/// Additional flags can be specified to change default behavior of the loader:
+/// Name									| Description
+/// ----------------------------------------|----------------------
+/// @c EVDS_OBJECT_LOADEX_ONLY_FIRST		| Only load the first object in file and skip all following.
+/// @c EVDS_OBJECT_LOADEX_NO_OBJECTS		| Do not load any objects from the file.
+/// @c EVDS_OBJECT_LOADEX_NO_DATABASES		| Do not load any databases from the file.
 ///
 ///	See EVDS_Object_LoadEx() for more information.
 ////////////////////////////////////////////////////////////////////////////////
@@ -409,6 +456,19 @@ struct EVDS_OBJECT_LOADEX {
 ////////////////////////////////////////////////////////////////////////////////
 /// @ingroup EVDS_OBJECT
 /// @brief Information structure for EVDS_Object_SaveEx().
+///
+/// If filename is null, EVDS_OBJECT_SAVEEX::description will be set to pointer to
+/// saved description.
+///
+/// @note If the object is saved as a description string, the string must be then free'd
+///       by the application.
+///
+/// Additional flags can be specified to change default behavior of the saver:
+/// Name									| Description
+/// ----------------------------------------|----------------------
+/// @c EVDS_OBJECT_SAVEEX_ONLY_CHILDREN		| Save only children of the object passed into EVDS_Object_SaveEx()
+/// @c EVDS_OBJECT_SAVEEX_SAVE_UIDS			| Save unique ID's of objects
+/// @c EVDS_OBJECT_SAVEEX_SAVE_FULL_STATE	| Save full state vector for object (including time and quaternion, solver states)
 ///
 ///	See EVDS_Object_SaveEx() for more information.
 ////////////////////////////////////////////////////////////////////////////////
@@ -462,6 +522,27 @@ typedef unsigned int EVDS_MESH_INDEX;
 ////////////////////////////////////////////////////////////////////////////////
 /// @ingroup EVDS_MESH
 /// @brief Information structure for EVDS_Mesh_GenerateEx().
+///
+/// If FIXME flag is specified, EVDS_MESH_GENERATEEX::target_index can be used to generate only
+/// part of the mesh. The index specifies number of the cross-section defined volume to generate.
+///
+/// If @c EVDS_MESH_FORCE_NUMSEGMENTS flag is specified, EVDS_MESH_GENERATEEX::num_segments defines the target
+/// number of segments that must be used for tessellation.
+///
+/// Additional flags can be specified for generating the mesh:
+/// Name								| Description
+/// ------------------------------------|------------------------------
+/// EVDS_MESH_SKIP_TRIANGLES			| Do not generate triangles
+/// EVDS_MESH_SKIP_VERTICES				| Do not generate per-vertex information (normals, vertex info, list of vertices)
+/// EVDS_MESH_SKIP_VERTEX_NORMALS		| Do not generate per-vertex normals
+/// EVDS_MESH_SKIP_VERTEX_INFO			| Do not generate per-vertex information
+/// EVDS_MESH_SKIP_INDICES				| Do not generate indices
+/// EVDS_MESH_SKIP_EDGES				| Do not generate edge data
+/// EVDS_MESH_NO_THICKNESS				| Do not generate additional triangles for thickness
+/// EVDS_MESH_FORCE_NUMSEGMENTS			| Force number of segments when generating mesh by cross-sections
+/// EVDS_MESH_USE_DIVISIONS				| Use number of divisions instead of resolution as a quality parameter
+///
+///	See EVDS_Mesh_GenerateEx() for more information.
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef DOXYGEN_INTERNAL_STRUCTS
 struct EVDS_MESH_GENERATEEX_TAG {
@@ -492,6 +573,23 @@ typedef struct EVDS_MESH_VECTOR_TAG {
 ////////////////////////////////////////////////////////////////////////////////
 /// @ingroup EVDS_MESH
 /// @brief Single triangle of a 3D mesh.
+///
+/// EVDS_MESH_TRIANGLE::center defines the triangles center of mass, it is calculated
+/// as an average of triangles endpoints.
+///
+/// EVDS_MESH_TRIANGLE::triangle_normal is the unit normal to triangles surface.
+///
+/// EVDS_MESH_TRIANGLE::vertex and EVDS_MESH_TRIANGLE::normal arrays contain vertex position
+/// and normal value for every triangles endpoint. If triangle belongs to a smooth surface, the normals
+/// will correspond to local normals to that smooth surface in the triangle endpoints.
+///
+/// EVDS_MESH_TRIANGLE::indices are the three indices of triangles endpoints in the meshes array of vertices.
+///
+/// EVDS_MESH_TRIANGLE::area is the total area of the triangle (always positive), EVDS_MESH_TRIANGLE::thickness
+/// is the thickness of mesh under the triangle. If thickness is zero, then this triangle encloses some volume.
+///
+/// EVDS_MESH_TRIANGLE::cross_section is the index of cross-section to which this triangle belongs. It can be
+/// used to segment cross-sections of a mesh (for visual or other purposes).
 ////////////////////////////////////////////////////////////////////////////////
 typedef struct EVDS_MESH_TRIANGLE_TAG {
 	EVDS_MESH_VECTOR center;				///< Location of triangles center of mass

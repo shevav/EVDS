@@ -644,14 +644,15 @@ void EVDS_InternalMesh_FinishVertices(EVDS_MESH* mesh, EVDS_MESH_GENERATEEX* inf
 /// The following flags can be used:
 /// Name								| Description
 /// ------------------------------------|---------------------------
-/// EVDS_MESH_SKIP_TRIANGLES			| Do not generate list of triangles
-/// EVDS_MESH_SKIP_VERTICES				| Do not generate information about vertices
+/// EVDS_MESH_SKIP_TRIANGLES			| Do not generate triangles
+/// EVDS_MESH_SKIP_VERTICES				| Do not generate per-vertex information (normals, vertex info, list of vertices)
 /// EVDS_MESH_SKIP_VERTEX_NORMALS		| Do not generate per-vertex normals
-/// EVDS_MESH_SKIP_VERTEX_INFO			| Do not generate per-vertex information (neighbours list, etc)
-/// EVDS_MESH_SKIP_INDICES				| Do not generate list of triangle strip indices
-/// EVDS_MESH_SKIP_EDGES				| Do not generate list of edges
-///	EVDS_MESH_NO_THICKNESS				| Skip geometry for the inner hull
-/// EVDS_MESH_FORCE_NUMSEGMENTS			| Force number of segments when tessellating cross-sections.
+/// EVDS_MESH_SKIP_VERTEX_INFO			| Do not generate per-vertex information
+/// EVDS_MESH_SKIP_INDICES				| Do not generate indices
+/// EVDS_MESH_SKIP_EDGES				| Do not generate edge data
+/// EVDS_MESH_NO_THICKNESS				| Do not generate additional triangles for thickness
+/// EVDS_MESH_FORCE_NUMSEGMENTS			| Force number of segments when generating mesh by cross-sections
+/// EVDS_MESH_USE_DIVISIONS				| Use number of divisions instead of resolution as a quality parameter
 ///
 /// Some flags require other flags to be present, for example inner hull geometry will only
 /// be generated when no other skip flags are set.
