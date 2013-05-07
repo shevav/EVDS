@@ -33,6 +33,8 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 /// @brief Default internal solver. Simply calls EVDS_Object_Solve() for all children.
+///
+/// The default solver is used when no solver is defined for the object.
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_InternalCallback_Solve(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVDS_OBJECT* object, EVDS_REAL delta_time) {
 	SIMC_LIST_ENTRY* entry = SIMC_List_GetFirst(object->children);
@@ -51,12 +53,19 @@ int EVDS_InternalCallback_Solve(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVDS_O
 /// Runs the solver for the object. Will first attempt to execute solving function that is
 /// defined specially for this object (see EVDS_Object_SetSolver()). If no function is defined,
 /// solver that has claimed the object will be used (if object has a known type defined).
+/// See EVDS_SOLVER::OnSolve for more information on creating a solving function.
 ///
 /// If neither solving function or a solver are available, uses the default solver which calls
 /// EVDS_Object_Solve() for every child object.
 ///
 /// Time step \f$\Delta t\f$ is the amount of time by which internal state of the object must be
 /// propagated forward. The solver may internally split a single time increment into sub-intervals.
+///
+/// The solver may update internal state of the object based on its current state vector. If any
+/// object state changes rapidly and must be integrated along with the objects state vector, it must
+/// be made part of the state vector, see EVDS_STATE_VECTOR.
+///
+/// @note Time step cannot be negative (only forward state propagation is allowed).
 ///
 /// @param[in] object Object to solve
 /// @param[in] delta_time Time step \f$\Delta t\f$ for the solver
@@ -65,7 +74,7 @@ int EVDS_InternalCallback_Solve(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVDS_O
 /// @retval EVDS_OK No errors during execution
 /// @retval EVDS_ERROR_BAD_PARAMETER "object" pointer is null
 /// @retval EVDS_ERROR_NOT_INITIALIZED Object was not initialized (see EVDS_Object_Initialize())
-/// @retval EVDS_ERROR_INVALID_OBJECT Object does not contain valid data (is a deleted object)
+/// @retval EVDS_ERROR_INVALID_OBJECT "object" was already destroyed
 /// @retval ... Error code returned from the solvers callback
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_Object_Solve(EVDS_OBJECT* object, EVDS_REAL delta_time) {
@@ -86,13 +95,16 @@ int EVDS_Object_Solve(EVDS_OBJECT* object, EVDS_REAL delta_time) {
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// @brief Compute derivative at some time after the given state.
+/// @brief Compute derivative of the objects state vector at some point in time.
+///
+/// Returns derivative of the objects state vector as based on the current state vector and
+/// the current internal (hidden) state of the object.
 ///
 /// This function is usually used by the propagators to compute accelerations
 /// and velocities to compute the motion trajectory. Alternatively it can be used
 /// by vessel objects to request forces and torques from children.
 ///
-/// The object may either set "common" set of variables, or set "torque" and "force"
+/// The object may either set the "common" set of variables, or set "torque" and "force"
 /// as a return value. The exact use of these variables depends on the parent object.
 ///
 /// If object has a custom integration function defined, it will be called instead of
@@ -103,7 +115,7 @@ int EVDS_Object_Solve(EVDS_OBJECT* object, EVDS_REAL delta_time) {
 ///  - Angular acceleration
 ///  - Angular velocity
 ///
-/// Example of using this callback (simple forward integration):
+/// Example of using this callback for writing a propagator (simple forward integration):
 /// ~~~{.c}
 ///		int EVDS_ForwardIntegration_Solve(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVDS_OBJECT* coordinate_system, EVDS_REAL delta_time) {
 ///			SIMC_LIST_ENTRY* entry;
@@ -131,21 +143,25 @@ int EVDS_Object_Solve(EVDS_OBJECT* object, EVDS_REAL delta_time) {
 /// ~~~
 /// 
 /// @todo It is not possible to set state per-thread for an object, and therefore not possible to
-///  call integration from multiple threads at once.
+///  call integration from multiple threads at once. The future EVDS version will change this
+///  to allow simultanous calls to integration from many threads.
 ///
 /// @evds_mt This function can only be called from one thread at a single time - only one
-///  thread may perform integration of an object at the same time.
+///  thread may perform integration of an object at the same time. Calling integration from two threads
+///  will put the EVDS system into indeterminate state (there are no protection mechanisms in place).
+///
+/// @note Time step cannot be negative (only forward state propagation is allowed).
 ///
 /// @param[in] object Object to integrate
-/// @param[in] delta_time Time step \f$\Delta t\f$ since state vector was last updated
+/// @param[in] delta_time Time step \f$\Delta t\f$ since state vectors last update time
 /// @param[in] state State vector for which derivative must be found
 /// @param[out] derivative Derivative of the state vector
 ///
 /// @returns Error code from function or error code from integration
-/// @retval EVDS_OK						No errors during execution
-/// @retval EVDS_ERROR_BAD_PARAMETER	"object" pointer is null
-/// @retval EVDS_ERROR_NOT_INITIALIZED	Object was not initialized (see EVDS_Object_Initialize())
-/// @retval EVDS_ERROR_INVALID_OBJECT	Object does not contain valid data (is a deleted object)
+/// @retval EVDS_OK No errors during execution
+/// @retval EVDS_ERROR_BAD_PARAMETER "object" pointer is null
+/// @retval EVDS_ERROR_NOT_INITIALIZED Object was not initialized (see EVDS_Object_Initialize())
+/// @retval EVDS_ERROR_INVALID_OBJECT "object" was already destroyed
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_Object_Integrate(EVDS_OBJECT* object, EVDS_REAL delta_time, EVDS_STATE_VECTOR* state,
 						  EVDS_STATE_VECTOR_DERIVATIVE* derivative) {
@@ -199,7 +215,16 @@ int EVDS_Object_Integrate(EVDS_OBJECT* object, EVDS_REAL delta_time, EVDS_STATE_
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// @brief Calculates moments of inertia/radius of gyration matrix for a body with mass
+/// @brief Calculates moments of inertia/radius of gyration tensor for a body with mass
+///
+/// Creates \f$R_g^2\f$ tensor from any possible data specified in the object.
+/// The following input data is sufficient for determining \f$R_g^2\f$ tensor:
+///  - @c ix/iy/iz (inertia tensor)
+///  - @c ixx/iyy/izz (principial elements of the tensor)
+///  - @c jxx/jyy/jzz (principial elements of the \f$R_g^2\f$ tensor)
+///  - No input data (an empty tensor will be created to be later filled out from objects geometry)
+///
+/// See EVDS_Object_Initialize() for more information.
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_InternalObject_ComputeMIMatrix(EVDS_OBJECT* object, char axis, EVDS_REAL mass, EVDS_VARIABLE** j_var) {
 	//Names for extra variables
@@ -269,7 +294,18 @@ int EVDS_InternalObject_ComputeMIMatrix(EVDS_OBJECT* object, char axis, EVDS_REA
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// @brief Calculate mass parameters if applicable
+/// @brief Calculate mass parameters if applicable.
+///
+/// The function will compute additional mass parameters for the object if it has
+/// 'mass' variable defined, and perform basic sanity checks against input values.
+///
+/// If object does not have center of mass or inertia tensor defined, they will be
+/// calculated from the objects mesh.
+///
+/// If the object is empty, it will still have a valid but insignificant (under EVDS_EPS)
+/// mass and moments of inertia tensor to assure numerical stability.
+///
+/// See EVDS_Object_Initialize() for more information.
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_InternalObject_ComputeMassParameters(EVDS_OBJECT* object) {
 	EVDS_VARIABLE* v_mass;
@@ -375,7 +411,7 @@ int EVDS_InternalObject_ComputeMassParameters(EVDS_OBJECT* object) {
 ////////////////////////////////////////////////////////////////////////////////
 /// @brief Thread that initializes object (can also be called as a routine).
 ///
-/// @param[in] object Object to be initialized
+/// See EVDS_Object_Initialize() for more information.
 ////////////////////////////////////////////////////////////////////////////////
 void EVDS_InternalThread_Initialize_Object(EVDS_OBJECT* object) {
 	EVDS_SYSTEM* system = object->system;
@@ -387,11 +423,11 @@ void EVDS_InternalThread_Initialize_Object(EVDS_OBJECT* object) {
 	object->initialize_thread = SIMC_Thread_GetUniqueID();
 #endif
 
-	//Make sure all children have unique names
-	//FIXME
+	//Make sure all children have unique names FIXME
+	//
 
-	//Make sure all children have unique identifiers
-	//FIXME
+	//Make sure all children have unique identifiers FIXME
+	//
 
 	//Initialize all children
 	entry = SIMC_List_GetFirst(object->raw_children);
@@ -463,33 +499,119 @@ void EVDS_InternalThread_Initialize_Object(EVDS_OBJECT* object) {
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// @brief Destroys object from the system
+/// @brief Initialize the object.
+///
+/// This will finalize the object structure (no new variables may be added after this call).
+/// The call can be blocking (in current thread), or a new thread may be created for the object
+/// to finish initialization in.
+///
+/// @note The objects ownership will be transferred to the initializing thread if non-blocking
+///       initialization is used. This will prevent the main thread from accessing object data
+///       until it finishes initializing. For example, EVDS_Object_GetName() will fail from the main
+///       thread until the object is fully initialized.
+///
+/// Non-blocking initialization is best used for loading objects, which may take a while to initialize,
+/// for example if some expensive precomputing is being done for those.
+///
+/// Example of use:
+/// ~~~{.c}
+/// 	EVDS_Object_Create(system,0,&inertial_space);
+///		EVDS_Object_SetType(inertial_space,"propagator_rk4");
+///		EVDS_Object_Initialize(inertial_space,1);
+///		//Execution will continue only after object was initialized
+/// ~~~
+///
+/// Before object is initialized the following actions will be executed in the listed order:
+///  - If any children have duplicate names (within this object), they will be renamed arbitrarily to unique names.
+///  - If any children have unique identifiers which are already used globally, they will be assigned new identifiers.
+///  - All children will be initialized in a blocking way.
+///
+/// @note The list of children will be unlocked while initializing the objects child. Children objects may
+///       create additional objects under the object being initialized.
+///
+/// Every solver registered in the EVDS system will be called to check if the object being initialized must be
+/// claimed. If global initialization callback is defined, it will be called first for every solver. See
+/// EVDS_System_SetCallback_OnInitialize().
+///
+/// After object is marked as initialized, it will be added to list of parents children and to list of objects
+/// by type.
+///
+/// If object has a "mass" variable defined, additional mass-related properties will be calculated. If mass
+/// is zero or negative, it will be made infinitely small. Objects radius of gyration squared tensor will be calculated from:
+///  - @c ix/iy/iz (inertia tensor specified explicitly)
+///  - @c jx/jy/jz (radius of gyration squared tensor specified explicitly)
+///  - @c ixx/iyy/izz (principial elements of the tensor)
+///  - @c jxx/jyy/jzz (principial elements of the radius of gyration squared tensor)
+///  - Automatically from objects mesh
+///
+/// The radius of gyrations squared tensor will be written as vector variables @c jx/jy/jz.
+///
+/// @note If inertia tensor is not defined for the object explicitly, the tensor variables (@c ix/iy/iz)
+///       will not be created. Inertia tensor can be calculated from mass and radius of gyration squared as
+///       \f$I_{ij} = R_{g,ij}^2 \cdot mass\f$.
+///
+/// If object does not have center of mass defined it will also be calculated from the objects mesh
+/// using weighted average between all vertices of the mesh.
+/// If the object is empty, it will still have a valid but insignificant (under EVDS_EPS)
+/// mass and moments of inertia tensor to assure numerical stability.
+///
+/// @evds_st Always blocking, ignores value of "is_blocking"
+///
+/// @param[in] object Object to be initialized
+/// @param[in] is_blocking Should object block current threads execution with its initialization
+///
+/// @returns Error code
+/// @retval EVDS_OK Successfully completed (does not report state of initialization)
+/// @retval EVDS_ERROR_BAD_PARAMETER "object" is null
+/// @retval EVDS_ERROR_BAD_STATE Object is already initialized
+////////////////////////////////////////////////////////////////////////////////
+int EVDS_Object_Initialize(EVDS_OBJECT* object, int is_blocking) {
+	if (!object) return EVDS_ERROR_BAD_PARAMETER;
+	if (object->initialized) return EVDS_ERROR_BAD_STATE;
+
+#ifndef EVDS_SINGLETHREADED
+	if (is_blocking) {
+		EVDS_InternalThread_Initialize_Object(object);
+	} else {
+		object->create_thread = SIMC_THREAD_BAD_ID;
+		SIMC_Thread_Create(EVDS_InternalThread_Initialize_Object,object);
+	}
+#else
+	EVDS_InternalThread_Initialize_Object(object);
+#endif
+	return EVDS_OK;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// @brief Destroys object from the system.
 ///
 /// @evds_mt Object data will remain in memory until it is no longer referenced anywhere
 /// (see EVDS_Object_Store(), EVDS_Object_Release()). The data will only be cleaned when
 /// EVDS_System_CleanupObjects() API call is executed.
 ///
 /// Destroyed objects must not be passed to the EVDS API. Any calls using destroyed objects
-/// will fail and will enter undefined state if object may have been destroyed.
+/// will fail and will enter undefined state if objects data was cleaned up (by
+/// EVDS_System_CleanupObjects()).
 ///
-/// After object is destroyed it will be removed from the following lists, in order:
-///		- List of all objects in the system
-///		- List of initialized children of the parent object
-///		- List of all children of the parent object
-///		- List of initialized objects by type
+/// After this function is called, object will be removed from the following lists, in this order:
+///	 - List of all objects in the system
+///	 - List of initialized children of the parent object
+///	 - List of all children of the parent object
+///	 - List of initialized objects by type
 ///
 /// If any iterator is in progress while an object is removed, the removing thread will be blocked
-/// until all iterators complete. The object accessed will still be valid, but may not be
-/// consitently represented in the linked lists above.
+/// until all iterators complete.
+///
+/// @note If object is still accessed from inside an iterator, it will be considered valid, but may not be
+///       consitently represented in the linked lists above.
 ///
 /// All children of the object will be destroyed after the object itself is no longer valid
-/// and is no longer represented in any lists.
+/// and is no longer represented in any lists. Finally the solver will deinitialize the object.
+/// The object will be then marked as destroyed and the API calls will stop accepting it.
 ///
-/// @evds_st The object data will be removed right away. The data for the object pointer will be
-/// destroyed and the pointer will become invalid. All children will be removed as in the multithreading
-/// case.
-///
-/// @todo Fix EVDS_ST documentation about reference counter
+/// @evds_st The object data will be removed right away.  The data for the object pointer will be
+///  destroyed and the pointer will become invalid. All children will be removed just as in the multithreading case.
 ///
 /// @param[in] object Object to be destroyed
 ///
@@ -526,24 +648,13 @@ int EVDS_Object_Destroy(EVDS_OBJECT* object) {
 	if (object->type_entry) SIMC_List_Remove(object->type_list,object->type_entry);
 #endif
 
-#ifndef EVDS_SINGLETHREADED
-	//Free object from its confines (assuming that "Destroy" is matched with "Create")
-	EVDS_Object_Release(object);
-
-	//Mark object as destroyed (from this moment no function will accept this object)
-	object->destroyed = 1;
-
-	//Make sure "EVDS_Object_GetParent" does not work
-	object->parent = 0;
-#endif
-
-	//Request all children destroyed first
+	//Request all children destroyed first (stop iteration so the raw children list will not be locked)
 	entry = SIMC_List_GetFirst(object->raw_children);
 	while (entry) {
 		EVDS_OBJECT* child = (EVDS_OBJECT*)SIMC_List_GetData(object->raw_children,entry);
 		SIMC_List_Stop(object->raw_children,entry); //Stop iterating
 
-		if (EVDS_Object_Destroy(child) == EVDS_OK) { //Destroy object and restart
+		if (EVDS_Object_Destroy(child) == EVDS_OK) { //Destroy object and restart iteration
 			entry = SIMC_List_GetFirst(object->raw_children);
 		} else {
 			entry = 0;
@@ -556,11 +667,17 @@ int EVDS_Object_Destroy(EVDS_OBJECT* object) {
 	}
 
 #ifndef EVDS_SINGLETHREADED
+	//Free object from its confines (assuming that "Destroy" is matched with "Create")
+	EVDS_Object_Release(object);
+
+	//Mark object as destroyed (from this moment no function will accept this object)
+	object->destroyed = 1;
+
 	//Add object to list of objects to destroy
 	SIMC_List_Append(object->system->deleted_objects,object);
 #else
-	//Delete object if no more references remain
-	if (object->stored_counter == 0) EVDS_InternalObject_DestroyData(object);
+	//Delete object right away
+	EVDS_InternalObject_DestroyData(object);
 #endif
 
 	return EVDS_OK;
@@ -579,8 +696,12 @@ int EVDS_Object_Destroy(EVDS_OBJECT* object) {
 /// This function must only be used when it is guranteed that objects will not be cleaned up
 /// before it may be called, for example if object is marked as stored.
 ///
+/// @note The object may typically exist for a couple seconds after it was destroyed, providing
+///       enough time for basic operations to complete. If more strict control over the process
+///       is required, see EVDS_Object_Store(), EVDS_Object_Release() and EVDS_System_CleanupObjects().
+///
 /// @param[in] object Object to check
-/// @param[out] is_valid Whether object is valid will be written here
+/// @param[out] is_destroyed Pointer to where the requested information must be written
 ///
 /// @returns Error code, is object valid
 /// @retval EVDS_OK "object" pointer is not null
@@ -600,7 +721,8 @@ int EVDS_Object_IsDestroyed(EVDS_OBJECT* object, int* is_destroyed) {
 ////////////////////////////////////////////////////////////////////////////////
 /// @brief Destroy objects internal data structure.
 ///
-/// @param[in] object Object which must be destroyed
+/// Destroys all variables inside the object and all of its list and lock objects. Does not
+/// touch objects userdata. The variables tree is removed recursively.
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_InternalObject_DestroyData(EVDS_OBJECT* object) {
 	SIMC_LIST_ENTRY* entry;
@@ -642,11 +764,17 @@ int EVDS_InternalObject_DestroyData(EVDS_OBJECT* object) {
 /// it can be used for simulation. All variables and fixed internal structures must be 
 /// created before object is initialized.
 ///
-/// After object has been initialized, it is no longer possible to alter the list of variables in it.
-/// It will only be possible to  modify the existing variable values.
+/// @note Before object is initialized, it will not show up in most object lists (list of objects by
+///       type, list of children, will not be returned with object queries). Uninitialized objects
+///       will only appear in raw lists (see EVDS_Object_GetAllChildren()).
 ///
-/// Objects will be assigned an unique ID automatically, which can be changed later at any time
+/// After object has been initialized, it is no longer possible to alter the list of variables in it.
+/// It will only be possible to  modify the existing variable values. 
+///
+/// Objects will be assigned an unique ID automatically, which can be changed later before the object is initialized
 /// using EVDS_Object_SetUID().
+/// Objects have empty name and type by default, but will be assigned a unique name if two objects with no name are
+/// listed under the same parent.
 ///
 /// Example of use:
 /// ~~~{.c}
@@ -654,9 +782,9 @@ int EVDS_InternalObject_DestroyData(EVDS_OBJECT* object) {
 ///		EVDS_Object_Create(system,inertial_system,&earth);
 ///		EVDS_Object_SetType(earth,"planet");
 ///		EVDS_Object_SetName(earth,"Earth");
-///		EVDS_Object_AddFloatVariable(earth,"mu",3.9860044e14,0);	//m3 sec-2
-///		EVDS_Object_AddFloatVariable(earth,"radius",6378.145e3,0);	//m
-///		EVDS_Object_AddFloatVariable(earth,"period",86164.10,0);	//sec
+///		EVDS_Object_AddFloatVariable(earth,"parameter.mu",3.9860044e14,0);			//m3 sec-2
+///		EVDS_Object_AddFloatVariable(earth,"parameter.radius",6378.145e3,0);		//m
+///		EVDS_Object_AddFloatVariable(earth,"parameter.rotation_period",86164.10,0);	//sec
 ///		EVDS_Object_Initialize(earth,1);
 /// ~~~
 ///
@@ -906,52 +1034,6 @@ int EVDS_Object_CreateBy(EVDS_OBJECT* origin, const char* sub_name, EVDS_OBJECT*
 		EVDS_ERRCHECK(EVDS_Object_SetName(*p_object,full_name));
 		return EVDS_ERROR_NOT_FOUND;
 	}
-	return EVDS_OK;
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-/// @brief Initialize the object.
-///
-/// This will finalize the object structure (no new variables may be added after this call).
-/// The call can be blocking (in current thread), or the object may finish initialization
-/// in a different thread.
-///
-/// Non-blocking initialization is best used for loading objects, which may take a while to initialize,
-/// for example if some expensive precomputing is being done for those.
-///
-/// Example of use:
-/// ~~~{.c}
-/// 	EVDS_Object_Create(fsystem,0,&inertial_system);
-///		EVDS_Object_SetType(inertial_system,"propagator_rk4");
-///		EVDS_Object_Initialize(inertial_system,1);
-///		//Execution will continue only after object was initialized
-/// ~~~
-///
-/// @evds_st Always blocking, ignores value of "is_blocking"
-///
-/// @param[in] object Object to be initialized
-/// @param[in] is_blocking Should object block current threads execution with its initialization
-///
-/// @returns Error code
-/// @retval EVDS_OK Successfully completed (does not report state of initialization)
-/// @retval EVDS_ERROR_BAD_PARAMETER "object" is null
-/// @retval EVDS_ERROR_BAD_STATE Object is already initialized
-////////////////////////////////////////////////////////////////////////////////
-int EVDS_Object_Initialize(EVDS_OBJECT* object, int is_blocking) {
-	if (!object) return EVDS_ERROR_BAD_PARAMETER;
-	if (object->initialized) return EVDS_ERROR_BAD_STATE;
-
-#ifndef EVDS_SINGLETHREADED
-	if (is_blocking) {
-		EVDS_InternalThread_Initialize_Object(object);
-	} else {
-		object->create_thread = SIMC_THREAD_BAD_ID;
-		SIMC_Thread_Create(EVDS_InternalThread_Initialize_Object,object);
-	}
-#else
-	EVDS_InternalThread_Initialize_Object(object);
-#endif
 	return EVDS_OK;
 }
 
