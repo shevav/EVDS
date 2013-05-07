@@ -577,7 +577,8 @@ typedef struct EVDS_MESH_VECTOR_TAG {
 /// EVDS_MESH_TRIANGLE::center defines the triangles center of mass, it is calculated
 /// as an average of triangles endpoints.
 ///
-/// EVDS_MESH_TRIANGLE::triangle_normal is the unit normal to triangles surface.
+/// EVDS_MESH_TRIANGLE::triangle_normal is the unit normal to triangles surface - it's
+/// calculated from three endpoints and only represents normal for this triangle.
 ///
 /// EVDS_MESH_TRIANGLE::vertex and EVDS_MESH_TRIANGLE::normal arrays contain vertex position
 /// and normal value for every triangles endpoint. If triangle belongs to a smooth surface, the normals
@@ -608,6 +609,10 @@ typedef struct EVDS_MESH_TRIANGLE_TAG {
 ////////////////////////////////////////////////////////////////////////////////
 /// @ingroup EVDS_MESH
 /// @brief Additional information about a single vertex.
+///
+/// EVDS_MESH_VERTEX_INFO::area defines area per single vertex - total sum of areas of all
+/// vertices will be equal to total surface area of the mesh. Each vertices area is a weighted sum of
+/// areas of triangles which include this vertex.
 ////////////////////////////////////////////////////////////////////////////////
 typedef struct EVDS_MESH_VERTEX_INFO_TAG {
 	EVDS_MESH_INDEX* triangles;				///< Triangles that this vertex belongs to
@@ -626,11 +631,15 @@ typedef struct EVDS_MESH_VERTEX_INFO_TAG {
 /// A 3D mesh may be generated for every object (as long as the object geometry data can be recognized
 /// by the built-in tessellator). This mesh can be used for physics or rendering afterwards.
 ///
-/// Additionally information about total volume and area will be returned for the given resolution level.
+/// Additionally approximate information about total volume and area will be returned for the
+/// given resolution level, as well as the bounding box for the mesh.
 ///
-/// Not all data will be correctly defined in the data structure, depending on flags passed to
-/// EVDS_Mesh_Generate(). Using data structures which were not requested via flags will put
-/// program into undefined state (most likely result in a crash).
+/// See EVDS_MESH_VERTEX_INFO, EVDS_MESH_VECTOR, EVDS_MESH_TRIANGLE for more information on data
+/// structures that make up the EVDS_MESH.
+///
+/// @note Not all data will be present in the data structure, depending on flags passed to
+///       EVDS_Mesh_Generate(). Using data structures which were not requested via flags will put
+///       program into undefined state (most likely result in a crash).
 ////////////////////////////////////////////////////////////////////////////////
 typedef struct EVDS_MESH_TAG {
 	EVDS_OBJECT* object;					///< Object that this mesh represents
@@ -701,6 +710,10 @@ typedef struct EVDS_MESH_TAG {
 ////////////////////////////////////////////////////////////////////////////////
 /// @ingroup EVDS_ENVIRONMENT
 /// @brief Structure that describes state of the atmosphere.
+///
+/// The structure is filled out by the atmospheric model. Missing/invalid parameters
+/// will be automatically filled out by the EVDS simulator using naive guesses for unknown
+/// parameters.
 ////////////////////////////////////////////////////////////////////////////////
 typedef struct EVDS_ENVIRONMENT_ATMOSPHERE_TAG {
 	EVDS_REAL density;						///< Atmospheric density [kg/m3]
@@ -887,6 +900,8 @@ EVDS_API int EVDS_System_GetObjectsByType(EVDS_SYSTEM* system, const char* type,
 EVDS_API int EVDS_System_GetObjectByUID(EVDS_SYSTEM* system, unsigned int uid, EVDS_OBJECT* parent, EVDS_OBJECT** p_object);
 // Get object by name (can search in children of a given object)
 EVDS_API int EVDS_System_GetObjectByName(EVDS_SYSTEM* system, const char* name, EVDS_OBJECT* parent, EVDS_OBJECT** p_object);
+// Query a variable by data reference
+EVDS_API int EVDS_System_QueryObject(EVDS_OBJECT* root, const char* query, EVDS_VARIABLE** p_variable, EVDS_OBJECT** p_object);
 
 // Cleanup objects (multithreaded only)
 EVDS_API int EVDS_System_CleanupObjects(EVDS_SYSTEM* system);
@@ -906,7 +921,8 @@ EVDS_API int EVDS_System_QueryDatabase(EVDS_SYSTEM* system, const char* query, E
 
 // Set global initialization callback
 EVDS_API int EVDS_System_SetCallback_OnInitialize(EVDS_SYSTEM* system, EVDS_Callback_Initialize* p_callback);
-//FIXME EVDS_API int EVDS_System_SetBaseSolver(EVDS_SYSTEM* system, EVDS_SOLVER* solver)
+// Set global deinitialization callback
+//EVDS_API int EVDS_System_SetCallback_OnDeinitialize(EVDS_SYSTEM* system, EVDS_Callback_Deinitialize* p_callback);
 
 // Set userdata
 EVDS_API int EVDS_System_SetUserdata(EVDS_SYSTEM* system, void* userdata);
@@ -1028,9 +1044,6 @@ EVDS_API int EVDS_Object_GetVariable(EVDS_OBJECT* object, const char* name, EVDS
 EVDS_API int EVDS_Object_GetVariables(EVDS_OBJECT* object, SIMC_LIST** p_list);
 // Get floating-point variable by name (only after initialized OR only in initializers thread)
 EVDS_API int EVDS_Object_GetRealVariable(EVDS_OBJECT* object, const char* name, EVDS_REAL* value, EVDS_VARIABLE** p_variable);
-
-// Query a variable by data reference
-EVDS_API int EVDS_Object_QueryVariable(EVDS_OBJECT* root, const char* query, EVDS_VARIABLE** p_variable);
 
 // Get children
 EVDS_API int EVDS_Object_GetChildren(EVDS_OBJECT* object, SIMC_LIST** p_list);

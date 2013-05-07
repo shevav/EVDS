@@ -785,6 +785,128 @@ int EVDS_System_QueryDatabase(EVDS_SYSTEM* system, const char* query, EVDS_VARIA
 
 
 ////////////////////////////////////////////////////////////////////////////////
+/// @brief Get variable by a dataref, starting from the root object.
+///
+/// @todo FIXME
+///
+/// Examples of various datarefs:
+/// Dataref										| Description
+/// --------------------------------------------|----------------------------------------
+/// @c /variable_name							| Variable of the root object
+/// @c /object_name/variable_name				| Variable of an object inside root object
+/// @c /Earth/mass								| Mass of object "Earth" in root object
+/// @c /vessel/csection_geometry/section[5]		| 5th variable named "section" (a cross-section) of a vessel
+/// @c /vessel/csection_geometry[5]				| 5th nested variable of a variable named "csection_geometry"
+///	@c /vessel/csection_geometry[5]/offset		| Attribute of a cross-section
+///
+/// The root object must not be null. It can either be a user-created object, or the
+/// root inertial space object must be used, for example:
+/// ~~~{.c}
+///		EVDS_OBJECT* root;
+///		EVDS_VARIABLE* variable;
+///		EVDS_System_GetRootInertialSpace(system,&root);
+///		EVDS_Object_QueryVariable(root,"/object_name/variable_name",&variable);
+/// ~~~
+///
+/// @param[in] root Pointer to the root object
+/// @param[in] query Dateref that must be retrieved (null-terminated string)
+/// @param[out] p_variable Pointer to variable will be written here
+///
+/// @returns Error code, pointer to a variable
+/// @retval EVDS_OK Successfully completed (object matches type)
+/// @retval EVDS_ERROR_BAD_PARAMETER "root" is null
+/// @retval EVDS_ERROR_BAD_PARAMETER "query" is null
+/// @retval EVDS_ERROR_BAD_PARAMETER "p_variable" is null
+//  @retval EVDS_ERROR_NOT_FOUND Could not resolve the dataref
+/// @retval EVDS_ERROR_INVALID_OBJECT Root object was destroyed
+////////////////////////////////////////////////////////////////////////////////
+int EVDS_System_QueryObject(EVDS_OBJECT* root, const char* query, EVDS_VARIABLE** p_variable, EVDS_OBJECT** p_object) {
+	EVDS_OBJECT* object = root; //Object, inside which the query is performed
+	EVDS_VARIABLE* variable = 0; //Variable, inside which the query is performed
+	int in_variable = 0; //Is currently inside a variable
+
+	char *token_start, *token_end; //Parameters for the token word
+	size_t token_length;
+	if (!root) return EVDS_ERROR_BAD_PARAMETER;
+	if (!query) return EVDS_ERROR_BAD_PARAMETER;
+	if (!p_variable) return EVDS_ERROR_BAD_PARAMETER;
+#ifndef EVDS_SINGLETHREADED
+	if (root->destroyed) return EVDS_ERROR_INVALID_OBJECT;
+#endif
+
+	//Parse the query
+	token_start = (char*)query;
+	while (*token_start) {
+		//Find next token or fetch entire remaining string
+		token_end = strchr(token_start,'/');
+		if (token_end) {
+			token_length = token_end-token_start;
+		} else {
+			token_length = strlen(token_start);
+		}
+
+		//Parse token if it was found
+		if (token_length != 0) {
+			SIMC_LIST_ENTRY* entry;
+
+			if (!in_variable) { //Logic for searching variables inside objects
+				EVDS_OBJECT* found_object = 0;
+
+				//Check if token is an objects name
+				entry = SIMC_List_GetFirst(object->raw_children);
+				while (entry) {
+					char name[257];
+					EVDS_OBJECT* child = SIMC_List_GetData(object->raw_children,entry);
+					EVDS_Object_GetName(child,name,256); name[256] = 0;
+					if (strncmp(name,token_start,token_length) == 0) {
+						found_object = child;
+						break;
+					}	
+					entry = SIMC_List_GetNext(object->raw_children,entry);
+				}
+				SIMC_List_Stop(object->raw_children,entry);
+
+				//Check if token is a variables name
+				if (!found_object) {
+					entry = SIMC_List_GetFirst(object->variables);
+					while (entry) {
+						char name[257];
+						EVDS_VARIABLE* child_variable = SIMC_List_GetData(object->variables,entry);
+						EVDS_Variable_GetName(child_variable,name,256); name[256] = 0;
+						if (strncmp(name,token_start,token_length) == 0) {
+							variable = child_variable;
+							in_variable = 1;
+
+							if (!token_end) { //Found the correct variable
+								*p_variable = variable;
+								return EVDS_OK;
+							}
+							break;
+						}	
+						entry = SIMC_List_GetNext(object->variables,entry);
+					}
+					SIMC_List_Stop(object->variables,entry);
+				}
+
+				//Move to next object or variable
+				if (found_object) {
+					object = found_object;
+				}
+			} else {
+				//FIXME
+			}
+		}
+
+		//Move to next token
+		token_start += token_length+1;
+	}
+
+	//Query failed
+	return EVDS_ERROR_NOT_FOUND;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
 /// @brief Set global initialization callback for system.
 ///
 /// This system-wide callback will be called before every object is initialized. It can be used to append
