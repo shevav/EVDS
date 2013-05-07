@@ -1021,6 +1021,11 @@ EVDS_API int EVDS_Object_Solve(EVDS_OBJECT* object, EVDS_REAL delta_time);
 EVDS_API int EVDS_Object_Integrate(EVDS_OBJECT* object, EVDS_REAL delta_time, EVDS_STATE_VECTOR* state,
 								   EVDS_STATE_VECTOR_DERIVATIVE* derivative);
 
+// Set objects solver
+EVDS_API int EVDS_Object_SetCallback_OnSolve(EVDS_OBJECT* object, EVDS_Callback_Solve* p_callback);
+// Set objects integrator
+EVDS_API int EVDS_Object_SetCallback_OnIntegrate(EVDS_OBJECT* object, EVDS_Callback_Integrate* p_callback);
+
 // Set object type
 EVDS_API int EVDS_Object_SetType(EVDS_OBJECT* object, const char* type);
 // Set object name

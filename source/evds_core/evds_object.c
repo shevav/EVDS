@@ -51,7 +51,7 @@ int EVDS_InternalCallback_Solve(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVDS_O
 /// @brief Solve object and update state of all its children.
 ///
 /// Runs the solver for the object. Will first attempt to execute solving function that is
-/// defined specially for this object (see EVDS_Object_SetSolver()). If no function is defined,
+/// defined specially for this object (see EVDS_Object_SetCallback_OnSolve()). If no function is defined,
 /// solver that has claimed the object will be used (if object has a known type defined).
 /// See EVDS_SOLVER::OnSolve for more information on creating a solving function.
 ///
@@ -782,9 +782,9 @@ int EVDS_InternalObject_DestroyData(EVDS_OBJECT* object) {
 ///		EVDS_Object_Create(system,inertial_system,&earth);
 ///		EVDS_Object_SetType(earth,"planet");
 ///		EVDS_Object_SetName(earth,"Earth");
-///		EVDS_Object_AddFloatVariable(earth,"parameter.mu",3.9860044e14,0);			//m3 sec-2
-///		EVDS_Object_AddFloatVariable(earth,"parameter.radius",6378.145e3,0);		//m
-///		EVDS_Object_AddFloatVariable(earth,"parameter.rotation_period",86164.10,0);	//sec
+///		EVDS_Object_AddFloatVariable(earth,"mass",5.97e24,0);				//kg
+///		EVDS_Object_AddFloatVariable(earth,"gravity.mu",3.9860044e14,0);	//m3 sec-2
+///		EVDS_Object_AddFloatVariable(earth,"shape.radius",6378.145e3,0);	//m
 ///		EVDS_Object_Initialize(earth,1);
 /// ~~~
 ///
@@ -862,15 +862,16 @@ int EVDS_Object_Create(EVDS_SYSTEM* system, EVDS_OBJECT* parent, EVDS_OBJECT** p
 ////////////////////////////////////////////////////////////////////////////////
 /// @brief Create new object as a copy of a different object.
 ///
-/// Creates a new object using EVDS_Object_Create and copies all internal data
+/// Creates a new object using EVDS_Object_Create() and copies all internal data
 /// from source object to the new object.
 ///
 /// Source and parent objects may belong to different EVDS_SYSTEM objects. It is
 /// possible to copy data between two different simulations this way. If parent is
 /// defined, the new object is created in parent objects EVDS_SYSTEM.
 ///
-/// The new copy of an object will not be initialized, but it may contain variables
-/// created during the initialization of the other object.
+/// @note The new copy of an object will not be initialized, but it may contain variables
+///       created during the initialization of the other object.
+///       See EVDS_Object_CopySingle() for more information.
 ///
 /// @evds_mt If source object is being simulated by the other thread, it may be copied
 ///		in an inconsitent state. There is no blocking during copy operation.
@@ -907,7 +908,19 @@ int EVDS_Object_Copy(EVDS_OBJECT* source, EVDS_OBJECT* parent, EVDS_OBJECT** p_o
 ////////////////////////////////////////////////////////////////////////////////
 /// @brief Create a copy of source objects children under a new parent.
 ///
-/// @todo Add documentation.
+/// Copies all children (including non-initialized ones) from one parent into another parent
+/// using EVDS_Object_Copy() for each child.
+///
+/// @note See EVDS_Object_Copy() and EVDS_Object_CopySingle() for more information.
+///       The state of objects copied may be inconsistent if the objects are being simulated.
+///
+/// @param[in] source_parent Pointer to the source parent object
+/// @param[in] parent Pointer to target parent object (can be null)
+///
+/// @returns Error code
+/// @retval EVDS_OK Successfully completed
+/// @retval EVDS_ERROR_BAD_PARAMETER "source_parent" is null
+/// @retval EVDS_ERROR_MEMORY Could not allocate memory for EVDS_OBJECT
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_Object_CopyChildren(EVDS_OBJECT* source_parent, EVDS_OBJECT* parent) {
 	SIMC_LIST_ENTRY* entry;
@@ -916,7 +929,11 @@ int EVDS_Object_CopyChildren(EVDS_OBJECT* source_parent, EVDS_OBJECT* parent) {
 	//Copy children
 	entry = SIMC_List_GetFirst(source_parent->raw_children);
 	while (entry) {	
-		EVDS_Object_Copy((EVDS_OBJECT*)SIMC_List_GetData(source_parent->raw_children,entry),parent,0);
+		int error_code = EVDS_Object_Copy((EVDS_OBJECT*)SIMC_List_GetData(source_parent->raw_children,entry),parent,0);
+		if (error_code) {
+			SIMC_List_Stop(source_parent->raw_children, entry);
+			return error_code;
+		}
 		entry = SIMC_List_GetNext(source_parent->raw_children,entry);
 	}
 	return EVDS_OK;
@@ -926,7 +943,7 @@ int EVDS_Object_CopyChildren(EVDS_OBJECT* source_parent, EVDS_OBJECT* parent) {
 ////////////////////////////////////////////////////////////////////////////////
 /// @brief Create new object as a copy of a different object, but do not copy its children.
 ///
-/// Creates a new object using EVDS_Object_Create and copies all internal data (excluding children)
+/// Creates a new object using EVDS_Object_Create() and copies all internal data (excluding children)
 /// from source object to the new object.
 ///
 /// Source and parent objects may belong to different EVDS_SYSTEM objects. It is
@@ -940,6 +957,9 @@ int EVDS_Object_CopyChildren(EVDS_OBJECT* source_parent, EVDS_OBJECT* parent) {
 /// over. The coordinate system reference will be updated only if vector points to the object
 /// being copied or if vector points to parent. In any other case, the variables will be referencing
 /// the original objects (for example if vector is specified in coordinate system of a child object).
+///
+/// @note The new copy of an object will not be initialized, but it may contain variables
+///       created during the initialization of the other object.
 ///
 /// @evds_mt If source object is being simulated by the other thread, it may be copied
 ///		in an inconsitent state. There is no blocking during copy operation.
@@ -1017,7 +1037,36 @@ int EVDS_Object_CopySingle(EVDS_OBJECT* source, EVDS_OBJECT* parent, EVDS_OBJECT
 ////////////////////////////////////////////////////////////////////////////////
 /// @brief Create a new object by origin object or return an already existing object.
 ///
-/// @todo Add documentation
+/// This function will check if an object with given name (that depends on origin objects name and
+/// target objects subname) already exists and return it. If it does not exist, a new object will
+/// be created.
+///
+/// The name for the target object is defined as (including examples):
+/// ~~~
+///	origin_objects_name [sub_name]
+/// Rocket engine [nozzle]
+/// Gimbal [gimbal platform]
+/// ~~~
+///
+/// The target use for this function is when solvers need to create some additional/new objects
+/// during initialization. If EVDS_SYSTEM state is saved and then restored, the solvers must
+/// find previously created object during initialization rather than creating a new one each time.
+///
+/// @note The created object may therefore be either empty or already have the variables defined.
+///       If the object was created from scratch, EVDS_ERROR_NOT_FOUND error code is returned!
+///
+/// @param[in] origin Pointer to the origin object
+/// @param[in] sub_name Sub-name of the target object
+/// @param[in] parent Parent for the target object
+/// @param[out] p_object Pointer to the new EVDS_OBJECT structure will be written here
+///
+/// @returns Error code
+/// @retval EVDS_OK Successfully completed (object was already created before)
+/// @retval EVDS_ERROR_NOT_FOUND Successfully completed (a new empty object was created)
+/// @retval EVDS_ERROR_BAD_PARAMETER "origin" is null
+/// @retval EVDS_ERROR_BAD_PARAMETER "sub_name" is null
+/// @retval EVDS_ERROR_BAD_PARAMETER "p_object" is null
+/// @retval EVDS_ERROR_MEMORY Could not allocate memory for EVDS_OBJECT
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_Object_CreateBy(EVDS_OBJECT* origin, const char* sub_name, EVDS_OBJECT* parent, EVDS_OBJECT** p_object) {
 	char full_name[257] = { 0 };
@@ -1039,15 +1088,17 @@ int EVDS_Object_CreateBy(EVDS_OBJECT* origin, const char* sub_name, EVDS_OBJECT*
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// @brief Transfer initialization right of object to the current thread.
+/// @brief Transfer initialization/creation right of object to the current thread.
 ///
-/// This function will make it possible to initialize object in a different thread
-/// (add/remove/edit variables list, etc). This will stop object from being accessible
-/// in the old thread.
+/// This function will make it possible to initialize object (or finish defining its variables) in a different thread
+/// (add/remove/edit variables list, etc). This will stop object from being accessible in the old thread.
 ///
 /// The function must be called before EVDS_Object_Initialize() is called on this object.
 /// If EVDS_Object_TransferInitialization() is called after EVDS_Object_Initialize(), but
 /// before initialization is completed, the result is undefined.
+///
+/// @note Without transferring initialization ownership, all the data access functions from
+///       other (non-initializing, non-creating) threads will fail.
 ///
 /// @evds_st Does not do anything, only returns the error code
 ///
@@ -1063,7 +1114,12 @@ int EVDS_Object_TransferInitialization(EVDS_OBJECT* object) {
 	if (object->initialized) return EVDS_ERROR_BAD_STATE;
 
 #ifndef EVDS_SINGLETHREADED
-	object->initialize_thread = SIMC_Thread_GetUniqueID();
+	if (object->create_thread != SIMC_THREAD_BAD_ID) {
+		object->create_thread = SIMC_Thread_GetUniqueID();
+	}
+	if (object->initialize_thread != SIMC_THREAD_BAD_ID) {
+		object->initialize_thread = SIMC_Thread_GetUniqueID();
+	}
 #endif
 	return EVDS_OK;
 }
@@ -1077,7 +1133,7 @@ int EVDS_Object_TransferInitialization(EVDS_OBJECT* object) {
 /// @evds_st Always returns 1
 ///
 /// @param[in] object Object that must be checked
-/// @param[out] is_initialized Returns 1 when object is already initialized, 0 if it's still initializing
+/// @param[out] is_initialized Returns 1 when object is already initialized, 0 if it's still initializing or not initialized yet
 ///
 /// @returns Error code
 /// @retval EVDS_OK Successfully completed
@@ -1103,9 +1159,8 @@ int EVDS_Object_IsInitialized(EVDS_OBJECT* object, int* is_initialized) {
 /// (using some internal means) that object is no longer used anywhere (for example,
 /// deletes all data which may be relevant to this one).
 ///
-/// @evds_st Does not have any effect
-///
-/// @todo Fix EVDS_ST documentation about reference counter
+/// @evds_st Increments reference counter by one. The object will be destroyed if reference
+///  counter reaches zero (it defaults to 1 when object is created).
 ///
 /// @param[in] object Object to be stored
 ///
@@ -1138,7 +1193,8 @@ int EVDS_Object_Store(EVDS_OBJECT* object) {
 ///
 /// The function will return an error if objects reference counter is already zero.
 ///
-/// @todo Fix EVDS_ST documentation about reference counter
+/// @evds_st Decrements the reference counter. If the counter reaches zero, the object
+///  will be destroyed using EVDS_Object_Destroy().
 ///
 /// @param[in] object Object to be released
 ///
@@ -1164,14 +1220,53 @@ int EVDS_Object_Release(EVDS_OBJECT* object) {
 #else
 	object->stored_counter--;
 	if (object->stored_counter < 0) return EVDS_ERROR_INVALID_OBJECT;
-	if (object->stored_counter == 0) EVDS_InternalObject_DestroyData(object);
+	if (object->stored_counter == 0) EVDS_Object_Destroy(object);
 #endif
 	return EVDS_OK;
 }
 
 
+////////////////////////////////////////////////////////////////////////////////
+/// @brief Set objects solver.
+///
+/// Set a custom callback used for solving the object. See EVDS_Object_Solve() for more information.
+/// The custom callback will override solvers callback.
+///
+/// @returns Error code
+/// @retval EVDS_OK Successfully completed
+/// @retval EVDS_ERROR_BAD_PARAMETER "object" is null
+/// @retval EVDS_ERROR_INVALID_OBJECT Object was destroyed
+////////////////////////////////////////////////////////////////////////////////
+int EVDS_Object_SetCallback_OnSolve(EVDS_OBJECT* object, EVDS_Callback_Solve* p_callback) {
+	if (!object) return EVDS_ERROR_BAD_PARAMETER;
+#ifndef EVDS_SINGLETHREADED
+	if (object->destroyed) return EVDS_ERROR_INVALID_OBJECT;
+#endif
 
+	object->solve = p_callback;
+	return EVDS_OK;
+}
 
+////////////////////////////////////////////////////////////////////////////////
+/// @brief Set objects integrator.
+///
+/// Set a custom callback used for integrating the objects state. See EVDS_Object_Integrate() for more information.
+/// The custom callback will override solvers callback.
+///
+/// @returns Error code
+/// @retval EVDS_OK Successfully completed
+/// @retval EVDS_ERROR_BAD_PARAMETER "object" is null
+/// @retval EVDS_ERROR_INVALID_OBJECT Object was destroyed
+////////////////////////////////////////////////////////////////////////////////
+int EVDS_Object_SetCallback_OnIntegrate(EVDS_OBJECT* object, EVDS_Callback_Integrate* p_callback) {
+	if (!object) return EVDS_ERROR_BAD_PARAMETER;
+#ifndef EVDS_SINGLETHREADED
+	if (object->destroyed) return EVDS_ERROR_INVALID_OBJECT;
+#endif
+
+	object->integrate = p_callback;
+	return EVDS_OK;
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1221,6 +1316,9 @@ int EVDS_Object_SetType(EVDS_OBJECT* object, const char* type) {
 /// Name must be a null-terminated C string, or a string of 256 characters (no null
 /// termination is required then)
 ///
+/// The name must be unique between all children under the same parent. If the name is not unique,
+/// the object will be automatically renamed after it's initialized.
+///
 /// @param[in] object Pointer to object
 /// @param[in] name Name (null-terminated string, only first 256 characters are taken)
 ///
@@ -1250,7 +1348,18 @@ int EVDS_Object_SetName(EVDS_OBJECT* object, const char* name) {
 
 ////////////////////////////////////////////////////////////////////////////////
 /// @brief Set objects name to a unique string.
-/// @todo Add documentation
+///
+/// This function call can be used to assign a globally unique name to the object.
+///
+/// @param[in] object Pointer to object
+///
+/// @returns Error code
+/// @retval EVDS_OK Successfully completed
+/// @retval EVDS_ERROR_BAD_PARAMETER "object" is null
+/// @retval EVDS_ERROR_BAD_STATE Object was already initialized
+/// @retval EVDS_ERROR_INVALID_OBJECT Object was destroyed
+/// @retval EVDS_ERROR_INTERTHREAD_CALL The function can only be called from thread that is initializing the object 
+///  (or thread that has created the object before initializer was called)
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_Object_SetUniqueName(EVDS_OBJECT* object) {
 	if (!object) return EVDS_ERROR_BAD_PARAMETER;
