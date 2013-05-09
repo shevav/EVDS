@@ -93,6 +93,8 @@ extern "C" {
 ///
 /// @note Only the pointer is stored, EVDS will not perform any memory management related operations on the pointer.
 ///
+/// @note Custom raw data structures are not thread safe - thread safety must be provided by the user.
+///
 /// Interpolated functions
 /// --------------------------------------------------------------------------------
 /// EVDS provides support for specifying functions as variables. These functions can either be defined

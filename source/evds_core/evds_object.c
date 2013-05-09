@@ -782,9 +782,9 @@ int EVDS_InternalObject_DestroyData(EVDS_OBJECT* object) {
 ///		EVDS_Object_Create(system,inertial_system,&earth);
 ///		EVDS_Object_SetType(earth,"planet");
 ///		EVDS_Object_SetName(earth,"Earth");
-///		EVDS_Object_AddFloatVariable(earth,"mass",5.97e24,0);				//kg
-///		EVDS_Object_AddFloatVariable(earth,"gravity.mu",3.9860044e14,0);	//m3 sec-2
-///		EVDS_Object_AddFloatVariable(earth,"shape.radius",6378.145e3,0);	//m
+///		EVDS_Object_AddFloatVariable(earth,"mass",5.97e24,0);		//kg
+///		EVDS_Object_AddFloatVariable(earth,"mu",3.9860044e14,0);	//m3 sec-2
+///		EVDS_Object_AddFloatVariable(earth,"radius",6378.145e3,0);	//m
 ///		EVDS_Object_Initialize(earth,1);
 /// ~~~
 ///
