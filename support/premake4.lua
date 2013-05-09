@@ -86,15 +86,17 @@ project "evds"
 --------------------------------------------------------------------------------
 -- Tutorials
 --------------------------------------------------------------------------------
-project "evds_tutorials"
-   uuid "740FC406-98AF-B54D-B226-CAF40650FF1E"
-   kind "ConsoleApp"
-   language "C"
-   includedirs { "../include",
-                 "../external/simc/include",
-                 "../source/evds_tutorials" }
-   files { "../source/evds_tutorials/evds_tutorials.c" }
-   links { "evds", "simc" } --, "glfw" }
-   
---   configuration { "windows" }
---     links { "opengl32" }
+if EVDS_STANDALONE ~= false then
+   project "evds_tutorials"
+      uuid "740FC406-98AF-B54D-B226-CAF40650FF1E"
+      kind "ConsoleApp"
+      language "C"
+      includedirs { "../include",
+                    "../external/simc/include",
+                    "../source/evds_tutorials" }
+      files { "../source/evds_tutorials/evds_tutorials.c" }
+      links { "evds", "simc" } --, "glfw" }
+      
+   --   configuration { "windows" }
+   --     links { "opengl32" }
+end
