@@ -790,14 +790,14 @@ int EVDS_System_QueryDatabase(EVDS_SYSTEM* system, const char* query, EVDS_VARIA
 /// @todo FIXME
 ///
 /// Examples of various datarefs:
-/// Dataref										| Description
-/// --------------------------------------------|----------------------------------------
-/// @c /variable_name							| Variable of the root object
-/// @c /object_name/variable_name				| Variable of an object inside root object
-/// @c /Earth/mass								| Mass of object "Earth" in root object
-/// @c /vessel/csection_geometry/section[5]		| 5th variable named "section" (a cross-section) of a vessel
-/// @c /vessel/csection_geometry[5]				| 5th nested variable of a variable named "csection_geometry"
-///	@c /vessel/csection_geometry[5]/offset		| Attribute of a cross-section
+/// Dataref											| Description
+/// ------------------------------------------------|----------------------------------------
+/// @c /variable_name								| Variable of the root object
+/// @c /object_name/variable_name					| Variable of an object inside root object
+/// @c /Earth/mass									| Mass of object "Earth" in root object
+/// @c /vessel/geometry.cross_sections/section[5]	| 5th variable named "section" (a cross-section) of a vessel
+/// @c /vessel/geometry.cross_sections[5]			| 5th nested variable of a variable named "geometry.cross_sections"
+///	@c /vessel/geometry.cross_sections[5]/offset	| Attribute of a cross-section
 ///
 /// The root object must not be null. It can either be a user-created object, or the
 /// root inertial space object must be used, for example:

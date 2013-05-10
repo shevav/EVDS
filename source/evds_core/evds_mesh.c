@@ -324,7 +324,7 @@ int EVDS_InternalMesh_CrossSections(EVDS_OBJECT* object, EVDS_MESH* mesh, EVDS_M
 	mesh->total_volume = 0.0f;
 
 	//Get list of cross-sections
-	EVDS_ERRCHECK(EVDS_Object_GetVariable(object,"csection_geometry",&geometry));
+	EVDS_ERRCHECK(EVDS_Object_GetVariable(object,"geometry.cross_sections",&geometry));
 	EVDS_ERRCHECK(EVDS_Variable_GetList(geometry,&cross_sections_list));
 
 	//Find average body radius

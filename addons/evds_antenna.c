@@ -46,10 +46,10 @@ int EVDS_InternalAntenna_GenerateGeometry(EVDS_OBJECT* object) {
 	char antenna_type[257] = { 0 };
 
 	//Reset the cross-sections
-	if (EVDS_Object_GetVariable(object,"csection_geometry",&geometry) == EVDS_OK) {
+	if (EVDS_Object_GetVariable(object,"geometry.cross_sections",&geometry) == EVDS_OK) {
 		EVDS_Variable_Destroy(geometry);
 	}
-	EVDS_Object_AddVariable(object,"csection_geometry",EVDS_VARIABLE_TYPE_NESTED,&geometry);
+	EVDS_Object_AddVariable(object,"geometry.cross_sections",EVDS_VARIABLE_TYPE_NESTED,&geometry);
 
 	//Get antenna parameters
 	if (EVDS_Object_GetVariable(object,"antenna_type",&variable) == EVDS_OK)		EVDS_Variable_GetString(variable,antenna_type,256,0);
@@ -63,10 +63,10 @@ int EVDS_InternalAntenna_GenerateGeometry(EVDS_OBJECT* object) {
 		EVDS_VARIABLE* dipole_end_tip;
 
 		//Add cross-sections
-		EVDS_Variable_AddNested(geometry,"csection_geometry",EVDS_VARIABLE_TYPE_NESTED,&dipole_start_tip);
-		EVDS_Variable_AddNested(geometry,"csection_geometry",EVDS_VARIABLE_TYPE_NESTED,&dipole_start);
-		EVDS_Variable_AddNested(geometry,"csection_geometry",EVDS_VARIABLE_TYPE_NESTED,&dipole_end);
-		EVDS_Variable_AddNested(geometry,"csection_geometry",EVDS_VARIABLE_TYPE_NESTED,&dipole_end_tip);
+		EVDS_Variable_AddNested(geometry,"geometry.cross_sections",EVDS_VARIABLE_TYPE_NESTED,&dipole_start_tip);
+		EVDS_Variable_AddNested(geometry,"geometry.cross_sections",EVDS_VARIABLE_TYPE_NESTED,&dipole_start);
+		EVDS_Variable_AddNested(geometry,"geometry.cross_sections",EVDS_VARIABLE_TYPE_NESTED,&dipole_end);
+		EVDS_Variable_AddNested(geometry,"geometry.cross_sections",EVDS_VARIABLE_TYPE_NESTED,&dipole_end_tip);
 
 		//Radius
 		EVDS_Variable_AddFloatAttribute(dipole_start_tip,	"rx",0.00,0);

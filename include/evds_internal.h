@@ -113,7 +113,7 @@ extern "C" {
 ///
 /// Here's an example of a nested data structure (geometry information for the tessellator):
 /// ~~~{.xml}
-///	<parameter name="csection_geometry">
+///	<parameter name="geometry.cross_sections">
 ///		<section type="ellipse" add_offset="1" rx="1.9" offset="0.5" />
 ///		<section type="ellipse" add_offset="1" rx="2" />
 ///		<section type="ellipse" offset="10.4" add_offset="1" rx="2" />

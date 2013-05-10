@@ -66,10 +66,10 @@ int EVDS_InternalRocketEngine_GenerateGeometry(EVDS_OBJECT* object) {
 	EVDS_REAL divergence_angle = 0;
 
 	//Reset the cross-sections for the engine
-	if (EVDS_Object_GetVariable(object,"csection_geometry",&geometry) == EVDS_OK) {
+	if (EVDS_Object_GetVariable(object,"geometry.cross_sections",&geometry) == EVDS_OK) {
 		EVDS_Variable_Destroy(geometry);
 	}
-	EVDS_Object_AddVariable(object,"csection_geometry",EVDS_VARIABLE_TYPE_NESTED,&geometry);
+	EVDS_Object_AddVariable(object,"geometry.cross_sections",EVDS_VARIABLE_TYPE_NESTED,&geometry);
 
 	//Get engine parameters (FIXME: use userdata)
 	EVDS_Object_GetRealVariable(object,"exit_radius",&exit_radius,0);
@@ -96,11 +96,11 @@ int EVDS_InternalRocketEngine_GenerateGeometry(EVDS_OBJECT* object) {
 		EVDS_VARIABLE* nozzle_end;
 
 		//Add cross-sections
-		EVDS_Variable_AddNested(geometry,"csection_geometry",EVDS_VARIABLE_TYPE_NESTED,&chamber_tip);
-		EVDS_Variable_AddNested(geometry,"csection_geometry",EVDS_VARIABLE_TYPE_NESTED,&chamber_rim);
-		EVDS_Variable_AddNested(geometry,"csection_geometry",EVDS_VARIABLE_TYPE_NESTED,&nozzle_start);
-		EVDS_Variable_AddNested(geometry,"csection_geometry",EVDS_VARIABLE_TYPE_NESTED,&nozzle_throat);
-		EVDS_Variable_AddNested(geometry,"csection_geometry",EVDS_VARIABLE_TYPE_NESTED,&nozzle_end);
+		EVDS_Variable_AddNested(geometry,"geometry.cross_sections",EVDS_VARIABLE_TYPE_NESTED,&chamber_tip);
+		EVDS_Variable_AddNested(geometry,"geometry.cross_sections",EVDS_VARIABLE_TYPE_NESTED,&chamber_rim);
+		EVDS_Variable_AddNested(geometry,"geometry.cross_sections",EVDS_VARIABLE_TYPE_NESTED,&nozzle_start);
+		EVDS_Variable_AddNested(geometry,"geometry.cross_sections",EVDS_VARIABLE_TYPE_NESTED,&nozzle_throat);
+		EVDS_Variable_AddNested(geometry,"geometry.cross_sections",EVDS_VARIABLE_TYPE_NESTED,&nozzle_end);
 
 		//Radius
 		EVDS_Variable_AddFloatAttribute(chamber_tip,	"rx",0.00,0);
