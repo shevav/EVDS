@@ -156,7 +156,7 @@ int EVDS_Internal_SaveObject(EVDS_OBJECT* object, SIMC_XML_DOCUMENT* doc,
 	EVDS_ERRCHECK(SIMC_XML_AddAttributeDouble(doc,element,"pitch",EVDS_DEG(pitch)));
 	EVDS_ERRCHECK(SIMC_XML_AddAttributeDouble(doc,element,"yaw",EVDS_DEG(yaw)));
 	EVDS_ERRCHECK(SIMC_XML_AddAttributeDouble(doc,element,"roll",EVDS_DEG(roll)));
-	if (info->flags & EVDS_OBJECT_SAVEEX_SAVE_FULL_STATE) {
+	if (info && (info->flags & EVDS_OBJECT_SAVEEX_SAVE_FULL_STATE)) {
 		EVDS_ERRCHECK(SIMC_XML_AddAttributeDouble(doc,element,"time",vector.time));
 		EVDS_ERRCHECK(SIMC_XML_AddAttributeDouble(doc,element,"q0",vector.orientation.q[0]));
 		EVDS_ERRCHECK(SIMC_XML_AddAttributeDouble(doc,element,"q1",vector.orientation.q[1]));
