@@ -681,7 +681,7 @@ int EVDS_Mesh_GenerateEx(EVDS_OBJECT* object, EVDS_MESH** p_mesh, EVDS_MESH_GENE
 	//Calculate correct resolution
 	if (info->flags & EVDS_MESH_USE_DIVISIONS) {
 		float dx,dy,dz;
-		float dmax = 0.0;
+		float est = 0.0; //Estimated object size
 		EVDS_MESH* bounding_mesh;
 
 		//Find bounding box and largest dimension (FIXME: proper call to EVDS_Mesh_GenerateEx)
@@ -690,12 +690,10 @@ int EVDS_Mesh_GenerateEx(EVDS_OBJECT* object, EVDS_MESH** p_mesh, EVDS_MESH_GENE
 		dx = bounding_mesh->bbox_max.x - bounding_mesh->bbox_min.x;
 		dy = bounding_mesh->bbox_max.y - bounding_mesh->bbox_min.y;
 		dz = bounding_mesh->bbox_max.z - bounding_mesh->bbox_min.z;
-		if (dx > dmax) dmax = dx;
-		if (dy > dmax) dmax = dy;
-		if (dz > dmax) dmax = dz;
+		est = sqrt(dx*dx+dy*dy+dz*dz);
 
 		//Calculate resolution from number of divisions
-		info->resolution = dmax / info->resolution;
+		info->resolution = est / info->resolution;
 
 		//Clean up bounding box mesh
 		EVDS_Mesh_Destroy(bounding_mesh);
