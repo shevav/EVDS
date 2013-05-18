@@ -25,15 +25,15 @@
 #include <string.h>
 #include "evds.h"
 
-// List of cross-section types
+// List of supported cross-section types
 #define CSECTION_ELLIPSE	0
 #define CSECTION_RECTANGLE	1
 #define CSECTION_NGON		2
 
-// Structure stores cross-section variables (for all types), just as a quick lookup
+// Structure that stores cross-section variables (for all types), just for the quick lookup
 #ifndef DOXYGEN_INTERNAL_STRUCTS
 typedef struct EVDS_INTERNALMESH_ATTRIBUTES_TAG {
-	//All
+	//Shared between all
 	int type;
 	EVDS_REAL offset;
 	EVDS_REAL xoffset;
@@ -90,14 +90,18 @@ void EVDS_InternalMesh_GetAttributes(EVDS_VARIABLE* cross_section, EVDS_INTERNAL
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// @brief Generate point on the cross-sections plane
+/// @brief Generate point on the cross-sections plane.
+///
+/// Returns X and Y offsets relative to cross-section guiding line, local smoothing
+/// group number.
 ////////////////////////////////////////////////////////////////////////////////
-void EVDS_InternalMesh_GetPoint(EVDS_INTERNALMESH_ATTRIBUTES* attributes, float time, float* x, float* y) {
+void EVDS_InternalMesh_GetPoint(EVDS_INTERNALMESH_ATTRIBUTES* attributes, float time, float* x, float* y, int* group) {
 	switch (attributes->type) {
 		case CSECTION_ELLIPSE: {
 			float phi = time*2.0f*EVDS_PIf;
 			*x = (float)attributes->rx*cosf(phi);
 			*y = (float)attributes->ry*sinf(phi);
+			*group = 0;
 		} break;
 		case CSECTION_RECTANGLE: {
 			float phi = time*2.0f*EVDS_PIf;
@@ -105,6 +109,8 @@ void EVDS_InternalMesh_GetPoint(EVDS_INTERNALMESH_ATTRIBUTES* attributes, float 
 			float r = 1.0f/cosf(fmodf(0.25f*EVDS_PIf+phi,2.0f*EVDS_PIf/n) - EVDS_PIf/n); //cosf(EVDS_PIf/n)
 			*x = (float)attributes->rx*0.5f*r*cosf(phi);
 			*y = (float)attributes->ry*0.5f*r*sinf(phi);
+			*group = (int)((time+0.125f-EVDS_EPSf)*4.0f);
+			if (*group >= 4) *group = 0;
 		} break;
 		case CSECTION_NGON: {
 			float phi = time*2.0f*EVDS_PIf;
@@ -117,6 +123,8 @@ void EVDS_InternalMesh_GetPoint(EVDS_INTERNALMESH_ATTRIBUTES* attributes, float 
 
 			*x = (float)attributes->rx*r*cosf(phi);
 			*y = (float)attributes->rx*r*sinf(phi);
+			*group = (int)(time*n); //FIXME
+			if (*group >= n) *group = 0;
 		} break;
 		default: {
 			*x = 0;
@@ -129,7 +137,8 @@ void EVDS_InternalMesh_GetPoint(EVDS_INTERNALMESH_ATTRIBUTES* attributes, float 
 ////////////////////////////////////////////////////////////////////////////////
 /// @brief Add a new vertex
 ////////////////////////////////////////////////////////////////////////////////
-int EVDS_InternalMesh_AddVertex(EVDS_MESH* mesh, EVDS_MESH_GENERATEEX* info, EVDS_MESH_VECTOR* v, int cross_section) {
+int EVDS_InternalMesh_AddVertex(EVDS_MESH* mesh, EVDS_MESH_GENERATEEX* info, EVDS_MESH_VECTOR* v, 
+								int cross_section, int smoothing_group) {
 	int index; 
 
 	//Check if storage must be grown
@@ -162,6 +171,7 @@ int EVDS_InternalMesh_AddVertex(EVDS_MESH* mesh, EVDS_MESH_GENERATEEX* info, EVD
 		mesh->vertex_info[index].triangles = (EVDS_MESH_INDEX*)malloc(sizeof(EVDS_MESH_INDEX)*mesh->vertex_info[index].num_allocated);
 		mesh->vertex_info[index].tri_index = (EVDS_MESH_INDEX*)malloc(sizeof(EVDS_MESH_INDEX)*mesh->vertex_info[index].num_allocated);
 		mesh->vertex_info[index].cross_section = cross_section;
+		mesh->vertex_info[index].smoothing_group = smoothing_group;
 	}
 	mesh->num_vertices++;
 	return index;
@@ -171,7 +181,8 @@ int EVDS_InternalMesh_AddVertex(EVDS_MESH* mesh, EVDS_MESH_GENERATEEX* info, EVD
 ////////////////////////////////////////////////////////////////////////////////
 /// @brief Add a new index
 ////////////////////////////////////////////////////////////////////////////////
-int EVDS_InternalMesh_AddIndex(EVDS_MESH* mesh, EVDS_MESH_GENERATEEX* info, EVDS_MESH_INDEX tri, EVDS_MESH_INDEX v_id, EVDS_MESH_INDEX v) {
+int EVDS_InternalMesh_AddIndex(EVDS_MESH* mesh, EVDS_MESH_GENERATEEX* info, 
+							   EVDS_MESH_INDEX tri, EVDS_MESH_INDEX v_id, EVDS_MESH_INDEX v) {
 	int index,v_index; 
 
 	//Check if storage must be grown
@@ -216,9 +227,12 @@ int EVDS_InternalMesh_AddIndex(EVDS_MESH* mesh, EVDS_MESH_GENERATEEX* info, EVDS
 /// @brief Add a new triangle
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_InternalMesh_AddTriangle(EVDS_MESH* mesh, EVDS_MESH_GENERATEEX* info, 
-								  EVDS_MESH_INDEX v1, EVDS_MESH_INDEX v2, EVDS_MESH_INDEX v3,
-								  int cross_section) {
+								  EVDS_MESH_INDEX* pv1, EVDS_MESH_INDEX* pv2, EVDS_MESH_INDEX* pv3,
+								  int cross_section, int smoothing_group) {
 	int index;
+	int v1 = *pv1;
+	int v2 = *pv2;
+	int v3 = *pv3;
 
 	//Check if storage must be grown
 	if (mesh->num_triangles == mesh->num_triangles_allocated) {
@@ -232,19 +246,36 @@ int EVDS_InternalMesh_AddTriangle(EVDS_MESH* mesh, EVDS_MESH_GENERATEEX* info,
 
 	//Store vertex and return new index
 	index = mesh->num_triangles;
-	mesh->triangles[index].indices[0] = v1;
-	mesh->triangles[index].indices[1] = v2;
-	mesh->triangles[index].indices[2] = v3;
 	memcpy(&mesh->triangles[index].vertex[0],&mesh->vertices[v1],sizeof(EVDS_MESH_VECTOR));
 	memcpy(&mesh->triangles[index].vertex[1],&mesh->vertices[v2],sizeof(EVDS_MESH_VECTOR));
 	memcpy(&mesh->triangles[index].vertex[2],&mesh->vertices[v3],sizeof(EVDS_MESH_VECTOR));
+
+	//Make sure all vertices are of same smoothing group, otherwise create additional ones
+	if (mesh->vertex_info[v1].smoothing_group != smoothing_group) {
+		v1 = EVDS_InternalMesh_AddVertex(mesh,info,&mesh->triangles[index].vertex[0],cross_section,smoothing_group);
+	}
+	if (mesh->vertex_info[v2].smoothing_group != smoothing_group) {
+		v2 = EVDS_InternalMesh_AddVertex(mesh,info,&mesh->triangles[index].vertex[1],cross_section,smoothing_group);
+	}
+	if (mesh->vertex_info[v3].smoothing_group != smoothing_group) {
+		v3 = EVDS_InternalMesh_AddVertex(mesh,info,&mesh->triangles[index].vertex[2],cross_section,smoothing_group);
+	}
+
+	//Store new (possibly modified) indices
+	mesh->triangles[index].indices[0] = v1;
+	mesh->triangles[index].indices[1] = v2;
+	mesh->triangles[index].indices[2] = v3;
 	mesh->triangles[index].cross_section = cross_section;
+	mesh->triangles[index].smoothing_group = smoothing_group;
 	mesh->num_triangles++;
 
 	//Add to array of indices
 	EVDS_InternalMesh_AddIndex(mesh,info,index,0,v1);
 	EVDS_InternalMesh_AddIndex(mesh,info,index,1,v2);
 	EVDS_InternalMesh_AddIndex(mesh,info,index,2,v3);
+	*pv1 = v1;
+	*pv2 = v2;
+	*pv3 = v3;
 	return index;
 }
 
@@ -265,18 +296,19 @@ void EVDS_InternalMesh_CrossSections_NumSegments(SIMC_LIST* cross_sections_list,
 	//Count average cross-section radius
 	entry = SIMC_List_GetFirst(cross_sections_list);
 	while (entry) {
+		int group;
 		float x,y,r1,r2,r3,r4;
 		EVDS_VARIABLE* cross_section = (EVDS_VARIABLE*)SIMC_List_GetData(cross_sections_list,entry);
 		EVDS_InternalMesh_GetAttributes(cross_section,&attributes);
 
 		//Calculate four points on edges
-		EVDS_InternalMesh_GetPoint(&attributes,0.00,&x,&y); //Right
+		EVDS_InternalMesh_GetPoint(&attributes,0.00,&x,&y,&group); //Right
 		r1 = sqrtf(x*x+y*y);
-		EVDS_InternalMesh_GetPoint(&attributes,0.25,&x,&y); //Top
+		EVDS_InternalMesh_GetPoint(&attributes,0.25,&x,&y,&group); //Top
 		r2 = sqrtf(x*x+y*y);
-		EVDS_InternalMesh_GetPoint(&attributes,0.50,&x,&y); //Left
+		EVDS_InternalMesh_GetPoint(&attributes,0.50,&x,&y,&group); //Left
 		r3 = sqrtf(x*x+y*y);
-		EVDS_InternalMesh_GetPoint(&attributes,0.75,&x,&y); //Bottom
+		EVDS_InternalMesh_GetPoint(&attributes,0.75,&x,&y,&group); //Bottom
 		r4 = sqrtf(x*x+y*y);
 
 		//Accumulate
@@ -303,6 +335,9 @@ void EVDS_InternalMesh_CrossSections_NumSegments(SIMC_LIST* cross_sections_list,
 ///  - For sectors (number of vertexes in a circle): resolution of average-radius circle
 ///  - For segments (number of divisions by length): new segment according to average of
 ///    curve length over four edgepoints (left, right, top, bottom).
+///
+/// FIXME: the cross-sections must be calculated as 3D objects rather than 2D, around
+/// a single guiding line.
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_InternalMesh_CrossSections(EVDS_OBJECT* object, EVDS_MESH* mesh, EVDS_MESH_GENERATEEX* info) {
 	SIMC_LIST_ENTRY* entry;
@@ -341,14 +376,16 @@ int EVDS_InternalMesh_CrossSections(EVDS_OBJECT* object, EVDS_MESH* mesh, EVDS_M
 	// between cross-sections
 	previous_indices = (EVDS_MESH_INDEX*)malloc(sizeof(EVDS_MESH_INDEX)*num_segments);
 	for (v1 = 0; v1 < num_segments; v1++) previous_indices[v1] = 0xFFFFFFFF; //Index not present
-	//v1 = -1; v2 = -1; v3 = -1;
+	v1 = -1; v2 = -1; v3 = -1;
 
 	//Iterate through all cross-sections
 	entry = SIMC_List_GetFirst(cross_sections_list);
 	while (entry) {
+		int group;
 		float x1,y1,x2,y2,length,new_offset;
 		float correct_resolution;
 		int num_sections,i,j;
+		int max_local_smoothing_group = 0; //How many smoothing groups do segments add
 
 		//Get cross-section
 		cross_section = (EVDS_VARIABLE*)SIMC_List_GetData(cross_sections_list,entry);
@@ -371,8 +408,8 @@ int EVDS_InternalMesh_CrossSections(EVDS_OBJECT* object, EVDS_MESH* mesh, EVDS_M
 			length = fabsf((float)attributes.offset-offset);
 			new_offset = (float)attributes.offset;
 		}
-		EVDS_InternalMesh_GetPoint(&previous_attributes,0.0,&x1,&y1);
-		EVDS_InternalMesh_GetPoint(&attributes,0.0,&x2,&y2);
+		EVDS_InternalMesh_GetPoint(&previous_attributes,0.0,&x1,&y1,&group);
+		EVDS_InternalMesh_GetPoint(&attributes,0.0,&x2,&y2,&group);
 		length = sqrtf(length*length + (x2-x1)*(x2-x1)); //FIXME: must use length of bezier curve
 
 		//Find correct resolution for a more or less uniform grid
@@ -380,10 +417,6 @@ int EVDS_InternalMesh_CrossSections(EVDS_OBJECT* object, EVDS_MESH* mesh, EVDS_M
 		if (num_sections > 16) num_sections = 16;
 		if (num_sections < 1) num_sections = 1;
 		correct_resolution = length / ((float)num_sections);
-
-		//Start a new triangle strip and reset smooth normals between cross-sections
-		for (i = 0; i < num_segments; i++) previous_indices[i] = 0xFFFFFFFF;
-		v1 = -1; v2 = -1; v3 = -1;
 
 		//Generate all sections for two cross-sections
 		for (i = 0; i < num_sections; i++) {
@@ -397,7 +430,7 @@ int EVDS_InternalMesh_CrossSections(EVDS_OBJECT* object, EVDS_MESH* mesh, EVDS_M
 			t1 = ((float)i) / ((float)num_sections); //Get interpolation times
 			t2 = ((float)i+1) / ((float)num_sections);
 
-			//Compute start and end of section
+			//Compute start and end of section (offset is part of the bezier curve)
 			z1 = offset;
 			z2 = new_offset;
 			tz1 = z1 + (float)previous_attributes.tangent_p_offset; //start tangent offset
@@ -409,6 +442,7 @@ int EVDS_InternalMesh_CrossSections(EVDS_OBJECT* object, EVDS_MESH* mesh, EVDS_M
 			for (j = 0; j <= num_segments; j++) {
 				EVDS_MESH_VECTOR v;
 				int vA,vB;
+				int group;
 				float t; //Segment interpolation time
 				float trx1,try1,trx2,try2; //Radial tangents
 				float theta1,theta2; //Radial vector in polar coordinates
@@ -422,8 +456,14 @@ int EVDS_InternalMesh_CrossSections(EVDS_OBJECT* object, EVDS_MESH* mesh, EVDS_M
 				if (fabs(t - 0.875f) < 0.5f/((float)num_segments)) t = 0.875f;
 
 				//Get points
-				EVDS_InternalMesh_GetPoint(&previous_attributes,t,&x1,&y1);
-				EVDS_InternalMesh_GetPoint(&attributes,t,&x2,&y2);
+				EVDS_InternalMesh_GetPoint(&previous_attributes,t,&x1,&y1,&group);
+				EVDS_InternalMesh_GetPoint(&attributes,t,&x2,&y2,&group);
+
+				//Count maximum smoothing group number and transform it from local to global
+				if (group > max_local_smoothing_group) max_local_smoothing_group = group;
+				//if (group2 > max_local_smoothing_group) max_local_smoothing_group = group2;
+				group += mesh->num_smoothing_groups;
+				//group2 += mesh->num_smoothing_groups;
 
 				//Compute radial tangent
 				theta1 = atan2f(y1,x1);
@@ -469,7 +509,7 @@ int EVDS_InternalMesh_CrossSections(EVDS_OBJECT* object, EVDS_MESH* mesh, EVDS_M
 					v.x = z_s;
 					v.y = x_s;
 					v.z = y_s;
-					previous_indices[j] = EVDS_InternalMesh_AddVertex(mesh,info,&v,index);
+					previous_indices[j] = EVDS_InternalMesh_AddVertex(mesh,info,&v,index,group);
 				}
 
 				//Add end vertex and define new vertices for the next triangle
@@ -480,7 +520,7 @@ int EVDS_InternalMesh_CrossSections(EVDS_OBJECT* object, EVDS_MESH* mesh, EVDS_M
 					v.x = z_e;
 					v.y = x_e;
 					v.z = y_e;
-					vB = EVDS_InternalMesh_AddVertex(mesh,info,&v,index);
+					vB = EVDS_InternalMesh_AddVertex(mesh,info,&v,index,group);
 
 					//Store this index for next sector
 					vA = previous_indices[j];
@@ -495,12 +535,12 @@ int EVDS_InternalMesh_CrossSections(EVDS_OBJECT* object, EVDS_MESH* mesh, EVDS_M
 
 				//Add two triangles to a triangle strip
 				v3 = vB;
-				if ((v1 >= 0) && (v2 >= 0) && (v3 >= 0)) EVDS_InternalMesh_AddTriangle(mesh,info,v1,v2,v3,index);
+				if ((v1 >= 0) && (v2 >= 0) && (v3 >= 0)) EVDS_InternalMesh_AddTriangle(mesh,info,&v1,&v2,&v3,index,group);
 				v1 = v2;
 				v2 = v3;
 
 				v3 = vA;
-				if ((v1 >= 0) && (v2 >= 0) && (v3 >= 0)) EVDS_InternalMesh_AddTriangle(mesh,info,v2,v1,v3,index);
+				if ((v1 >= 0) && (v2 >= 0) && (v3 >= 0)) EVDS_InternalMesh_AddTriangle(mesh,info,&v2,&v1,&v3,index,group);
 				v1 = v2;
 				v2 = v3;
 			}
@@ -509,6 +549,9 @@ int EVDS_InternalMesh_CrossSections(EVDS_OBJECT* object, EVDS_MESH* mesh, EVDS_M
 			mesh->total_volume += 0.5f*(section_area1+section_area2)*(z_e - z_s);
 		}
 
+		//Next cross-section must have a different smoothing group
+		mesh->num_smoothing_groups += 1 + max_local_smoothing_group;
+
 		//Move to next section
 		offset = new_offset;
 		previous_cross_section = cross_section;
@@ -516,8 +559,6 @@ int EVDS_InternalMesh_CrossSections(EVDS_OBJECT* object, EVDS_MESH* mesh, EVDS_M
 		index++;
 		entry = SIMC_List_GetNext(cross_sections_list,entry);
 	}
-
-	//printf("Total volume %s: %.0f lo2  %.0f lh2\n",mesh->object->name,mesh->total_volume*1140,mesh->total_volume*70);
 
 	//Return
 	free(previous_indices);
@@ -537,11 +578,11 @@ void EVDS_InternalMesh_FinishTriangle(EVDS_MESH* mesh, EVDS_MESH_GENERATEEX* inf
 	ax = tri->vertex[0].x - tri->vertex[1].x; //v0-v1
 	ay = tri->vertex[0].y - tri->vertex[1].y;
 	az = tri->vertex[0].z - tri->vertex[1].z;
-	bx = tri->vertex[2].x - tri->vertex[1].x; //v2-v1
-	by = tri->vertex[2].y - tri->vertex[1].y;
-	bz = tri->vertex[2].z - tri->vertex[1].z;
+	bx = tri->vertex[1].x - tri->vertex[2].x; //v1-v2
+	by = tri->vertex[1].y - tri->vertex[2].y;
+	bz = tri->vertex[1].z - tri->vertex[2].z;
 
-	tri->triangle_normal.x = ay*bz-az*by; //(v0-v1) x (v2-v1)
+	tri->triangle_normal.x = ay*bz-az*by; //(v0-v1) x (v1-v2)
 	tri->triangle_normal.y = az*bx-ax*bz;
 	tri->triangle_normal.z = ax*by-ay*bx;
 
@@ -594,8 +635,7 @@ void EVDS_InternalMesh_FinishVertices(EVDS_MESH* mesh, EVDS_MESH_GENERATEEX* inf
 	mesh->normals = (EVDS_MESH_VECTOR*)malloc(sizeof(EVDS_MESH_VECTOR)*mesh->num_vertices);
 	for (i = 0; i < mesh->num_vertices; i++) {
 		float mag;
-		int tri_count = 0;
-	
+
 		//Find normal
 		mesh->normals[i].x = 0.0;
 		mesh->normals[i].y = 0.0;
@@ -605,16 +645,15 @@ void EVDS_InternalMesh_FinishVertices(EVDS_MESH* mesh, EVDS_MESH_GENERATEEX* inf
 			mesh->normals[i].x += tri->triangle_normal.x;
 			mesh->normals[i].y += tri->triangle_normal.y;
 			mesh->normals[i].z += tri->triangle_normal.z;
-			tri_count++;
 		}
-		mesh->normals[i].x /= (float)tri_count;
-		mesh->normals[i].y /= (float)tri_count;
-		mesh->normals[i].z /= (float)tri_count;
+		mesh->normals[i].x /= (float)mesh->vertex_info[i].num_triangles + EVDS_EPSf;
+		mesh->normals[i].y /= (float)mesh->vertex_info[i].num_triangles + EVDS_EPSf;
+		mesh->normals[i].z /= (float)mesh->vertex_info[i].num_triangles + EVDS_EPSf;
 
 		//Normalize
 		mag = sqrtf(mesh->normals[i].x*mesh->normals[i].x+
 					mesh->normals[i].y*mesh->normals[i].y+
-					mesh->normals[i].z*mesh->normals[i].z)+1e-9f;
+					mesh->normals[i].z*mesh->normals[i].z) + EVDS_EPSf;
 		mesh->normals[i].x /= mag;
 		mesh->normals[i].y /= mag;
 		mesh->normals[i].z /= mag;
@@ -715,6 +754,9 @@ int EVDS_Mesh_GenerateEx(EVDS_OBJECT* object, EVDS_MESH** p_mesh, EVDS_MESH_GENE
 	mesh->num_vertices_allocated = mesh->num_triangles_allocated*3;
 	mesh->vertices = (EVDS_MESH_VECTOR*)malloc(sizeof(EVDS_MESH_VECTOR)*mesh->num_vertices_allocated);
 	mesh->vertex_info = (EVDS_MESH_VERTEX_INFO*)malloc(sizeof(EVDS_MESH_VERTEX_INFO)*mesh->num_vertices_allocated);
+
+	//Start counting smoothing groups
+	mesh->num_smoothing_groups = 0;
 
 	//Generate mesh for this object
 	EVDS_InternalMesh_CrossSections(object,mesh,info);

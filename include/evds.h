@@ -591,6 +591,9 @@ typedef struct EVDS_MESH_VECTOR_TAG {
 ///
 /// EVDS_MESH_TRIANGLE::cross_section is the index of cross-section to which this triangle belongs. It can be
 /// used to segment cross-sections of a mesh (for visual or other purposes).
+///
+/// EVDS_MESH_TRIANGLE::smoothing_group is the index of smoothing group this triangle belongs to. Triangles within
+/// same smoothing group make up a single smooth surface.
 ////////////////////////////////////////////////////////////////////////////////
 typedef struct EVDS_MESH_TRIANGLE_TAG {
 	EVDS_MESH_VECTOR center;				///< Location of triangles center of mass
@@ -603,6 +606,7 @@ typedef struct EVDS_MESH_TRIANGLE_TAG {
 	float area;								///< Triangle area
 	float thickness;						///< Triangle thickness (if zero, then triangle encloses a volume)
 	int cross_section;						///< Index of cross-section this triangle belongs to
+	int smoothing_group;					///< Index of the smoothing group this triangle belongs to
 } EVDS_MESH_TRIANGLE;
 
 
@@ -619,6 +623,7 @@ typedef struct EVDS_MESH_VERTEX_INFO_TAG {
 	EVDS_MESH_INDEX* tri_index;				///< Index of vertex in the triangle
 	float area;								///< Total area of this vertex
 	int cross_section;						///< Index of cross-section this vertex belongs to
+	int smoothing_group;					///< Index of the smoothing group this vertex belongs to
 	int num_triangles;						///< Number of triangles that share this vertex
 	int num_allocated;						///< Size of array of triangles (used internally)
 } EVDS_MESH_VERTEX_INFO;
@@ -651,6 +656,7 @@ typedef struct EVDS_MESH_TAG {
 	int num_triangles;						///< Total number of triangles
 	int num_indices;						///< Total number of indices
 	int num_vertices;						///< Total number of vertices
+	int num_smoothing_groups;				///< Total number of smoothing groups
 	float total_volume;						///< Total volume of the mesh
 	float total_area;						///< Total area of the mesh
 	EVDS_MESH_VECTOR bbox_min;				///< Minimum set of coordinates for bounding box
