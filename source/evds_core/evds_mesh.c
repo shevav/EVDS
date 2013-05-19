@@ -545,6 +545,11 @@ int EVDS_InternalMesh_CrossSections(EVDS_OBJECT* object, EVDS_MESH* mesh, EVDS_M
 				v2 = v3;
 			}
 
+			//Reset triangle strip before going to next section. This avoids a degenerate triangle
+			// which otherwise appears between last edge from previous section and the first edge
+			// of the next section.
+			v1 = -1; v2 = -1; v3 = -1;
+
 			//Add to total volume
 			mesh->total_volume += 0.5f*(section_area1+section_area2)*(z_e - z_s);
 		}
