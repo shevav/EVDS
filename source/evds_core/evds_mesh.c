@@ -128,7 +128,7 @@ void EVDS_InternalMesh_GetPoint(EVDS_INTERNALMESH_ATTRIBUTES* attributes, float 
 			*x = (float)attributes->rx*r*cosf(phi);
 			*y = (float)attributes->rx*r*sinf(phi);
 			//*group = (int)(time*n);
-			*group = (int)(((phi + dphi - EVDS_EPSf) / (2.0*EVDS_PIf))*n);
+			*group = (int)(((phi + dphi) / (2.0*EVDS_PIf))*n - EVDS_EPSf);
 			if (*group >= n) *group = 0;
 		} break;
 		default: {
