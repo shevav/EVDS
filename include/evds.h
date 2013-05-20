@@ -662,6 +662,7 @@ typedef struct EVDS_MESH_TAG {
 	EVDS_MESH_VECTOR bbox_min;				///< Minimum set of coordinates for bounding box
 	EVDS_MESH_VECTOR bbox_max;				///< Maximum set of coordinates for bounding box
 
+	int max_smoothing_group;				///< Maximum index of a smoothing group
 	int num_triangles_allocated;			///< Total number of triangles allocated
 	int num_indices_allocated;				///< Total number of indices allocated
 	int num_vertices_allocated;				///< Total number of vertices allocated

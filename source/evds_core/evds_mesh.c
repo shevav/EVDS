@@ -159,6 +159,9 @@ int EVDS_InternalMesh_AddVertex(EVDS_MESH* mesh, EVDS_MESH_GENERATEEX* info, EVD
 		}
 	}
 
+	//Update smoothing groups counter
+	if (smoothing_group > mesh->max_smoothing_group) mesh->max_smoothing_group = smoothing_group;
+
 	//Update bounding box
 	if (v->x < mesh->bbox_min.x) mesh->bbox_min.x = v->x;
 	if (v->x > mesh->bbox_max.x) mesh->bbox_max.x = v->x;
@@ -248,6 +251,9 @@ int EVDS_InternalMesh_AddTriangle(EVDS_MESH* mesh, EVDS_MESH_GENERATEEX* info,
 		}
 		mesh->triangles = (EVDS_MESH_TRIANGLE*)realloc(mesh->triangles,sizeof(EVDS_MESH_TRIANGLE)*mesh->num_triangles_allocated);
 	}
+
+	//Update smoothing groups counter
+	if (smoothing_group > mesh->max_smoothing_group) mesh->max_smoothing_group = smoothing_group;
 
 	//Store vertex and return new index
 	index = mesh->num_triangles;
@@ -768,6 +774,7 @@ int EVDS_Mesh_GenerateEx(EVDS_OBJECT* object, EVDS_MESH** p_mesh, EVDS_MESH_GENE
 	mesh->vertex_info = (EVDS_MESH_VERTEX_INFO*)malloc(sizeof(EVDS_MESH_VERTEX_INFO)*mesh->num_vertices_allocated);
 
 	//Start counting smoothing groups
+	mesh->max_smoothing_group = 0;
 	mesh->num_smoothing_groups = 0;
 
 	//Generate mesh for this object
@@ -776,6 +783,9 @@ int EVDS_Mesh_GenerateEx(EVDS_OBJECT* object, EVDS_MESH** p_mesh, EVDS_MESH_GENE
 	//Finalize data
 	EVDS_InternalMesh_FinishTriangles(mesh,info);
 	EVDS_InternalMesh_FinishVertices(mesh,info);
+
+	//Make sure all smoothing groups are accounted for
+	mesh->num_smoothing_groups = mesh->max_smoothing_group + 1;
 
 	//Make sure bounding box is correct
 	if (mesh->bbox_min.x > mesh->bbox_max.x) {
