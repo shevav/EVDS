@@ -110,24 +110,18 @@ int EVDS_InternalRocketEngine_GenerateGeometry(EVDS_OBJECT* object) {
 		EVDS_Variable_AddFloatAttribute(nozzle_end,		"rx",exit_radius,0);
 
 		//Tangents
-		//EVDS_Variable_AddFloatAttribute(chamber_tip,	"tangent_p_radial",chamber_radius,0);
-		EVDS_Variable_AddFloatAttribute(nozzle_throat,	"tangent_m_radial",0.0,0);
-		EVDS_Variable_AddFloatAttribute(nozzle_throat,	"tangent_m_offset",0.0,0);
-		EVDS_Variable_AddFloatAttribute(nozzle_throat,	"tangent_p_radial",exit_radius*0.5,0);
-		EVDS_Variable_AddFloatAttribute(nozzle_throat,	"tangent_p_offset",exit_radius*0.5,0);
+		//EVDS_Variable_AddFloatAttribute(chamber_tip,	"tangent.radial.pos",chamber_radius,0);
+		EVDS_Variable_AddFloatAttribute(nozzle_throat,	"tangent.radial.neg",0.0,0);
+		EVDS_Variable_AddFloatAttribute(nozzle_throat,	"tangent.offset.neg",0.0,0);
+		EVDS_Variable_AddFloatAttribute(nozzle_throat,	"tangent.radial.pos",exit_radius*0.5,0);
+		EVDS_Variable_AddFloatAttribute(nozzle_throat,	"tangent.offset.pos",exit_radius*0.5,0);
 
 		//Offsets
-		EVDS_Variable_AddFloatAttribute(chamber_tip,	"add_offset",0.0,0);
-		EVDS_Variable_AddFloatAttribute(chamber_rim,	"add_offset",0.0,0);
-		EVDS_Variable_AddFloatAttribute(nozzle_start,	"add_offset",0.0,0);
-		EVDS_Variable_AddFloatAttribute(nozzle_throat,	"add_offset",0.0,0);
-		EVDS_Variable_AddFloatAttribute(nozzle_end,		"add_offset",0.0,0);
-
-		EVDS_Variable_AddFloatAttribute(chamber_tip,	"offset",-chamber_length,0);
-		EVDS_Variable_AddFloatAttribute(chamber_rim,	"offset",-chamber_length,0); //+chamber_radius
-		EVDS_Variable_AddFloatAttribute(nozzle_start,	"offset",0,0);
+		EVDS_Variable_AddFloatAttribute(chamber_tip,	"offset",0,0);
+		EVDS_Variable_AddFloatAttribute(chamber_rim,	"offset",0,0);
+		EVDS_Variable_AddFloatAttribute(nozzle_start,	"offset",chamber_length,0);
 		EVDS_Variable_AddFloatAttribute(nozzle_throat,	"offset",nozzle_length*0.1,0);
-		EVDS_Variable_AddFloatAttribute(nozzle_end,		"offset",nozzle_length,0);
+		EVDS_Variable_AddFloatAttribute(nozzle_end,		"offset",nozzle_length*0.9,0);
 
 		//Thickness
 		EVDS_Variable_AddFloatAttribute(chamber_tip,	"thickness", 0.02,0);

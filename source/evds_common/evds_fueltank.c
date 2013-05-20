@@ -81,17 +81,12 @@ int EVDS_InternalFuelTank_GenerateGeometry(EVDS_OBJECT* object) {
 		EVDS_Variable_AddFloatAttribute(lower_tip,"rx",inner_radius,0);
 
 		//Tangents
-		//EVDS_Variable_AddFloatAttribute(upper_tip,"tangent_p_radial",0.0,0); //outer_radius
-		EVDS_Variable_AddFloatAttribute(upper_rim,"tangent_m_offset",upper_radius,0);
-		EVDS_Variable_AddFloatAttribute(lower_rim,"tangent_p_offset",lower_radius,0);
-		//EVDS_Variable_AddFloatAttribute(lower_tip,"tangent_p_offset",0.0,0);
+		//EVDS_Variable_AddFloatAttribute(upper_tip,"tangent.radial.pos",0.0,0); //outer_radius
+		EVDS_Variable_AddFloatAttribute(upper_rim,"tangent.offset.neg",upper_radius,0);
+		EVDS_Variable_AddFloatAttribute(lower_rim,"tangent.offset.pos",lower_radius,0);
+		//EVDS_Variable_AddFloatAttribute(lower_tip,"tangent.offset.pos",0.0,0);
 
 		//Offsets
-		EVDS_Variable_AddFloatAttribute(upper_tip,"add_offset",0,0);
-		EVDS_Variable_AddFloatAttribute(upper_rim,"add_offset",1,0);
-		EVDS_Variable_AddFloatAttribute(lower_rim,"add_offset",1,0);
-		EVDS_Variable_AddFloatAttribute(lower_tip,"add_offset",1,0);
-
 		EVDS_Variable_AddFloatAttribute(upper_tip,"offset",0.0,0);
 		EVDS_Variable_AddFloatAttribute(upper_rim,"offset",upper_radius,0);
 		EVDS_Variable_AddFloatAttribute(lower_rim,"offset",middle_length,0);

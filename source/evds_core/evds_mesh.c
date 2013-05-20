@@ -36,14 +36,16 @@ typedef struct EVDS_INTERNALMESH_ATTRIBUTES_TAG {
 	//Shared between all
 	int type;
 	EVDS_REAL offset;
-	EVDS_REAL xoffset;
-	EVDS_REAL yoffset;
-	EVDS_REAL add_offset;
+	EVDS_REAL offset_x;
+	EVDS_REAL offset_y;
+	EVDS_REAL absolute;
 	EVDS_REAL thickness;
-	EVDS_REAL tangent_p_offset;
-	EVDS_REAL tangent_m_offset;
-	EVDS_REAL tangent_p_radial;
-	EVDS_REAL tangent_m_radial;
+	EVDS_REAL continuous;
+
+	EVDS_REAL tangent_offset_pos;
+	EVDS_REAL tangent_offset_neg;
+	EVDS_REAL tangent_radial_pos;
+	EVDS_REAL tangent_radial_neg;
 
 	//ELLIPSE, RECTANGLE
 	EVDS_REAL rx;
@@ -71,14 +73,16 @@ void EVDS_InternalMesh_GetAttributes(EVDS_VARIABLE* cross_section, EVDS_INTERNAL
 
 	//Get variables
 	if (EVDS_Variable_GetAttribute(cross_section,"offset",&v) == EVDS_OK) EVDS_Variable_GetReal(v,&attributes->offset);
-	if (EVDS_Variable_GetAttribute(cross_section,"xoffset",&v) == EVDS_OK) EVDS_Variable_GetReal(v,&attributes->xoffset);
-	if (EVDS_Variable_GetAttribute(cross_section,"yoffset",&v) == EVDS_OK) EVDS_Variable_GetReal(v,&attributes->yoffset);
-	if (EVDS_Variable_GetAttribute(cross_section,"add_offset",&v) == EVDS_OK) EVDS_Variable_GetReal(v,&attributes->add_offset);
+	if (EVDS_Variable_GetAttribute(cross_section,"offset.x",&v) == EVDS_OK) EVDS_Variable_GetReal(v,&attributes->offset_x);
+	if (EVDS_Variable_GetAttribute(cross_section,"offset.y",&v) == EVDS_OK) EVDS_Variable_GetReal(v,&attributes->offset_y);
+	if (EVDS_Variable_GetAttribute(cross_section,"absolute",&v) == EVDS_OK) EVDS_Variable_GetReal(v,&attributes->absolute);
 	if (EVDS_Variable_GetAttribute(cross_section,"thickness",&v) == EVDS_OK) EVDS_Variable_GetReal(v,&attributes->thickness);
-	if (EVDS_Variable_GetAttribute(cross_section,"tangent_p_offset",&v) == EVDS_OK) EVDS_Variable_GetReal(v,&attributes->tangent_p_offset);
-	if (EVDS_Variable_GetAttribute(cross_section,"tangent_m_offset",&v) == EVDS_OK) EVDS_Variable_GetReal(v,&attributes->tangent_m_offset);
-	if (EVDS_Variable_GetAttribute(cross_section,"tangent_p_radial",&v) == EVDS_OK) EVDS_Variable_GetReal(v,&attributes->tangent_p_radial);
-	if (EVDS_Variable_GetAttribute(cross_section,"tangent_m_radial",&v) == EVDS_OK) EVDS_Variable_GetReal(v,&attributes->tangent_m_radial);
+	if (EVDS_Variable_GetAttribute(cross_section,"continuous",&v) == EVDS_OK) EVDS_Variable_GetReal(v,&attributes->continuous);
+
+	if (EVDS_Variable_GetAttribute(cross_section,"tangent.offset.pos",&v) == EVDS_OK) EVDS_Variable_GetReal(v,&attributes->tangent_offset_pos);
+	if (EVDS_Variable_GetAttribute(cross_section,"tangent.offset.neg",&v) == EVDS_OK) EVDS_Variable_GetReal(v,&attributes->tangent_offset_neg);
+	if (EVDS_Variable_GetAttribute(cross_section,"tangent.radial.pos",&v) == EVDS_OK) EVDS_Variable_GetReal(v,&attributes->tangent_radial_pos);
+	if (EVDS_Variable_GetAttribute(cross_section,"tangent.radial.neg",&v) == EVDS_OK) EVDS_Variable_GetReal(v,&attributes->tangent_radial_neg);
 
 	if (EVDS_Variable_GetAttribute(cross_section,"rx",&v) == EVDS_OK) EVDS_Variable_GetReal(v,&attributes->rx);
 	if (EVDS_Variable_GetAttribute(cross_section,"ry",&v) == EVDS_OK) EVDS_Variable_GetReal(v,&attributes->ry);
@@ -123,7 +127,8 @@ void EVDS_InternalMesh_GetPoint(EVDS_INTERNALMESH_ATTRIBUTES* attributes, float 
 
 			*x = (float)attributes->rx*r*cosf(phi);
 			*y = (float)attributes->rx*r*sinf(phi);
-			*group = (int)(time*n); //FIXME
+			//*group = (int)(time*n);
+			*group = (int)(((phi + dphi - EVDS_EPSf) / (2.0*EVDS_PIf))*n);
 			if (*group >= n) *group = 0;
 		} break;
 		default: {
@@ -398,15 +403,15 @@ int EVDS_InternalMesh_CrossSections(EVDS_OBJECT* object, EVDS_MESH* mesh, EVDS_M
 			continue;
 		}
 		//Get attributes
-		EVDS_InternalMesh_GetAttributes(cross_section,&attributes);		
+		EVDS_InternalMesh_GetAttributes(cross_section,&attributes);
 		
 		//Determine length of curve and propagate offset
-		if (attributes.add_offset >= 0.5) {
-			length = (float)attributes.offset;
-			new_offset = offset+(float)attributes.offset;
-		} else {
+		if (attributes.absolute >= 0.5) { //Offset of cross-section absolute relative to origin
 			length = fabsf((float)attributes.offset-offset);
 			new_offset = (float)attributes.offset;
+		} else { //Offset relative to previous cross-section
+			length = (float)attributes.offset;
+			new_offset = offset+(float)attributes.offset;
 		}
 		EVDS_InternalMesh_GetPoint(&previous_attributes,0.0,&x1,&y1,&group);
 		EVDS_InternalMesh_GetPoint(&attributes,0.0,&x2,&y2,&group);
@@ -433,8 +438,8 @@ int EVDS_InternalMesh_CrossSections(EVDS_OBJECT* object, EVDS_MESH* mesh, EVDS_M
 			//Compute start and end of section (offset is part of the bezier curve)
 			z1 = offset;
 			z2 = new_offset;
-			tz1 = z1 + (float)previous_attributes.tangent_p_offset; //start tangent offset
-			tz2 = z2 - (float)attributes.tangent_m_offset; //end tangent offset
+			tz1 = z1 + (float)previous_attributes.tangent_offset_pos; //start tangent offset
+			tz2 = z2 - (float)attributes.tangent_offset_neg; //end tangent offset
 			z_s = powf(1-t1,3)*z1+3*t1*powf(1-t1,2)*tz1+3*(1-t1)*powf(t1,2)*tz2+powf(t1,3)*z2; //Start of section
 			z_e = powf(1-t2,3)*z1+3*t2*powf(1-t2,2)*tz1+3*(1-t2)*powf(t2,2)*tz2+powf(t2,3)*z2; //End of section
 
@@ -477,16 +482,16 @@ int EVDS_InternalMesh_CrossSections(EVDS_OBJECT* object, EVDS_MESH* mesh, EVDS_M
 				}
 
 				//Add cross-section offset
-				x1 += (float)previous_attributes.xoffset;
-				y1 += (float)previous_attributes.yoffset;
-				x2 += (float)attributes.xoffset;
-				y2 += (float)attributes.yoffset;
+				x1 += (float)previous_attributes.offset_x;
+				y1 += (float)previous_attributes.offset_y;
+				x2 += (float)attributes.offset_x;
+				y2 += (float)attributes.offset_y;
 
 				//Compute radial tangent vectors
-				trx1 = x1 + (float)previous_attributes.tangent_p_radial*cosf(theta1);
-				try1 = y1 + (float)previous_attributes.tangent_p_radial*sinf(theta1);
-				trx2 = x2 - (float)attributes.tangent_m_radial*cosf(theta2);
-				try2 = y2 - (float)attributes.tangent_m_radial*sinf(theta2);
+				trx1 = x1 + (float)previous_attributes.tangent_radial_pos*cosf(theta1);
+				try1 = y1 + (float)previous_attributes.tangent_radial_pos*sinf(theta1);
+				trx2 = x2 - (float)attributes.tangent_radial_neg*cosf(theta2);
+				try2 = y2 - (float)attributes.tangent_radial_neg*sinf(theta2);
 
 				//Bezier curve interpolation
 				x_s = powf(1-t1,3)*x1+3*t1*powf(1-t1,2)*trx1+3*(1-t1)*powf(t1,2)*trx2+powf(t1,3)*x2;
@@ -554,8 +559,10 @@ int EVDS_InternalMesh_CrossSections(EVDS_OBJECT* object, EVDS_MESH* mesh, EVDS_M
 			mesh->total_volume += 0.5f*(section_area1+section_area2)*(z_e - z_s);
 		}
 
-		//Next cross-section must have a different smoothing group
-		mesh->num_smoothing_groups += 1 + max_local_smoothing_group;
+		//Next cross-section may have a different or same smoothing group set
+		if (attributes.continuous < 0.5) {
+			mesh->num_smoothing_groups += 1 + max_local_smoothing_group;
+		}
 
 		//Move to next section
 		offset = new_offset;
