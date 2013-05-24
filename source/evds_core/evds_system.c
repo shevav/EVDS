@@ -496,6 +496,12 @@ int EVDS_System_GetObjectByUID(EVDS_SYSTEM* system, unsigned int uid, EVDS_OBJEC
 	if (!system) return EVDS_ERROR_BAD_PARAMETER;
 	if (!p_object) return EVDS_ERROR_BAD_PARAMETER;
 
+	//Check if searching for the parent
+	if (parent->uid == uid) {
+		*p_object = parent;
+		return EVDS_OK;
+	}
+
 	if (parent) { 
 		//Traverse parent children
 		entry = SIMC_List_GetFirst(parent->raw_children);
@@ -565,6 +571,12 @@ int EVDS_System_GetObjectByName(EVDS_SYSTEM* system, const char* name, EVDS_OBJE
 	if (!system) return EVDS_ERROR_BAD_PARAMETER;
 	if (!name) return EVDS_ERROR_BAD_PARAMETER;
 	if (!p_object) return EVDS_ERROR_BAD_PARAMETER;
+
+	//Check if searching for the parent
+	if (strncmp(parent->name,name,256) == 0) {
+		*p_object = parent;
+		return EVDS_OK;
+	}
 
 	if (parent) { 
 		//Traverse parent children
