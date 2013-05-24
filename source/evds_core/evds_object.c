@@ -952,6 +952,9 @@ int EVDS_Object_CopyChildren(EVDS_OBJECT* source_parent, EVDS_OBJECT* parent) {
 ///
 /// The new copy of an object will not be initialized, but it may contain variables
 /// created during the initialization of the other object.
+/// The userdata pointer will be retained in the copy (but not the solvers userdata).
+///
+/// @note The function does not copy data to which userdata points - only the pointer itself!
 ///
 /// If any vector or quaternion variables are stored inside an object, they will be copied
 /// over. The coordinate system reference will be updated only if vector points to the object
@@ -989,6 +992,9 @@ int EVDS_Object_CopySingle(EVDS_OBJECT* source, EVDS_OBJECT* parent, EVDS_OBJECT
 	SIMC_SRW_EnterRead(source->state_lock); //Copy state under a lock
 	EVDS_StateVector_Copy(&object->state,&source->state);
 	SIMC_SRW_LeaveRead(source->state_lock);
+
+	//Copy userdata pointer
+	object->userdata = source->userdata;
 
 	//Update state coordinate system
 	object->state.position.coordinate_system = parent;
