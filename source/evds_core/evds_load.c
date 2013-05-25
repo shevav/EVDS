@@ -153,61 +153,61 @@ int EVDS_Internal_LoadParameter(EVDS_OBJECT* object, EVDS_VARIABLE* parent_varia
 		q.q[3] = w;
 		q.coordinate_system = object;
 		EVDS_Variable_SetQuaternion(variable,&q);
-	} else if (type == EVDS_VARIABLE_TYPE_FUNCTION) {
-		/*int i;
+	} else if (type == EVDS_VARIABLE_TYPE_FUNCTION) { //FIXME: requires total rewrite
+		int i;
 		EVDS_VARIABLE_FUNCTION* table = (EVDS_VARIABLE_FUNCTION*)variable->value;
 
 		//Get count of items in 1D table
-		table->count = 0;
+		table->data1d_count = 0;
 		EVDS_ERRCHECK(SIMC_XML_GetElement(doc,element,&nested_element,"data"));
 		while (nested_element) {
-			table->count++;
+			table->data1d_count++;
 			EVDS_ERRCHECK(SIMC_XML_Iterate(doc,element,&nested_element,"data"));
 		}
 
 		//Allocate 1D table
-		table->data = (EVDS_VARIABLE_TABLE1D_ENTRY*)malloc(sizeof(EVDS_VARIABLE_TABLE1D_ENTRY)*table->count);
+		table->data1d = (EVDS_VARIABLE_TVALUE_ENTRY*)malloc(sizeof(EVDS_VARIABLE_TVALUE_ENTRY)*table->data1d_count);
 
 		//Read items in 1D table
 		i = 0;
-		EVDS_ERRCHECK(SIMC_XML_GetElement(doc,element,&nested_element,"data1d"));
+		EVDS_ERRCHECK(SIMC_XML_GetElement(doc,element,&nested_element,"data"));
 		while (nested_element) {
 			char *xvar,*fvar;
-			table->data[i].x = 0.0;
-			table->data[i].f = 0.0;
+			table->data1d[i].x = 0.0;
+			table->data1d[i].f = 0.0;
 
 			EVDS_ERRCHECK(SIMC_XML_GetAttribute(doc,nested_element,"x",&xvar));
 			EVDS_ERRCHECK(SIMC_XML_GetText(doc,nested_element,&fvar));
-			EVDS_StringToReal(xvar,0,&table->data[i].x);
-			EVDS_StringToReal(fvar,0,&table->data[i].f);
+			EVDS_StringToReal(xvar,0,&table->data1d[i].x);
+			EVDS_StringToReal(fvar,0,&table->data1d[i].f);
 
 			i++;
-			EVDS_ERRCHECK(SIMC_XML_Iterate(doc,element,&nested_element,"data1d"));
+			EVDS_ERRCHECK(SIMC_XML_Iterate(doc,element,&nested_element,"data"));
 		}
 
 		//Set constant value
 		if (value) {
-			table->constant = real_value;
+			table->data0d = real_value;
 		} else {
-			if (table->count > 0) {
-				table->constant = table->data[0].f;
+			if (table->data1d_count > 0) {
+				table->data0d = table->data1d[0].f;
 			} else {
-				table->constant = 0.0;
+				table->data0d = 0.0;
 			}
 		}
 
 		//Sort 1D table
-		qsort(table->data,table->count,sizeof(EVDS_VARIABLE_TABLE1D_ENTRY),EVDS_Internal_CompareTableEntries);
+		qsort(table->data1d,table->data1d_count,sizeof(EVDS_VARIABLE_TVALUE_ENTRY),EVDS_Internal_CompareTableEntries);
 
 		//Set min/max
-		if (table->count == 0) {
+		/*if (table->count == 0) {
 			table->data_min = 0.0;
 			table->data_max = 0.0;
 			table->data_length = 0.0;
 			table->data_length1 = 1.0;
 		} else if (table->count == 1) {
-			table->data_min = table->data[0].x;
-			table->data_max = table->data[0].x;
+			table->data_min = table->data1d[0].x;
+			table->data_max = table->data1d[0].x;
 			table->data_length = EVDS_EPS;
 			table->data_length1 = 1.0;
 		} else {

@@ -128,10 +128,20 @@ int EVDS_InternalFuelTank_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, E
 	EVDS_REAL fuel_mass = 0.0;
 	EVDS_REAL fuel_volume = 0.0;
 	EVDS_REAL is_cryogenic = 0.0;
+	EVDS_REAL load_ratio = 1.0;
 	if (EVDS_Object_CheckType(object,"fuel_tank") != EVDS_OK) return EVDS_IGNORE_OBJECT; 
 
 	//Generate geometry for the rocket engine
 	EVDS_InternalFuelTank_GenerateGeometry(object);
+
+	//Get total fuel load in percent
+	if (EVDS_Object_GetVariable(object,"load_ratio",&variable) == EVDS_OK) {
+		EVDS_Variable_GetReal(variable,&load_ratio);
+	}
+	if (EVDS_Object_GetVariable(object,"load_ratio_percent",&variable) == EVDS_OK) {
+		EVDS_Variable_GetReal(variable,&load_ratio);
+		load_ratio *= 0.01;
+	}
 
 	//Is fuel cryogenic
 	if (EVDS_Object_GetVariable(object,"is_cryogenic",&variable) == EVDS_OK) {
@@ -148,8 +158,9 @@ int EVDS_InternalFuelTank_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, E
 	if (fuel_volume < EVDS_EPS) {
 		EVDS_MESH* mesh;
 		EVDS_Mesh_Generate(object,&mesh,50.0f,EVDS_MESH_USE_DIVISIONS);
-		fuel_volume = mesh->total_volume;
-		EVDS_Object_AddFloatVariable(object,"fuel_volume",fuel_volume,0);
+			fuel_volume = mesh->total_volume;
+			EVDS_Object_AddFloatVariable(object,"fuel_volume",0,&variable);
+			EVDS_Variable_SetReal(variable,fuel_volume);
 		EVDS_Mesh_Destroy(mesh);
 	}
 
@@ -196,11 +207,19 @@ int EVDS_InternalFuelTank_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, E
 			//Calculate fuel mass
 			fuel_mass = fuel_volume * fuel_density;
 		}
-		EVDS_Object_AddFloatVariable(object,"fuel_mass",fuel_mass,0);
+		EVDS_Object_AddFloatVariable(object,"fuel_mass",0,&variable);
+		EVDS_Variable_SetReal(variable,fuel_mass);
 	}
 
 	//Remember the tank capacity
-	EVDS_Object_AddFloatVariable(object,"fuel_capacity",fuel_mass,0);
+	EVDS_Object_AddFloatVariable(object,"fuel_capacity",0,&variable);
+	EVDS_Variable_SetReal(variable,fuel_mass);
+
+	//Apply fuel load ratio
+	if (load_ratio > 1.0) load_ratio = 1.0;
+	if (load_ratio < 0.0) load_ratio = 0.0;
+	EVDS_Object_GetVariable(object,"fuel_mass",&variable);
+	EVDS_Variable_SetReal(variable,fuel_mass*load_ratio);
 
 	//Fuel tanks have mass
 	if (EVDS_Object_GetVariable(object,"mass",&variable) != EVDS_OK) {
