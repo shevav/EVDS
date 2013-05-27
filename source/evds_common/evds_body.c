@@ -300,9 +300,10 @@ int EVDS_InternalRigidBody_Solve(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVDS_
 		EVDS_Variable_GetReal(v_mass,&m);
 
 		//Get center of mass
-		error_code = EVDS_Object_GetVariable(child,"total_cm",&v_cm);
-		if (error_code != EVDS_OK) {
-			EVDS_Object_GetVariable(child,"cm",&v_cm);
+		if ((EVDS_Object_GetVariable(child,"total_cm",&v_cm) != EVDS_OK) &&
+			(EVDS_Object_GetVariable(child,"cm",&v_cm) != EVDS_OK)) {
+			entry = SIMC_List_GetNext(children,entry);
+			continue;
 		}
 		EVDS_Variable_GetVector(v_cm,&cm);
 		//EVDS_Variable_GetVector(child_userdata->dCM,&dcm);
@@ -312,9 +313,12 @@ int EVDS_InternalRigidBody_Solve(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVDS_
 		error_code += EVDS_Object_GetVariable(child,"total_iy",&v_iy);
 		error_code += EVDS_Object_GetVariable(child,"total_iz",&v_iz);
 		if (error_code != EVDS_OK) {
-			EVDS_Object_GetVariable(child,"jx",&v_jx);
-			EVDS_Object_GetVariable(child,"jy",&v_jy);
-			EVDS_Object_GetVariable(child,"jz",&v_jz);
+			if ((EVDS_Object_GetVariable(child,"jx",&v_jx) != EVDS_OK) ||
+				(EVDS_Object_GetVariable(child,"jy",&v_jy) != EVDS_OK) ||
+				(EVDS_Object_GetVariable(child,"jz",&v_jz) != EVDS_OK)) {
+				entry = SIMC_List_GetNext(children,entry);
+				continue;
+			}
 
 			EVDS_Variable_GetVector(v_jx,&Ix1);
 			EVDS_Variable_GetVector(v_jy,&Iy1);
@@ -596,10 +600,10 @@ int EVDS_InternalRigidBody_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, 
 	userdata = (EVDS_SOLVER_RIGID_USERDATA*)malloc(sizeof(EVDS_SOLVER_RIGID_USERDATA));
 	memset(userdata,0,sizeof(EVDS_SOLVER_RIGID_USERDATA));
 
-	//Make sure the object has mass
+	//Make sure the object has mass (FIXME: must make this object properly static)
 	if (EVDS_Object_GetVariable(object,"mass",&userdata->m) != EVDS_OK) {
-		free(userdata);
-		return EVDS_IGNORE_OBJECT;
+		is_static = 1;
+		EVDS_Object_AddFloatVariable(object,"mass",0.0,&userdata->m);
 	}
 
 	//Set solverdata
