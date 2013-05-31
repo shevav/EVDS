@@ -529,6 +529,8 @@ typedef unsigned int EVDS_MESH_INDEX;
 /// If @c EVDS_MESH_FORCE_NUMSEGMENTS flag is specified, EVDS_MESH_GENERATEEX::num_segments defines the target
 /// number of segments that must be used for tessellation.
 ///
+/// It's possible to limit resolution when @c EVDS_MESH_USE_DIVISIONS is used by setting EVDS_MESH_GENERATEEX::min_resolution.
+///
 /// Additional flags can be specified for generating the mesh:
 /// Name								| Description
 /// ------------------------------------|------------------------------
@@ -550,6 +552,7 @@ struct EVDS_MESH_GENERATEEX_TAG {
 struct EVDS_MESH_GENERATEEX {
 #endif
 	float resolution;			///< Mesh resolution
+	float min_resolution;		///< Smallest allowed resolution
 	int flags;					///< Flags passed into EVDS_Mesh_Generate()
 	int target_index;			///< Index of element for which mesh must be generated
 	int num_segments;			///< Number of segments for tesselation (see EVDS_MESH_FORCE_NUMSEGMENTS)

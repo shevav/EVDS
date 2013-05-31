@@ -714,8 +714,15 @@ void EVDS_InternalMesh_FinishVertices(EVDS_MESH* mesh, EVDS_MESH_GENERATEEX* inf
 /// Some flags require other flags to be present, for example inner hull geometry will only
 /// be generated when no other skip flags are set.
 ///
-/// If EVDS_MESH_FORCE_NUMSEGMENTS flag is used, "info.num_segments" field must be set to a valid integer
+/// If @c EVDS_MESH_FORCE_NUMSEGMENTS flag is used, "info.num_segments" field must be set to a valid integer
 /// value.
+///
+/// If @c EVDS_MESH_USE_DIVISIONS flag is used, the resolution will be interpreted as an estimate for number of
+/// sections/segments (to return a nearly constant number of vertices for any size of input model). The real resolution
+/// is determined from mesh bounding box and can be clamped using EVDS_MESH_GENERATEEX::min_resolution field.
+///
+/// @note The actual resolution with which mesh was generated will be written to EVDS_MESH_GENERATEEX::resolution field
+///   if @c EVDS_MESH_USE_DIVISIONS is used.
 ///
 /// @param[in] object Object, from which mesh must be generated
 /// @param[out] p_mesh Pointer to EVDS_MESH will be written here
@@ -751,6 +758,11 @@ int EVDS_Mesh_GenerateEx(EVDS_OBJECT* object, EVDS_MESH** p_mesh, EVDS_MESH_GENE
 
 		//Calculate resolution from number of divisions
 		info->resolution = est / info->resolution;
+
+		//Clamp resolution
+		if (info->resolution < info->min_resolution) {
+			info->resolution = info->min_resolution;
+		}
 
 		//Clean up bounding box mesh
 		EVDS_Mesh_Destroy(bounding_mesh);
