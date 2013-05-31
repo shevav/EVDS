@@ -75,11 +75,6 @@ int EVDS_InternalAntenna_GenerateGeometry(EVDS_OBJECT* object) {
 		EVDS_Variable_AddFloatAttribute(dipole_end_tip,		"rx",0.00,0);
 
 		//Offsets
-		EVDS_Variable_AddFloatAttribute(dipole_start_tip,	"add_offset",0.0,0);
-		EVDS_Variable_AddFloatAttribute(dipole_start,		"add_offset",0.0,0);
-		EVDS_Variable_AddFloatAttribute(dipole_end,			"add_offset",0.0,0);
-		EVDS_Variable_AddFloatAttribute(dipole_end_tip,		"add_offset",0.0,0);
-
 		EVDS_Variable_AddFloatAttribute(dipole_start_tip,	"offset",-size/2,0);
 		EVDS_Variable_AddFloatAttribute(dipole_start,		"offset",-size/2,0);
 		EVDS_Variable_AddFloatAttribute(dipole_end,			"offset", size/2,0);
@@ -141,7 +136,8 @@ int EVDS_InternalAntenna_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EV
 		size = 299792458.0/(1e6*design_frequency);
 	}
 	if (size < 0.0) size = 0.0;
-	EVDS_Object_AddFloatVariable(object,"size",size,0);
+	EVDS_Object_GetVariable(object,"size",&variable);
+	EVDS_Variable_SetReal(variable,size);
 
 	//Sanity check for frequency
 	if (frequency <= 0.0) frequency = 299792458.0/(1e6*size);

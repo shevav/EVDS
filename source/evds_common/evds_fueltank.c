@@ -61,8 +61,8 @@ int EVDS_InternalFuelTank_GenerateGeometry(EVDS_OBJECT* object) {
 	}
 	EVDS_Object_AddVariable(object,"geometry.cross_sections",EVDS_VARIABLE_TYPE_NESTED,&geometry);
 
-	//Generate correct geometry
-	if (1) {
+	//Generate geometry for a normal fuel tank
+	if (inner_radius <= 0.0) {
 		EVDS_VARIABLE* upper_tip;
 		EVDS_VARIABLE* upper_rim;
 		EVDS_VARIABLE* lower_rim;
@@ -91,7 +91,52 @@ int EVDS_InternalFuelTank_GenerateGeometry(EVDS_OBJECT* object) {
 		EVDS_Variable_AddFloatAttribute(upper_rim,"offset",upper_radius,0);
 		EVDS_Variable_AddFloatAttribute(lower_rim,"offset",middle_length,0);
 		EVDS_Variable_AddFloatAttribute(lower_tip,"offset",lower_radius,0);
+	} else { //Geometry for a torus tank
+		EVDS_VARIABLE* inner_rim_fwd;
+		EVDS_VARIABLE* upper_tip;
+		EVDS_VARIABLE* middle_rim_fwd;
+		EVDS_VARIABLE* middle_rim_aft;
+		EVDS_VARIABLE* lower_tip;
+		EVDS_VARIABLE* inner_rim_aft;
+		EVDS_VARIABLE* inner_middle;
 
+		float half_radius = (inner_radius + outer_radius) / 2;
+
+		//Add cross-sections
+		EVDS_Variable_AddNested(geometry,"geometry.cross_sections",EVDS_VARIABLE_TYPE_NESTED,&inner_rim_fwd );
+		EVDS_Variable_AddNested(geometry,"geometry.cross_sections",EVDS_VARIABLE_TYPE_NESTED,&upper_tip     );
+		EVDS_Variable_AddNested(geometry,"geometry.cross_sections",EVDS_VARIABLE_TYPE_NESTED,&middle_rim_fwd);
+		EVDS_Variable_AddNested(geometry,"geometry.cross_sections",EVDS_VARIABLE_TYPE_NESTED,&middle_rim_aft);
+		EVDS_Variable_AddNested(geometry,"geometry.cross_sections",EVDS_VARIABLE_TYPE_NESTED,&lower_tip     );
+		EVDS_Variable_AddNested(geometry,"geometry.cross_sections",EVDS_VARIABLE_TYPE_NESTED,&inner_rim_aft );
+		EVDS_Variable_AddNested(geometry,"geometry.cross_sections",EVDS_VARIABLE_TYPE_NESTED,&inner_middle  );
+
+		//Radius
+		EVDS_Variable_AddFloatAttribute(inner_rim_fwd ,"rx",inner_radius,0);
+		EVDS_Variable_AddFloatAttribute(upper_tip     ,"rx",half_radius,0);
+		EVDS_Variable_AddFloatAttribute(middle_rim_fwd,"rx",outer_radius,0);
+		EVDS_Variable_AddFloatAttribute(middle_rim_aft,"rx",outer_radius,0);
+		EVDS_Variable_AddFloatAttribute(lower_tip     ,"rx",half_radius,0);
+		EVDS_Variable_AddFloatAttribute(inner_rim_aft ,"rx",inner_radius,0);
+		EVDS_Variable_AddFloatAttribute(inner_middle  ,"rx",inner_radius,0);
+
+		//Tangents
+		EVDS_Variable_AddFloatAttribute(inner_rim_fwd ,"tangent.offset.pos",-upper_radius,0); //outer_radius
+		//EVDS_Variable_AddFloatAttribute(upper_tip     ,"tangent.offset.neg",upper_radius,0);
+		EVDS_Variable_AddFloatAttribute(middle_rim_fwd,"tangent.offset.neg",upper_radius,0);
+		EVDS_Variable_AddFloatAttribute(middle_rim_aft,"tangent.offset.pos",lower_radius,0);
+		//EVDS_Variable_AddFloatAttribute(lower_tip     ,"tangent.offset.pos",lower_radius,0);
+		EVDS_Variable_AddFloatAttribute(inner_rim_aft ,"tangent.offset.neg",-lower_radius,0);
+		//EVDS_Variable_AddFloatAttribute(inner_middle  ,"tangent.offset.pos",lower_radius,0);
+
+		//Offsets
+		EVDS_Variable_AddFloatAttribute(inner_rim_fwd ,"offset", upper_radius,0);
+		EVDS_Variable_AddFloatAttribute(upper_tip     ,"offset",-upper_radius,0);
+		EVDS_Variable_AddFloatAttribute(middle_rim_fwd,"offset", upper_radius,0);
+		EVDS_Variable_AddFloatAttribute(middle_rim_aft,"offset", middle_length,0);
+		EVDS_Variable_AddFloatAttribute(lower_tip     ,"offset", lower_radius,0);
+		EVDS_Variable_AddFloatAttribute(inner_rim_aft ,"offset",-lower_radius,0);
+		EVDS_Variable_AddFloatAttribute(inner_middle  ,"offset",-middle_length,0);
 	}
 	return EVDS_OK;
 }
