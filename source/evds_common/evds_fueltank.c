@@ -140,10 +140,10 @@ int EVDS_InternalFuelTank_GenerateGeometry(EVDS_OBJECT* object) {
 
 		//Continuous
 		EVDS_Variable_AddFloatAttribute(upper_tip     ,"continuous",1.0,0);
-		EVDS_Variable_AddFloatAttribute(middle_rim_fwd,"continuous",1.0,0);
-		EVDS_Variable_AddFloatAttribute(middle_rim_aft,"continuous",1.0,0);
+		//EVDS_Variable_AddFloatAttribute(middle_rim_fwd,"continuous",1.0,0);
+		//EVDS_Variable_AddFloatAttribute(middle_rim_aft,"continuous",1.0,0);
 		EVDS_Variable_AddFloatAttribute(lower_tip     ,"continuous",1.0,0);
-		EVDS_Variable_AddFloatAttribute(inner_rim_aft ,"continuous",1.0,0);
+		//EVDS_Variable_AddFloatAttribute(inner_rim_aft ,"continuous",1.0,0);
 	}
 	return EVDS_OK;
 }
