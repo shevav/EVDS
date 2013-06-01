@@ -35,7 +35,7 @@
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// @brief Generate geometry for the antenna
+/// @brief Generate geometry
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_InternalAntenna_GenerateGeometry(EVDS_OBJECT* object) {
 	EVDS_VARIABLE* geometry;
@@ -76,16 +76,16 @@ int EVDS_InternalAntenna_GenerateGeometry(EVDS_OBJECT* object) {
 
 		//Offsets
 		EVDS_Variable_AddFloatAttribute(dipole_start_tip,	"offset",-size/2,0);
-		EVDS_Variable_AddFloatAttribute(dipole_start,		"offset",-size/2,0);
-		EVDS_Variable_AddFloatAttribute(dipole_end,			"offset", size/2,0);
-		EVDS_Variable_AddFloatAttribute(dipole_end_tip,		"offset", size/2,0);
+		EVDS_Variable_AddFloatAttribute(dipole_start,		"offset",    0.0,0);
+		EVDS_Variable_AddFloatAttribute(dipole_end,			"offset",   size,0);
+		EVDS_Variable_AddFloatAttribute(dipole_end_tip,		"offset",    0.0,0);
 	}
 	return EVDS_OK;
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// @brief Update engine internal state
+/// @brief Update internal state
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_InternalAntenna_Solve(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVDS_OBJECT* object, EVDS_REAL delta_time) {
 	return EVDS_OK;
@@ -150,9 +150,9 @@ int EVDS_InternalAntenna_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EV
 
 	if (tx < 0.5) flags |= RDRS_ANTENNA_NO_SEND;
 	if (rx < 0.5) flags |= RDRS_ANTENNA_NO_RECEIVE;
-	RDRS_Antenna_Create((RDRS_SYSTEM*)solver->userdata,&antenna,channel,flags);
-	RDRS_Antenna_SetSize(antenna,size);
-	EVDS_Object_SetSolverdata(object,(void*)antenna);
+	//RDRS_Antenna_Create((RDRS_SYSTEM*)solver->userdata,&antenna,channel,flags);
+	//RDRS_Antenna_SetSize(antenna,size);
+	//EVDS_Object_SetSolverdata(object,(void*)antenna);
 
 	//Generate geometry for the antenna
 	EVDS_InternalAntenna_GenerateGeometry(object);
@@ -161,12 +161,12 @@ int EVDS_InternalAntenna_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EV
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// @brief Deinitialize engine solver
+/// @brief Deinitialize solver
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_InternalAntenna_Deinitialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVDS_OBJECT* object) {
-	RDRS_ANTENNA* antenna;
-	EVDS_Object_GetSolverdata(object,(void**)&antenna);
-	RDRS_Antenna_Destroy(antenna);
+	//RDRS_ANTENNA* antenna;
+	//EVDS_Object_GetSolverdata(object,(void**)&antenna);
+	//RDRS_Antenna_Destroy(antenna);
 	return EVDS_OK;
 }
 
@@ -177,10 +177,10 @@ int EVDS_InternalAntenna_Deinitialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, 
 int EVDS_InternalAntenna_Startup(EVDS_SYSTEM* system, EVDS_SOLVER* solver) {
 	RDRS_SYSTEM* rdrs_system;
 
-	RDRS_System_Create(&rdrs_system);
-	RDRS_System_SetRealTime(rdrs_system,1);
-	RDRS_System_Start(rdrs_system);
-	solver->userdata = rdrs_system;
+	//RDRS_System_Create(&rdrs_system);
+	//RDRS_System_SetRealTime(rdrs_system,1);
+	//RDRS_System_Start(rdrs_system);
+	//solver->userdata = rdrs_system;
 	return EVDS_OK;
 }
 
@@ -190,7 +190,7 @@ int EVDS_InternalAntenna_Startup(EVDS_SYSTEM* system, EVDS_SOLVER* solver) {
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_InternalAntenna_Shutdown(EVDS_SYSTEM* system, EVDS_SOLVER* solver) {
 	RDRS_SYSTEM* rdrs_system = solver->userdata;
-	RDRS_System_Destroy(rdrs_system);
+	//RDRS_System_Destroy(rdrs_system);
 	return EVDS_OK;
 }
 
