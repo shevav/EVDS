@@ -54,17 +54,35 @@ int EVDS_Internal_SaveVariable(EVDS_VARIABLE* variable, SIMC_XML_DOCUMENT* doc,
 	} else if (variable->type == EVDS_VARIABLE_TYPE_FLOAT) {
 		EVDS_REAL value;
 		EVDS_Variable_GetReal(variable,&value);
-		if ((value > EVDS_EPS) || (value < -EVDS_EPS) || (!parent)) { //Only write non-null values (unless a parameter)
+
+		//Replace near-zero values with zero values
+		if ((value <= EVDS_EPS) && (value >= -EVDS_EPS)) value = 0.0;
+
+		//Only write non-null values, unless it's a parameter
+		if ((value != 0.0) || (!parent)) {
 			snprintf(buffer,1023,"%.15g",value);
 		}
 		//EVDS_Variable_SetReal(variable,real_value);
 	} else if (variable->type == EVDS_VARIABLE_TYPE_VECTOR) {
 		EVDS_VECTOR value;
 		EVDS_Variable_GetVector(variable,&value);
+		
+		//Replace near-zero values with zero values
+		if ((value.x <= EVDS_EPS) && (value.x >= -EVDS_EPS)) value.x = 0.0;
+		if ((value.y <= EVDS_EPS) && (value.y >= -EVDS_EPS)) value.y = 0.0;
+		if ((value.z <= EVDS_EPS) && (value.z >= -EVDS_EPS)) value.z = 0.0;
+
 		snprintf(buffer,1023,"%.15g %.15g %.15g",value.x,value.y,value.z);
 	} else if (variable->type == EVDS_VARIABLE_TYPE_QUATERNION) {
 		EVDS_QUATERNION value;
 		EVDS_Variable_GetQuaternion(variable,&value);
+
+		//Replace near-zero values with zero values
+		if ((value.q[0] <= EVDS_EPS) && (value.q[0] >= -EVDS_EPS)) value.q[0] = 0.0;
+		if ((value.q[1] <= EVDS_EPS) && (value.q[1] >= -EVDS_EPS)) value.q[1] = 0.0;
+		if ((value.q[2] <= EVDS_EPS) && (value.q[2] >= -EVDS_EPS)) value.q[2] = 0.0;
+		if ((value.q[3] <= EVDS_EPS) && (value.q[3] >= -EVDS_EPS)) value.q[3] = 0.0;
+
 		snprintf(buffer,1023,"%.15g %.15g %.15g %.15g",value.q[0],value.q[1],value.q[2],value.q[3]);
 	}
 
