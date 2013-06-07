@@ -573,9 +573,9 @@ int EVDS_System_GetObjectByName(EVDS_SYSTEM* system, const char* name, EVDS_OBJE
 	if (!p_object) return EVDS_ERROR_BAD_PARAMETER;
 
 	//Check if searching for the parent
-	if (strncmp(parent->name,name,256) == 0) {
-		*p_object = parent;
-		return EVDS_OK;
+	if (parent && (strncmp(parent->name,name,256) == 0)) {
+			*p_object = parent;
+			return EVDS_OK;
 	}
 
 	if (parent) { 

@@ -88,6 +88,14 @@ int EVDS_Planet_GetNearest(EVDS_OBJECT* object, EVDS_OBJECT** p_planet) {
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_InternalPlanet_Solve(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVDS_OBJECT* object, EVDS_REAL delta_time) {
 	//FIXME: Manual orbital calculations
+
+	//Solve all children
+	SIMC_LIST_ENTRY* entry = SIMC_List_GetFirst(object->children);
+	while (entry) {
+		EVDS_OBJECT* child = (EVDS_OBJECT*)SIMC_List_GetData(object->children,entry);
+		EVDS_Object_Solve(child,delta_time);
+		entry = SIMC_List_GetNext(object->children,entry);
+	}
 	return EVDS_OK;
 }
 
