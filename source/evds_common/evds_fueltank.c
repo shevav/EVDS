@@ -75,10 +75,10 @@ int EVDS_InternalFuelTank_GenerateGeometry(EVDS_OBJECT* object) {
 		EVDS_Variable_AddNested(geometry,"geometry.cross_sections",EVDS_VARIABLE_TYPE_NESTED,&lower_tip);
 
 		//Radius
-		EVDS_Variable_AddFloatAttribute(upper_tip,"rx",inner_radius,0);
-		EVDS_Variable_AddFloatAttribute(upper_rim,"rx",outer_radius,0);
-		EVDS_Variable_AddFloatAttribute(lower_rim,"rx",outer_radius,0);
-		EVDS_Variable_AddFloatAttribute(lower_tip,"rx",inner_radius,0);
+		EVDS_Variable_AddFloatAttribute(upper_tip,"r",inner_radius,0);
+		EVDS_Variable_AddFloatAttribute(upper_rim,"r",outer_radius,0);
+		EVDS_Variable_AddFloatAttribute(lower_rim,"r",outer_radius,0);
+		EVDS_Variable_AddFloatAttribute(lower_tip,"r",inner_radius,0);
 
 		//Tangents
 		//EVDS_Variable_AddFloatAttribute(upper_tip,"tangent.radial.pos",0.0,0); //outer_radius
@@ -112,13 +112,13 @@ int EVDS_InternalFuelTank_GenerateGeometry(EVDS_OBJECT* object) {
 		EVDS_Variable_AddNested(geometry,"geometry.cross_sections",EVDS_VARIABLE_TYPE_NESTED,&inner_middle  );
 
 		//Radius
-		EVDS_Variable_AddFloatAttribute(inner_rim_fwd ,"rx",inner_radius,0);
-		EVDS_Variable_AddFloatAttribute(upper_tip     ,"rx",half_radius,0);
-		EVDS_Variable_AddFloatAttribute(middle_rim_fwd,"rx",outer_radius,0);
-		EVDS_Variable_AddFloatAttribute(middle_rim_aft,"rx",outer_radius,0);
-		EVDS_Variable_AddFloatAttribute(lower_tip     ,"rx",half_radius,0);
-		EVDS_Variable_AddFloatAttribute(inner_rim_aft ,"rx",inner_radius,0);
-		EVDS_Variable_AddFloatAttribute(inner_middle  ,"rx",inner_radius,0);
+		EVDS_Variable_AddFloatAttribute(inner_rim_fwd ,"r",inner_radius,0);
+		EVDS_Variable_AddFloatAttribute(upper_tip     ,"r",half_radius,0);
+		EVDS_Variable_AddFloatAttribute(middle_rim_fwd,"r",outer_radius,0);
+		EVDS_Variable_AddFloatAttribute(middle_rim_aft,"r",outer_radius,0);
+		EVDS_Variable_AddFloatAttribute(lower_tip     ,"r",half_radius,0);
+		EVDS_Variable_AddFloatAttribute(inner_rim_aft ,"r",inner_radius,0);
+		EVDS_Variable_AddFloatAttribute(inner_middle  ,"r",inner_radius,0);
 
 		//Tangents
 		EVDS_Variable_AddFloatAttribute(inner_rim_fwd ,"tangent.offset.pos",-upper_radius,0); //outer_radius

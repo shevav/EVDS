@@ -103,11 +103,11 @@ int EVDS_InternalRocketEngine_GenerateGeometry(EVDS_OBJECT* object) {
 		EVDS_Variable_AddNested(geometry,"geometry.cross_sections",EVDS_VARIABLE_TYPE_NESTED,&nozzle_end);
 
 		//Radius
-		EVDS_Variable_AddFloatAttribute(chamber_tip,	"rx",0.00,0);
-		EVDS_Variable_AddFloatAttribute(chamber_rim,	"rx",chamber_radius,0);
-		EVDS_Variable_AddFloatAttribute(nozzle_start,	"rx",chamber_radius,0);
-		EVDS_Variable_AddFloatAttribute(nozzle_throat,	"rx",exit_radius*sqrt(1/area_ratio),0);
-		EVDS_Variable_AddFloatAttribute(nozzle_end,		"rx",exit_radius,0);
+		EVDS_Variable_AddFloatAttribute(chamber_tip,	"r",0.00,0);
+		EVDS_Variable_AddFloatAttribute(chamber_rim,	"r",chamber_radius,0);
+		EVDS_Variable_AddFloatAttribute(nozzle_start,	"r",chamber_radius,0);
+		EVDS_Variable_AddFloatAttribute(nozzle_throat,	"r",exit_radius*sqrt(1/area_ratio),0);
+		EVDS_Variable_AddFloatAttribute(nozzle_end,		"r",exit_radius,0);
 
 		//Tangents
 		//EVDS_Variable_AddFloatAttribute(chamber_tip,	"tangent.radial.pos",chamber_radius,0);

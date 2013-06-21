@@ -61,6 +61,8 @@ extern "C" {
 ///		Radio antenna with various shapes and geometric parameters available. If
 ///		Realtime Digital Radio Simulator support is enabled, it can be used for
 ///		simulating the digital radio link within the current EVDS_SYSTEM.
+/// - @subpage EVDS_Solver_Train_WheelsGeometry "'train_wheels'"
+///		Temporary placeholder that only represents geometry of train wheels.
 /// - @subpage EVDS_Callback_NRLMSISE_00
 ///		NRLMSISE-00 Earth atmospheric model callback for the EVDS_ENVIRONMENT API.
 /// - @subpage EVDS_Callback_WMM

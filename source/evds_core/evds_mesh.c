@@ -84,9 +84,20 @@ void EVDS_InternalMesh_GetAttributes(EVDS_VARIABLE* cross_section, EVDS_INTERNAL
 	if (EVDS_Variable_GetAttribute(cross_section,"tangent.radial.pos",&v) == EVDS_OK) EVDS_Variable_GetReal(v,&attributes->tangent_radial_pos);
 	if (EVDS_Variable_GetAttribute(cross_section,"tangent.radial.neg",&v) == EVDS_OK) EVDS_Variable_GetReal(v,&attributes->tangent_radial_neg);
 
+	if (EVDS_Variable_GetAttribute(cross_section,"r",&v) == EVDS_OK) { //Special variable for easier manual input
+		EVDS_VARIABLE* a;
+		EVDS_REAL value;
+		EVDS_Variable_GetReal(v,&value);
+
+		if (EVDS_Variable_AddAttribute(cross_section,"rx",EVDS_VARIABLE_TYPE_FLOAT,&a) == EVDS_OK) EVDS_Variable_SetReal(a,value);
+		if (EVDS_Variable_AddAttribute(cross_section,"ry",EVDS_VARIABLE_TYPE_FLOAT,&a) == EVDS_OK) EVDS_Variable_SetReal(a,value);
+	}
 	if (EVDS_Variable_GetAttribute(cross_section,"rx",&v) == EVDS_OK) EVDS_Variable_GetReal(v,&attributes->rx);
 	if (EVDS_Variable_GetAttribute(cross_section,"ry",&v) == EVDS_OK) EVDS_Variable_GetReal(v,&attributes->ry);
-	else															  attributes->ry = attributes->rx;
+	else { //Fix for old saves which were missing "ry" variable
+		EVDS_VARIABLE* a;
+		if (EVDS_Variable_AddAttribute(cross_section,"ry",EVDS_VARIABLE_TYPE_FLOAT,&a) == EVDS_OK) EVDS_Variable_SetReal(a,attributes->rx);
+	}
 
 	if (EVDS_Variable_GetAttribute(cross_section,"n",&v) == EVDS_OK)   EVDS_Variable_GetReal(v,&attributes->n);
 	if (EVDS_Variable_GetAttribute(cross_section,"phi",&v) == EVDS_OK) EVDS_Variable_GetReal(v,&attributes->phi);

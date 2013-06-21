@@ -69,10 +69,10 @@ int EVDS_InternalAntenna_GenerateGeometry(EVDS_OBJECT* object) {
 		EVDS_Variable_AddNested(geometry,"geometry.cross_sections",EVDS_VARIABLE_TYPE_NESTED,&dipole_end_tip);
 
 		//Radius
-		EVDS_Variable_AddFloatAttribute(dipole_start_tip,	"rx",0.00,0);
-		EVDS_Variable_AddFloatAttribute(dipole_start,		"rx",0.01,0);
-		EVDS_Variable_AddFloatAttribute(dipole_end,			"rx",0.01,0);
-		EVDS_Variable_AddFloatAttribute(dipole_end_tip,		"rx",0.00,0);
+		EVDS_Variable_AddFloatAttribute(dipole_start_tip,	"r",0.00,0);
+		EVDS_Variable_AddFloatAttribute(dipole_start,		"r",0.01,0);
+		EVDS_Variable_AddFloatAttribute(dipole_end,			"r",0.01,0);
+		EVDS_Variable_AddFloatAttribute(dipole_end_tip,		"r",0.00,0);
 
 		//Offsets
 		EVDS_Variable_AddFloatAttribute(dipole_start_tip,	"offset",-size/2,0);

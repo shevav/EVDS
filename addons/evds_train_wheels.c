@@ -88,99 +88,99 @@ int EVDS_InternalTrain_WheelsGeometry_Initialize(EVDS_SYSTEM* system, EVDS_SOLVE
 		EVDS_Variable_AddNested(geometry,"geometry.cross_sections",EVDS_VARIABLE_TYPE_NESTED,&section);
 		EVDS_Variable_AddFloatAttribute(section,"absolute",	1.0,0);
 		EVDS_Variable_AddFloatAttribute(section,"offset",	-gauge/2-hub_height,0);
-		EVDS_Variable_AddFloatAttribute(section,"rx",		0,0);
+		EVDS_Variable_AddFloatAttribute(section,"r",		0,0);
 		EVDS_Variable_AddNested(geometry,"geometry.cross_sections",EVDS_VARIABLE_TYPE_NESTED,&section);
 		EVDS_Variable_AddFloatAttribute(section,"absolute",	1.0,0);
 		EVDS_Variable_AddFloatAttribute(section,"offset",	-gauge/2-hub_height,0);
-		EVDS_Variable_AddFloatAttribute(section,"rx",		hub_diameter/2,0);
+		EVDS_Variable_AddFloatAttribute(section,"r",		hub_diameter/2,0);
 		EVDS_Variable_AddNested(geometry,"geometry.cross_sections",EVDS_VARIABLE_TYPE_NESTED,&section);
 		EVDS_Variable_AddFloatAttribute(section,"absolute",	1.0,0);
 		EVDS_Variable_AddFloatAttribute(section,"offset",	-gauge/2-disk_thickness,0);
-		EVDS_Variable_AddFloatAttribute(section,"rx",		hub_diameter/2,0);
+		EVDS_Variable_AddFloatAttribute(section,"r",		hub_diameter/2,0);
 		EVDS_Variable_AddFloatAttribute(section,"tangent.radial.pos",fabs(hub_diameter-inner_diameter)/2,0);
 
 		//Wheel core left
 		//EVDS_Variable_AddNested(geometry,"geometry.cross_sections",EVDS_VARIABLE_TYPE_NESTED,&section);
 		//EVDS_Variable_AddFloatAttribute(section,"absolute",	1.0,0);
 		//EVDS_Variable_AddFloatAttribute(section,"offset",	-gauge/2-disk_thickness,0);
-		//EVDS_Variable_AddFloatAttribute(section,"rx",		inner_diameter/2,0);
+		//EVDS_Variable_AddFloatAttribute(section,"r",		inner_diameter/2,0);
 		EVDS_Variable_AddNested(geometry,"geometry.cross_sections",EVDS_VARIABLE_TYPE_NESTED,&section);
 		EVDS_Variable_AddFloatAttribute(section,"absolute",	1.0,0);
 		EVDS_Variable_AddFloatAttribute(section,"offset",	-gauge/2-rim_height,0);
-		EVDS_Variable_AddFloatAttribute(section,"rx",		inner_diameter/2,0);
+		EVDS_Variable_AddFloatAttribute(section,"r",		inner_diameter/2,0);
 		EVDS_Variable_AddNested(geometry,"geometry.cross_sections",EVDS_VARIABLE_TYPE_NESTED,&section);
 		EVDS_Variable_AddFloatAttribute(section,"absolute",	1.0,0);
 		EVDS_Variable_AddFloatAttribute(section,"offset",	-gauge/2-rim_height,0);
-		EVDS_Variable_AddFloatAttribute(section,"rx",		outer_diameter/2,0);
+		EVDS_Variable_AddFloatAttribute(section,"r",		outer_diameter/2,0);
 
 		//Wheel flange left
 		EVDS_Variable_AddNested(geometry,"geometry.cross_sections",EVDS_VARIABLE_TYPE_NESTED,&section); //Flange base
 		EVDS_Variable_AddFloatAttribute(section,"absolute",	1.0,0);
 		EVDS_Variable_AddFloatAttribute(section,"offset",	-gauge/2,0);
-		EVDS_Variable_AddFloatAttribute(section,"rx",		outer_diameter/2+flange_taper,0);
+		EVDS_Variable_AddFloatAttribute(section,"r",		outer_diameter/2+flange_taper,0);
 		EVDS_Variable_AddNested(geometry,"geometry.cross_sections",EVDS_VARIABLE_TYPE_NESTED,&section); //Flange outer rim
 		EVDS_Variable_AddFloatAttribute(section,"absolute",	1.0,0);
 		EVDS_Variable_AddFloatAttribute(section,"offset",	-gauge/2,0);
-		EVDS_Variable_AddFloatAttribute(section,"rx",		outer_diameter/2+flange_height,0);
+		EVDS_Variable_AddFloatAttribute(section,"r",		outer_diameter/2+flange_height,0);
 		EVDS_Variable_AddNested(geometry,"geometry.cross_sections",EVDS_VARIABLE_TYPE_NESTED,&section); //Flange inner rim
 		EVDS_Variable_AddFloatAttribute(section,"absolute",	1.0,0);
 		EVDS_Variable_AddFloatAttribute(section,"offset",	-gauge/2+flange_thickness,0);
-		EVDS_Variable_AddFloatAttribute(section,"rx",		outer_diameter/2+flange_height,0);
+		EVDS_Variable_AddFloatAttribute(section,"r",		outer_diameter/2+flange_height,0);
 
 
 		//Axle
 		EVDS_Variable_AddNested(geometry,"geometry.cross_sections",EVDS_VARIABLE_TYPE_NESTED,&section); //Axle left
 		EVDS_Variable_AddFloatAttribute(section,"absolute",	1.0,0);
 		EVDS_Variable_AddFloatAttribute(section,"offset",	-gauge/2+flange_thickness,0);
-		EVDS_Variable_AddFloatAttribute(section,"rx",		axle_diameter/2,0);
+		EVDS_Variable_AddFloatAttribute(section,"r",		axle_diameter/2,0);
 		EVDS_Variable_AddNested(geometry,"geometry.cross_sections",EVDS_VARIABLE_TYPE_NESTED,&section); //Axle right
 		EVDS_Variable_AddFloatAttribute(section,"absolute",	1.0,0);
 		EVDS_Variable_AddFloatAttribute(section,"offset",	gauge/2-flange_thickness,0);
-		EVDS_Variable_AddFloatAttribute(section,"rx",		axle_diameter/2,0);
+		EVDS_Variable_AddFloatAttribute(section,"r",		axle_diameter/2,0);
 
 
 		//Wheel flange right
 		EVDS_Variable_AddNested(geometry,"geometry.cross_sections",EVDS_VARIABLE_TYPE_NESTED,&section); //Flange inner rim
 		EVDS_Variable_AddFloatAttribute(section,"absolute",	1.0,0);
 		EVDS_Variable_AddFloatAttribute(section,"offset",	gauge/2-flange_thickness,0);
-		EVDS_Variable_AddFloatAttribute(section,"rx",		outer_diameter/2+flange_height,0);
+		EVDS_Variable_AddFloatAttribute(section,"r",		outer_diameter/2+flange_height,0);
 		EVDS_Variable_AddNested(geometry,"geometry.cross_sections",EVDS_VARIABLE_TYPE_NESTED,&section); //Flange outer rim
 		EVDS_Variable_AddFloatAttribute(section,"absolute",	1.0,0);
 		EVDS_Variable_AddFloatAttribute(section,"offset",	gauge/2,0);
-		EVDS_Variable_AddFloatAttribute(section,"rx",		outer_diameter/2+flange_height,0);
+		EVDS_Variable_AddFloatAttribute(section,"r",		outer_diameter/2+flange_height,0);
 		EVDS_Variable_AddNested(geometry,"geometry.cross_sections",EVDS_VARIABLE_TYPE_NESTED,&section); //Flange base
 		EVDS_Variable_AddFloatAttribute(section,"absolute",	1.0,0);
 		EVDS_Variable_AddFloatAttribute(section,"offset",	gauge/2,0);
-		EVDS_Variable_AddFloatAttribute(section,"rx",		outer_diameter/2+flange_taper,0);
+		EVDS_Variable_AddFloatAttribute(section,"r",		outer_diameter/2+flange_taper,0);
 
 		//Wheel core right
 		EVDS_Variable_AddNested(geometry,"geometry.cross_sections",EVDS_VARIABLE_TYPE_NESTED,&section);
 		EVDS_Variable_AddFloatAttribute(section,"absolute",	1.0,0);
 		EVDS_Variable_AddFloatAttribute(section,"offset",	gauge/2+rim_height,0);
-		EVDS_Variable_AddFloatAttribute(section,"rx",		outer_diameter/2,0);
+		EVDS_Variable_AddFloatAttribute(section,"r",		outer_diameter/2,0);
 		EVDS_Variable_AddNested(geometry,"geometry.cross_sections",EVDS_VARIABLE_TYPE_NESTED,&section);
 		EVDS_Variable_AddFloatAttribute(section,"absolute",	1.0,0);
 		EVDS_Variable_AddFloatAttribute(section,"offset",	gauge/2+rim_height,0);
-		EVDS_Variable_AddFloatAttribute(section,"rx",		inner_diameter/2,0);
+		EVDS_Variable_AddFloatAttribute(section,"r",		inner_diameter/2,0);
 		//EVDS_Variable_AddNested(geometry,"geometry.cross_sections",EVDS_VARIABLE_TYPE_NESTED,&section);
 		//EVDS_Variable_AddFloatAttribute(section,"absolute",	1.0,0);
 		//EVDS_Variable_AddFloatAttribute(section,"offset",	gauge/2+disk_thickness,0);
-		//EVDS_Variable_AddFloatAttribute(section,"rx",		inner_diameter/2,0);
+		//EVDS_Variable_AddFloatAttribute(section,"r",		inner_diameter/2,0);
 
 		//Wheel hub right
 		EVDS_Variable_AddNested(geometry,"geometry.cross_sections",EVDS_VARIABLE_TYPE_NESTED,&section);
 		EVDS_Variable_AddFloatAttribute(section,"absolute",	1.0,0);
 		EVDS_Variable_AddFloatAttribute(section,"offset",	gauge/2+disk_thickness,0);
-		EVDS_Variable_AddFloatAttribute(section,"rx",		hub_diameter/2,0);
+		EVDS_Variable_AddFloatAttribute(section,"r",		hub_diameter/2,0);
 		EVDS_Variable_AddFloatAttribute(section,"tangent.radial.neg",fabs(hub_diameter-inner_diameter)/2,0);
 		EVDS_Variable_AddNested(geometry,"geometry.cross_sections",EVDS_VARIABLE_TYPE_NESTED,&section);
 		EVDS_Variable_AddFloatAttribute(section,"absolute",	1.0,0);
 		EVDS_Variable_AddFloatAttribute(section,"offset",	gauge/2+hub_height,0);
-		EVDS_Variable_AddFloatAttribute(section,"rx",		hub_diameter/2,0);
+		EVDS_Variable_AddFloatAttribute(section,"r",		hub_diameter/2,0);
 		EVDS_Variable_AddNested(geometry,"geometry.cross_sections",EVDS_VARIABLE_TYPE_NESTED,&section);
 		EVDS_Variable_AddFloatAttribute(section,"absolute",	1.0,0);
 		EVDS_Variable_AddFloatAttribute(section,"offset",	gauge/2+hub_height,0);
-		EVDS_Variable_AddFloatAttribute(section,"rx",		0,0);
+		EVDS_Variable_AddFloatAttribute(section,"r",		0,0);
 		
 	}
 	return EVDS_CLAIM_OBJECT;
