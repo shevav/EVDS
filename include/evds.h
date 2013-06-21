@@ -103,6 +103,7 @@ typedef struct EVDS_SOLVER_TAG EVDS_SOLVER;
 typedef struct EVDS_OBJECT_LOADEX_TAG EVDS_OBJECT_LOADEX;
 typedef struct EVDS_OBJECT_SAVEEX_TAG EVDS_OBJECT_SAVEEX;
 typedef struct EVDS_MESH_GENERATEEX_TAG EVDS_MESH_GENERATEEX;
+typedef struct EVDS_MESH_INTERNAL_TAG EVDS_MESH_INTERNAL;
 
 
 
@@ -651,6 +652,7 @@ typedef struct EVDS_MESH_VERTEX_INFO_TAG {
 ////////////////////////////////////////////////////////////////////////////////
 typedef struct EVDS_MESH_TAG {
 	EVDS_OBJECT* object;					///< Object that this mesh represents
+	EVDS_MESH_INTERNAL* internal;			///< Internal data used by EVDS_Mesh_GenerateEx()
 	EVDS_MESH_TRIANGLE* triangles;			///< Array of triangles
 	EVDS_MESH_INDEX* indices;				///< Array of indices
 	EVDS_MESH_VECTOR* normals;				///< Array of normals
@@ -664,11 +666,6 @@ typedef struct EVDS_MESH_TAG {
 	float total_area;						///< Total area of the mesh
 	EVDS_MESH_VECTOR bbox_min;				///< Minimum set of coordinates for bounding box
 	EVDS_MESH_VECTOR bbox_max;				///< Maximum set of coordinates for bounding box
-
-	int max_smoothing_group;				///< Maximum index of a smoothing group
-	int num_triangles_allocated;			///< Total number of triangles allocated
-	int num_indices_allocated;				///< Total number of indices allocated
-	int num_vertices_allocated;				///< Total number of vertices allocated
 } EVDS_MESH;
 
 

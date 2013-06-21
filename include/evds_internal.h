@@ -437,6 +437,26 @@ struct EVDS_SYSTEM_TAG {
 
 
 ////////////////////////////////////////////////////////////////////////////////
+/// @ingroup EVDS_MESH
+/// @struct EVDS_MESH_INTERNAL
+/// @brief Internal data used by EVDS_Mesh_GenerateEx() during mesh generation.
+///
+/// This data structure is used internally by the mesh tessellator to hold the intermediate
+/// tessellation results, various temporary information.
+////////////////////////////////////////////////////////////////////////////////
+#ifndef DOXYGEN_INTERNAL_STRUCTS
+struct EVDS_MESH_INTERNAL_TAG {
+	int max_smoothing_group;				///< Maximum index of a smoothing group
+	int num_triangles_allocated;			///< Total number of triangles allocated
+	int num_indices_allocated;				///< Total number of indices allocated
+	int num_vertices_allocated;				///< Total number of vertices allocated
+};
+#endif
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////
 // Internal API
 ////////////////////////////////////////////////////////////////////////////////
 // Destroy object internal data
