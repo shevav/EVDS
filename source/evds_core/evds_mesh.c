@@ -246,10 +246,10 @@ int EVDS_InternalMesh_AddTriangle(EVDS_MESH* mesh, EVDS_MESH_GENERATEEX* info,
 	if (v1i->smoothing_group != smoothing_group) {
 		v1 = EVDS_InternalMesh_AddVertex(mesh,info,v1d,cross_section,smoothing_group);
 	}
-	if (v1i->smoothing_group != smoothing_group) {
+	if (v2i->smoothing_group != smoothing_group) {
 		v2 = EVDS_InternalMesh_AddVertex(mesh,info,v2d,cross_section,smoothing_group);
 	}
-	if (v1i->smoothing_group != smoothing_group) {
+	if (v3i->smoothing_group != smoothing_group) {
 		v3 = EVDS_InternalMesh_AddVertex(mesh,info,v3d,cross_section,smoothing_group);
 	}
 

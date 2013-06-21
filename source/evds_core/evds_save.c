@@ -273,6 +273,7 @@ int EVDS_Object_SaveEx(EVDS_OBJECT* object, const char* filename, EVDS_OBJECT_SA
 
 	EVDS_ERRCHECK(SIMC_XML_Create(&doc));
 	EVDS_ERRCHECK(SIMC_XML_AddRootElement(doc,&root,"EVDS"));
+	EVDS_ERRCHECK(SIMC_XML_AddAttributeDouble(doc,root,"version",EVDS_VERSION));
 	EVDS_ERRCHECK(EVDS_Internal_SaveObject(object,doc,root,info));
 	if (!filename) {
 		EVDS_ERRCHECK(SIMC_XML_SaveString(doc,&info->description));
