@@ -67,6 +67,8 @@ project "evds"
            "../source/evds_common/**",
            "../include/**" }
    defines { "EVDS_LIBRARY", "SIMC_LIBRARY" }
+   configuration { "*Dynamic*" }
+      links { "simc" }
 
 
 --------------------------------------------------------------------------------
