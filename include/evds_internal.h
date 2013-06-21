@@ -446,15 +446,11 @@ struct EVDS_SYSTEM_TAG {
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef DOXYGEN_INTERNAL_STRUCTS
 struct EVDS_MESH_INTERNAL_TAG {
-	SIMC_STORAGEARRAY* vertices;
-	SIMC_STORAGEARRAY* indices;
-	SIMC_STORAGEARRAY* vertex_info;
-	SIMC_STORAGEARRAY* triangles;
-
+	SIMC_STORAGEARRAY* vertices;			///< Temporary storage for vertices
+	SIMC_STORAGEARRAY* indices;				///< Temporary storage for indices
+	SIMC_STORAGEARRAY* vertex_info;			///< Temporary storage for vertex information
+	SIMC_STORAGEARRAY* triangles;			///< Temporary storage for triangles
 	int max_smoothing_group;				///< Maximum index of a smoothing group
-	int num_triangles_allocated;			///< Total number of triangles allocated
-	int num_indices_allocated;				///< Total number of indices allocated
-	int num_vertices_allocated;				///< Total number of vertices allocated
 };
 #endif
 

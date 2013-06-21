@@ -742,7 +742,7 @@ int EVDS_Mesh_GenerateEx(EVDS_OBJECT* object, EVDS_MESH** p_mesh, EVDS_MESH_GENE
 		dx = bounding_mesh->bbox_max.x - bounding_mesh->bbox_min.x;
 		dy = bounding_mesh->bbox_max.y - bounding_mesh->bbox_min.y;
 		dz = bounding_mesh->bbox_max.z - bounding_mesh->bbox_min.z;
-		est = sqrt(dx*dx+dy*dy+dz*dz);
+		est = sqrtf(dx*dx+dy*dy+dz*dz);
 
 		//Calculate resolution from number of divisions
 		info->resolution = est / info->resolution;
@@ -775,10 +775,10 @@ int EVDS_Mesh_GenerateEx(EVDS_OBJECT* object, EVDS_MESH** p_mesh, EVDS_MESH_GENE
 	EVDS_InternalMesh_CrossSections(object,mesh,info);
 
 	//Finalize data
-	mesh->triangles = (EVDS_MESH_TRIANGLE*)SIMC_StorageArray_GetAll(mesh->internal->triangles);
-	mesh->indices = (EVDS_MESH_INDEX*)SIMC_StorageArray_GetAll(mesh->internal->indices);
-	mesh->vertices = (EVDS_MESH_VECTOR*)SIMC_StorageArray_GetAll(mesh->internal->vertices);
-	mesh->vertex_info = (EVDS_MESH_VERTEX_INFO*)SIMC_StorageArray_GetAll(mesh->internal->vertex_info);
+	mesh->triangles = (EVDS_MESH_TRIANGLE*)SIMC_StorageArray_GetAllAndDestroy(mesh->internal->triangles);
+	mesh->indices = (EVDS_MESH_INDEX*)SIMC_StorageArray_GetAllAndDestroy(mesh->internal->indices);
+	mesh->vertices = (EVDS_MESH_VECTOR*)SIMC_StorageArray_GetAllAndDestroy(mesh->internal->vertices);
+	mesh->vertex_info = (EVDS_MESH_VERTEX_INFO*)SIMC_StorageArray_GetAllAndDestroy(mesh->internal->vertex_info);
 	EVDS_InternalMesh_FinishTriangles(mesh,info);
 	EVDS_InternalMesh_FinishVertices(mesh,info);
 
