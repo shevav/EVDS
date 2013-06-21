@@ -409,8 +409,11 @@ int EVDS_Internal_ParseFile(EVDS_OBJECT* parent, SIMC_XML_DOCUMENT* doc,
 							EVDS_OBJECT** p_object, EVDS_OBJECT_LOADEX* info) {
 	SIMC_XML_ELEMENT* root;
 	SIMC_XML_ELEMENT* element;
+	int version;
 
 	EVDS_ERRCHECK(SIMC_XML_GetRootElement(doc,&root,"EVDS"));
+	EVDS_ERRCHECK(SIMC_XML_GetAttributeInt(doc,root,"version",&version));
+	if (info) info->version = version;
 	if (root) {
 		//Load a single object
 		EVDS_ERRCHECK(EVDS_Internal_LoadFile(parent,doc,root,p_object,info));

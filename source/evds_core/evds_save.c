@@ -228,6 +228,7 @@ int EVDS_Object_SaveToFile(EVDS_OBJECT* object, const char* filename) {
 
 	EVDS_ERRCHECK(SIMC_XML_Create(&doc));
 	EVDS_ERRCHECK(SIMC_XML_AddRootElement(doc,&root,"EVDS"));
+	EVDS_ERRCHECK(SIMC_XML_AddAttributeDouble(doc,root,"version",EVDS_VERSION));
 	EVDS_ERRCHECK(EVDS_Internal_SaveObject(object,doc,root,0));
 	EVDS_ERRCHECK(SIMC_XML_Save(doc,filename));
 	EVDS_ERRCHECK(SIMC_XML_Close(doc));
@@ -246,6 +247,7 @@ int EVDS_Object_SaveToString(EVDS_OBJECT* object, char** description) {
 
 	EVDS_ERRCHECK(SIMC_XML_Create(&doc));
 	EVDS_ERRCHECK(SIMC_XML_AddRootElement(doc,&root,"EVDS"));
+	EVDS_ERRCHECK(SIMC_XML_AddAttributeDouble(doc,root,"version",EVDS_VERSION));
 	EVDS_ERRCHECK(EVDS_Internal_SaveObject(object,doc,root,0));
 	EVDS_ERRCHECK(SIMC_XML_SaveString(doc,description));
 	EVDS_ERRCHECK(SIMC_XML_Close(doc));

@@ -447,6 +447,7 @@ struct EVDS_OBJECT_LOADEX {
 	EVDS_Callback_LoadObject*	OnLoadObject;	///< Called for every loaded object
 	EVDS_Callback_SyntaxError*	OnSyntaxError;	///< Called when a syntax error occurs
 
+	int							version;		///< Version of loaded file is written here
 	int							flags;			///< Flags for loading
 	char*						description;	///< Description, from which data must be loaded
 	EVDS_OBJECT*				firstObject;	///< First loaded object (use OnLoadObject to get pointers for all objects)
