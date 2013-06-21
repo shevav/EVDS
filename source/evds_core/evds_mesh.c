@@ -758,6 +758,7 @@ int EVDS_Mesh_GenerateEx(EVDS_OBJECT* object, EVDS_MESH** p_mesh, EVDS_MESH_GENE
 
 	//Create internal mesh information
 	mesh->internal = (EVDS_MESH_INTERNAL*)malloc(sizeof(EVDS_MESH_INTERNAL));
+	mesh->internal->max_smoothing_group = 0;
 	SIMC_StorageArray_Create(&mesh->internal->vertices,sizeof(EVDS_MESH_VECTOR));
 	SIMC_StorageArray_Create(&mesh->internal->vertex_info,sizeof(EVDS_MESH_VERTEX_INFO));
 	SIMC_StorageArray_Create(&mesh->internal->indices,sizeof(EVDS_MESH_INDEX));
