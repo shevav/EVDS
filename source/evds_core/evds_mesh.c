@@ -155,20 +155,10 @@ void EVDS_InternalMesh_GetPoint(EVDS_INTERNALMESH_ATTRIBUTES* attributes, float 
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_InternalMesh_AddVertex(EVDS_MESH* mesh, EVDS_MESH_GENERATEEX* info, EVDS_MESH_VECTOR* v, 
 								int cross_section, int smoothing_group) {
-	int index; 
-
-	//Check if storage must be grown
-	if (mesh->num_vertices == mesh->internal->num_vertices_allocated) {
-		if (mesh->internal->num_vertices_allocated < 16384) {
-			mesh->internal->num_vertices_allocated *= 2;
-		} else {
-			mesh->internal->num_vertices_allocated += 16384;
-		}
-		mesh->vertices = (EVDS_MESH_VECTOR*)realloc(mesh->vertices,sizeof(EVDS_MESH_VECTOR)*mesh->internal->num_vertices_allocated);
-		if (!(info->flags & EVDS_MESH_SKIP_VERTEX_INFO)) {
-			mesh->vertex_info = (EVDS_MESH_VERTEX_INFO*)realloc(mesh->vertex_info,sizeof(EVDS_MESH_VERTEX_INFO)*mesh->internal->num_vertices_allocated);
-		}
-	}
+	//Add new vertex
+	EVDS_MESH_VECTOR* vertex = (EVDS_MESH_VECTOR*)SIMC_StorageArray_Add(mesh->internal->vertices);
+	EVDS_MESH_VERTEX_INFO* vertex_info = (EVDS_MESH_VERTEX_INFO*)SIMC_StorageArray_Add(mesh->internal->vertex_info);
+	int v_idx = mesh->num_vertices++;
 
 	//Update smoothing groups counter
 	if (smoothing_group > mesh->internal->max_smoothing_group) mesh->internal->max_smoothing_group = smoothing_group;
@@ -182,18 +172,16 @@ int EVDS_InternalMesh_AddVertex(EVDS_MESH* mesh, EVDS_MESH_GENERATEEX* info, EVD
 	if (v->z > mesh->bbox_max.z) mesh->bbox_max.z = v->z;
 
 	//Store vertex and return new index
-	index = mesh->num_vertices;
-	memcpy(&mesh->vertices[index],v,sizeof(EVDS_MESH_VECTOR));
+	memcpy(vertex,v,sizeof(EVDS_MESH_VECTOR));
 	if (!(info->flags & EVDS_MESH_SKIP_VERTEX_INFO)) {
-		mesh->vertex_info[index].num_allocated = 16;
-		mesh->vertex_info[index].num_triangles = 0;
-		mesh->vertex_info[index].triangles = (EVDS_MESH_INDEX*)malloc(sizeof(EVDS_MESH_INDEX)*mesh->vertex_info[index].num_allocated);
-		mesh->vertex_info[index].tri_index = (EVDS_MESH_INDEX*)malloc(sizeof(EVDS_MESH_INDEX)*mesh->vertex_info[index].num_allocated);
-		mesh->vertex_info[index].cross_section = cross_section;
-		mesh->vertex_info[index].smoothing_group = smoothing_group;
+		vertex_info->num_allocated = 16;
+		vertex_info->num_triangles = 0;
+		vertex_info->triangles = (EVDS_MESH_INDEX*)malloc(sizeof(EVDS_MESH_INDEX)*vertex_info->num_allocated);
+		vertex_info->tri_index = (EVDS_MESH_INDEX*)malloc(sizeof(EVDS_MESH_INDEX)*vertex_info->num_allocated);
+		vertex_info->cross_section = cross_section;
+		vertex_info->smoothing_group = smoothing_group;
 	}
-	mesh->num_vertices++;
-	return index;
+	return v_idx;
 }
 
 
@@ -202,43 +190,35 @@ int EVDS_InternalMesh_AddVertex(EVDS_MESH* mesh, EVDS_MESH_GENERATEEX* info, EVD
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_InternalMesh_AddIndex(EVDS_MESH* mesh, EVDS_MESH_GENERATEEX* info, 
 							   EVDS_MESH_INDEX tri, EVDS_MESH_INDEX v_id, EVDS_MESH_INDEX v) {
-	int index,v_index; 
-
-	//Check if storage must be grown
-	if (mesh->num_indices == mesh->internal->num_indices_allocated) {
-		if (mesh->internal->num_indices_allocated < 16384) {
-			mesh->internal->num_indices_allocated *= 2;
-		} else {
-			mesh->internal->num_indices_allocated += 16384;
-		}
-		mesh->indices = (EVDS_MESH_INDEX*)realloc(mesh->indices,sizeof(EVDS_MESH_INDEX)*mesh->internal->num_indices_allocated);
-	}
+	//Add new index
+	EVDS_MESH_INDEX* index = (EVDS_MESH_INDEX*)SIMC_StorageArray_Add(mesh->internal->indices);
+	int i_idx = mesh->num_indices++;
 
 	//Store vertex and return new index
-	index = mesh->num_indices;
-	mesh->indices[index] = v;	
-	mesh->num_indices++;
+	*index = v;
 
 	//Add this triangle to vertex
-	if (!(info->flags & EVDS_MESH_SKIP_VERTEX_INFO)) {
-		if (mesh->vertex_info[v].num_triangles == mesh->vertex_info[v].num_allocated) {
-			if (mesh->vertex_info[v].num_allocated < 64) {
-				mesh->vertex_info[v].num_allocated *= 2;
+	if (!(info->flags & EVDS_MESH_SKIP_VERTEX_INFO)) { //FIXME
+		int v_index;
+		EVDS_MESH_VERTEX_INFO* vertex_info = SIMC_StorageArray_Get(mesh->internal->vertex_info,v);
+		if (vertex_info->num_triangles == vertex_info->num_allocated) {
+			if (vertex_info->num_allocated < 64) {
+				vertex_info->num_allocated *= 2;
 			} else {
-				mesh->vertex_info[v].num_allocated += 64;
+				vertex_info->num_allocated += 64;
 			}
 
-			mesh->vertex_info[v].triangles = (EVDS_MESH_INDEX*)realloc(mesh->vertex_info[v].triangles,
-				sizeof(EVDS_MESH_INDEX)*mesh->vertex_info[v].num_allocated);
-			mesh->vertex_info[v].tri_index = (EVDS_MESH_INDEX*)realloc(mesh->vertex_info[v].tri_index,
-				sizeof(EVDS_MESH_INDEX)*mesh->vertex_info[v].num_allocated);
+			vertex_info->triangles = (EVDS_MESH_INDEX*)realloc(vertex_info->triangles,
+				sizeof(EVDS_MESH_INDEX)*vertex_info->num_allocated);
+			vertex_info->tri_index = (EVDS_MESH_INDEX*)realloc(vertex_info->tri_index,
+				sizeof(EVDS_MESH_INDEX)*vertex_info->num_allocated);
 		}
-		v_index = mesh->vertex_info[v].num_triangles;
-		mesh->vertex_info[v].triangles[v_index] = tri;
-		mesh->vertex_info[v].tri_index[v_index] = v_id;
-		mesh->vertex_info[v].num_triangles++;
+		v_index = vertex_info->num_triangles;
+		vertex_info->triangles[v_index] = tri;
+		vertex_info->tri_index[v_index] = v_id;
+		vertex_info->num_triangles++;
 	}
-	return index;
+	return i_idx;
 }
 
 
@@ -248,57 +228,54 @@ int EVDS_InternalMesh_AddIndex(EVDS_MESH* mesh, EVDS_MESH_GENERATEEX* info,
 int EVDS_InternalMesh_AddTriangle(EVDS_MESH* mesh, EVDS_MESH_GENERATEEX* info, 
 								  EVDS_MESH_INDEX* pv1, EVDS_MESH_INDEX* pv2, EVDS_MESH_INDEX* pv3,
 								  int cross_section, int smoothing_group) {
-	int index;
 	int v1 = *pv1;
 	int v2 = *pv2;
 	int v3 = *pv3;
+	EVDS_MESH_VERTEX_INFO* v1i = (EVDS_MESH_VERTEX_INFO*)SIMC_StorageArray_Get(mesh->internal->vertex_info,v1);
+	EVDS_MESH_VERTEX_INFO* v2i = (EVDS_MESH_VERTEX_INFO*)SIMC_StorageArray_Get(mesh->internal->vertex_info,v2);
+	EVDS_MESH_VERTEX_INFO* v3i = (EVDS_MESH_VERTEX_INFO*)SIMC_StorageArray_Get(mesh->internal->vertex_info,v3);
+	EVDS_MESH_VECTOR* v1d = (EVDS_MESH_VECTOR*)SIMC_StorageArray_Get(mesh->internal->vertices,v1);
+	EVDS_MESH_VECTOR* v2d = (EVDS_MESH_VECTOR*)SIMC_StorageArray_Get(mesh->internal->vertices,v2);
+	EVDS_MESH_VECTOR* v3d = (EVDS_MESH_VECTOR*)SIMC_StorageArray_Get(mesh->internal->vertices,v3);
 
-	//Check if storage must be grown
-	if (mesh->num_triangles == mesh->internal->num_triangles_allocated) {
-		if (mesh->internal->num_triangles_allocated < 16384) {
-			mesh->internal->num_triangles_allocated *= 2;
-		} else {
-			mesh->internal->num_triangles_allocated += 16384;
-		}
-		mesh->triangles = (EVDS_MESH_TRIANGLE*)realloc(mesh->triangles,sizeof(EVDS_MESH_TRIANGLE)*mesh->internal->num_triangles_allocated);
-	}
+	//Add new triangle
+	EVDS_MESH_TRIANGLE* triangle = (EVDS_MESH_TRIANGLE*)SIMC_StorageArray_Add(mesh->internal->triangles);
+	int tri_idx = mesh->num_triangles++;
 
 	//Update smoothing groups counter
 	if (smoothing_group > mesh->internal->max_smoothing_group) mesh->internal->max_smoothing_group = smoothing_group;
 
-	//Store vertex and return new index
-	index = mesh->num_triangles;
-	memcpy(&mesh->triangles[index].vertex[0],&mesh->vertices[v1],sizeof(EVDS_MESH_VECTOR));
-	memcpy(&mesh->triangles[index].vertex[1],&mesh->vertices[v2],sizeof(EVDS_MESH_VECTOR));
-	memcpy(&mesh->triangles[index].vertex[2],&mesh->vertices[v3],sizeof(EVDS_MESH_VECTOR));
+	//Write vertex data
+	memcpy(&triangle->vertex[0],v1d,sizeof(EVDS_MESH_VECTOR));
+	memcpy(&triangle->vertex[1],v2d,sizeof(EVDS_MESH_VECTOR));
+	memcpy(&triangle->vertex[2],v3d,sizeof(EVDS_MESH_VECTOR));
 
 	//Make sure all vertices are of same smoothing group, otherwise create additional ones
-	if (mesh->vertex_info[v1].smoothing_group != smoothing_group) {
-		v1 = EVDS_InternalMesh_AddVertex(mesh,info,&mesh->triangles[index].vertex[0],cross_section,smoothing_group);
+	if (v1i->smoothing_group != smoothing_group) {
+		v1 = EVDS_InternalMesh_AddVertex(mesh,info,v1d,cross_section,smoothing_group);
 	}
-	if (mesh->vertex_info[v2].smoothing_group != smoothing_group) {
-		v2 = EVDS_InternalMesh_AddVertex(mesh,info,&mesh->triangles[index].vertex[1],cross_section,smoothing_group);
+	if (v1i->smoothing_group != smoothing_group) {
+		v2 = EVDS_InternalMesh_AddVertex(mesh,info,v2d,cross_section,smoothing_group);
 	}
-	if (mesh->vertex_info[v3].smoothing_group != smoothing_group) {
-		v3 = EVDS_InternalMesh_AddVertex(mesh,info,&mesh->triangles[index].vertex[2],cross_section,smoothing_group);
+	if (v1i->smoothing_group != smoothing_group) {
+		v3 = EVDS_InternalMesh_AddVertex(mesh,info,v3d,cross_section,smoothing_group);
 	}
 
 	//Store new (possibly modified) indices
-	mesh->triangles[index].indices[0] = v1;
-	mesh->triangles[index].indices[1] = v2;
-	mesh->triangles[index].indices[2] = v3;
-	mesh->triangles[index].cross_section = cross_section;
-	mesh->triangles[index].smoothing_group = smoothing_group;
-	mesh->num_triangles++;
+	triangle->indices[0] = v1;
+	triangle->indices[1] = v2;
+	triangle->indices[2] = v3;
+	triangle->cross_section = cross_section;
+	triangle->smoothing_group = smoothing_group;
 
 	//Add to array of indices
-	EVDS_InternalMesh_AddIndex(mesh,info,index,0,v1);
-	EVDS_InternalMesh_AddIndex(mesh,info,index,1,v2);
-	EVDS_InternalMesh_AddIndex(mesh,info,index,2,v3);
+	EVDS_InternalMesh_AddIndex(mesh,info,tri_idx,0,v1);
+	EVDS_InternalMesh_AddIndex(mesh,info,tri_idx,1,v2);
+	EVDS_InternalMesh_AddIndex(mesh,info,tri_idx,2,v3);
 	*pv1 = v1;
 	*pv2 = v2;
 	*pv3 = v3;
-	return index;
+	return tri_idx;
 }
 
 
@@ -789,24 +766,19 @@ int EVDS_Mesh_GenerateEx(EVDS_OBJECT* object, EVDS_MESH** p_mesh, EVDS_MESH_GENE
 
 	//Create internal mesh information
 	mesh->internal = (EVDS_MESH_INTERNAL*)malloc(sizeof(EVDS_MESH_INTERNAL));
-
-	//Allocate lists (FIXME: EVDS_ERROR_MEMORY checks)
-	mesh->internal->num_triangles_allocated = 128;//65536; //128;
-	mesh->triangles = (EVDS_MESH_TRIANGLE*)malloc(sizeof(EVDS_MESH_TRIANGLE)*mesh->internal->num_triangles_allocated);
-	mesh->internal->num_indices_allocated = mesh->internal->num_triangles_allocated*3;
-	mesh->indices = (EVDS_MESH_INDEX*)malloc(sizeof(EVDS_MESH_INDEX)*mesh->internal->num_indices_allocated);
-	mesh->internal->num_vertices_allocated = mesh->internal->num_triangles_allocated*3;
-	mesh->vertices = (EVDS_MESH_VECTOR*)malloc(sizeof(EVDS_MESH_VECTOR)*mesh->internal->num_vertices_allocated);
-	mesh->vertex_info = (EVDS_MESH_VERTEX_INFO*)malloc(sizeof(EVDS_MESH_VERTEX_INFO)*mesh->internal->num_vertices_allocated);
-
-	//Start counting smoothing groups
-	mesh->internal->max_smoothing_group = 0;
-	mesh->num_smoothing_groups = 0;
+	SIMC_StorageArray_Create(&mesh->internal->vertices,sizeof(EVDS_MESH_VECTOR));
+	SIMC_StorageArray_Create(&mesh->internal->vertex_info,sizeof(EVDS_MESH_VERTEX_INFO));
+	SIMC_StorageArray_Create(&mesh->internal->indices,sizeof(EVDS_MESH_INDEX));
+	SIMC_StorageArray_Create(&mesh->internal->triangles,sizeof(EVDS_MESH_TRIANGLE));
 
 	//Generate mesh for this object
 	EVDS_InternalMesh_CrossSections(object,mesh,info);
 
 	//Finalize data
+	mesh->triangles = (EVDS_MESH_TRIANGLE*)SIMC_StorageArray_GetAll(mesh->internal->triangles);
+	mesh->indices = (EVDS_MESH_INDEX*)SIMC_StorageArray_GetAll(mesh->internal->indices);
+	mesh->vertices = (EVDS_MESH_VECTOR*)SIMC_StorageArray_GetAll(mesh->internal->vertices);
+	mesh->vertex_info = (EVDS_MESH_VERTEX_INFO*)SIMC_StorageArray_GetAll(mesh->internal->vertex_info);
 	EVDS_InternalMesh_FinishTriangles(mesh,info);
 	EVDS_InternalMesh_FinishVertices(mesh,info);
 
@@ -826,12 +798,6 @@ int EVDS_Mesh_GenerateEx(EVDS_OBJECT* object, EVDS_MESH** p_mesh, EVDS_MESH_GENE
 		mesh->bbox_min.z = 0.0f;
 		mesh->bbox_max.z = 0.0f;
 	}
-	
-	//Optimize data
-	mesh->triangles = (EVDS_MESH_TRIANGLE*)realloc(mesh->triangles,sizeof(EVDS_MESH_TRIANGLE)*mesh->num_triangles);
-	mesh->indices = (EVDS_MESH_INDEX*)realloc(mesh->indices,sizeof(EVDS_MESH_INDEX)*mesh->num_indices);
-	mesh->vertices = (EVDS_MESH_VECTOR*)realloc(mesh->vertices,sizeof(EVDS_MESH_VECTOR)*mesh->num_vertices);
-	mesh->vertex_info = (EVDS_MESH_VERTEX_INFO*)realloc(mesh->vertex_info,sizeof(EVDS_MESH_VERTEX_INFO)*mesh->num_vertices);
 	return EVDS_OK;
 }
 

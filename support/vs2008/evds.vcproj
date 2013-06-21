@@ -68,7 +68,6 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				AdditionalDependencies="..\..\bin\simcd32.lib"
 				OutputFile="$(OutDir)\evdsd32.lib"
 				AdditionalOptions="/MACHINE:X86"
 			/>
@@ -148,7 +147,6 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				AdditionalDependencies="..\..\bin\simcd.lib"
 				OutputFile="$(OutDir)\evdsd.lib"
 				AdditionalOptions="/MACHINE:X64"
 			/>
@@ -226,7 +224,6 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				AdditionalDependencies="..\..\bin\simc32.lib"
 				OutputFile="$(OutDir)\evds32.lib"
 				AdditionalOptions="/MACHINE:X86"
 			/>
@@ -305,7 +302,6 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				AdditionalDependencies="..\..\bin\simc.lib"
 				OutputFile="$(OutDir)\evds.lib"
 				AdditionalOptions="/MACHINE:X64"
 			/>
@@ -728,7 +724,6 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				AdditionalDependencies="..\..\bin\simc_std32.lib"
 				OutputFile="$(OutDir)\evds_std32.lib"
 				AdditionalOptions="/MACHINE:X86"
 			/>
@@ -808,7 +803,6 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				AdditionalDependencies="..\..\bin\simc_std.lib"
 				OutputFile="$(OutDir)\evds_std.lib"
 				AdditionalOptions="/MACHINE:X64"
 			/>
@@ -886,7 +880,6 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				AdditionalDependencies="..\..\bin\simc_st32.lib"
 				OutputFile="$(OutDir)\evds_st32.lib"
 				AdditionalOptions="/MACHINE:X86"
 			/>
@@ -965,7 +958,6 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				AdditionalDependencies="..\..\bin\simc_st.lib"
 				OutputFile="$(OutDir)\evds_st.lib"
 				AdditionalOptions="/MACHINE:X64"
 			/>
@@ -1364,6 +1356,14 @@
 			</File>
 			<File
 				RelativePath="..\..\source\evds_common\evds_fueltank.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\source\evds_common\evds_gimbal.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\source\evds_common\evds_planet.c"
 				>
 			</File>
 			<File
