@@ -213,13 +213,13 @@ int EVDS_System_Destroy(EVDS_SYSTEM* system)
 	SIMC_LIST_ENTRY* entry;
 	if (!system) return EVDS_ERROR_BAD_PARAMETER;
 
+	//Remove objects pending for deleting
+	EVDS_System_CleanupObjects(system);
+
 	//Destroy all objects
 #ifndef EVDS_SINGLETHREADED
 	SIMC_Lock_Enter(system->cleanup_working); //Make sure cleanup is not running
 #endif
-
-	//Remove objects pending for deleting
-	EVDS_System_CleanupObjects(system);
 
 	//Deinitialize all solvers
 	entry = system->solvers->first;
