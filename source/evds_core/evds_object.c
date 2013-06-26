@@ -1325,6 +1325,9 @@ int EVDS_Object_SetType(EVDS_OBJECT* object, const char* type) {
 /// The name must be unique between all children under the same parent. If the name is not unique,
 /// the object will be automatically renamed after it's initialized.
 ///
+/// The objects name must not contain the following special characters:
+/// `*`, `/`, `[`, `]`.
+///
 /// @param[in] object Pointer to object
 /// @param[in] name Name (null-terminated string, only first 256 characters are taken)
 ///
@@ -1338,6 +1341,9 @@ int EVDS_Object_SetType(EVDS_OBJECT* object, const char* type) {
 ///  (or thread that has created the object before initializer was called)
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_Object_SetName(EVDS_OBJECT* object, const char* name) {
+	int count;
+	char clean_name[256];
+	char* clean_name_ptr;
 	if (!object) return EVDS_ERROR_BAD_PARAMETER;
 	if (!name) return EVDS_ERROR_BAD_PARAMETER;
 	if (object->initialized) return EVDS_ERROR_BAD_STATE;
@@ -1347,7 +1353,26 @@ int EVDS_Object_SetName(EVDS_OBJECT* object, const char* name) {
 		(object->initialize_thread != SIMC_Thread_GetUniqueID())) return EVDS_ERROR_INTERTHREAD_CALL;
 #endif
 
-	strncpy(object->name,name,256);
+	//Sanitize the name
+	clean_name_ptr = clean_name;
+	for (count = 1; (count <= 256) && (*name); 
+		count++, name++, clean_name_ptr++) {
+		switch (*name) {
+			case '*':
+			case '/':
+			case '[':
+			case ']':
+				*clean_name_ptr = '_';
+			break;
+			default:
+				*clean_name_ptr = *name;
+			break;
+		}
+	}
+	if (count < 256) *clean_name_ptr = '\0';
+
+	//Store it
+	strncpy(object->name,clean_name,256);
 	return EVDS_OK;
 }
 
@@ -1565,6 +1590,9 @@ int EVDS_Object_GetUID(EVDS_OBJECT* object, unsigned int* uid) {
 /// Type must point to a null-terminated string, or a string of 256 characters
 /// (no null termination required then).
 ///
+/// The objects type can end with '*' as a wildcard. This can only be used as the
+/// last character in the input string (all following characters will be ignored).
+///
 /// @param[in] object Pointer to object
 /// @param[in] type Type (null-terminated string, only first 256 characters are compared)
 ///
@@ -1577,7 +1605,9 @@ int EVDS_Object_GetUID(EVDS_OBJECT* object, unsigned int* uid) {
 /// @retval EVDS_ERROR_INTERTHREAD_CALL The function can only be called from thread that is initializing the object 
 ///  (or thread that has created the object before initializer was called)
 ////////////////////////////////////////////////////////////////////////////////
-int EVDS_Object_CheckType(EVDS_OBJECT* object, char* type) {
+int EVDS_Object_CheckType(EVDS_OBJECT* object, const char* type) {
+	int max_count;
+	char* wildcard_pos;
 	if (!object) return EVDS_ERROR_BAD_PARAMETER;
 	if (!type) return EVDS_ERROR_BAD_PARAMETER;
 #ifndef EVDS_SINGLETHREADED
@@ -1587,7 +1617,14 @@ int EVDS_Object_CheckType(EVDS_OBJECT* object, char* type) {
 		(object->initialize_thread != SIMC_Thread_GetUniqueID())) return EVDS_ERROR_INTERTHREAD_CALL;
 #endif
 
-	if (strncmp(type,object->type,256) == 0) {
+	//Determine maximum count to check
+	max_count = 256;
+	wildcard_pos = strchr(type,'*');
+	if (wildcard_pos) max_count = wildcard_pos - type;
+	if (max_count > 256) max_count = 256;
+
+	//Check the object type
+	if (strncmp(type,object->type,max_count) == 0) {
 		return EVDS_OK;
 	} else {
 		return EVDS_ERROR_INVALID_TYPE;
@@ -1883,9 +1920,10 @@ int EVDS_Object_GetParent(EVDS_OBJECT* object, EVDS_OBJECT** p_object) {
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// @brief Get objects parent coordinate system.
+/// @brief Get the objects parent with the given type (can contain wildcards).
 ///
-/// This will be the pointer to first parent propagator (which may be nested inside another propagator).
+/// The returned pointer will be the first object which matches the given type,
+/// to which the passed object or any of the passed objects parents belong.
 ///
 /// This call is not completely thread safe as the parent changes after this API call.
 ///
@@ -1895,71 +1933,22 @@ int EVDS_Object_GetParent(EVDS_OBJECT* object, EVDS_OBJECT** p_object) {
 /// @returns Error code, pointer to coordinate system
 /// @retval EVDS_OK Successfully completed
 /// @retval EVDS_ERROR_BAD_PARAMETER "object" is null
+/// @retval EVDS_ERROR_BAD_PARAMETER "type" is null
 /// @retval EVDS_ERROR_BAD_PARAMETER "p_object" is null
 /// @retval EVDS_ERROR_INVALID_OBJECT Object was destroyed
 ////////////////////////////////////////////////////////////////////////////////
-int EVDS_Object_GetParentCoordinateSystem(EVDS_OBJECT* object, EVDS_OBJECT** p_object) {
+int EVDS_Object_GetParentObjectByType(EVDS_OBJECT* object, const char* type, EVDS_OBJECT** p_object) {
 	EVDS_OBJECT* parent;
 	if (!object) return EVDS_ERROR_BAD_PARAMETER;
+	if (!type) return EVDS_ERROR_BAD_PARAMETER;
 	if (!p_object) return EVDS_ERROR_BAD_PARAMETER;
 #ifndef EVDS_SINGLETHREADED
 	if (object->destroyed) return EVDS_ERROR_INVALID_OBJECT;
 #endif
 
 	parent = object;
-	while (strncmp(parent->type,"propagator",10) != 0) {
+	while (EVDS_Object_CheckType(parent,type) != EVDS_OK) {
 		parent = object->parent;
-	}
-	*p_object = parent;
-	return EVDS_OK;
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-/// @brief Get objects parent inertial coordinate system.
-///
-/// This will be the pointer to first parent propagator, which has zero angular velocity, 
-///  zero linear velocity, and zero accelerations. It may be nested inside another propagator.
-///
-/// This call is not completely thread safe as the parent changes after this API call.
-///
-/// @param[in] object Pointer to object
-/// @param[out] p_object Pointer to coordinate system will be written here
-///
-/// @returns Error code, pointer to coordinate system
-/// @retval EVDS_OK Successfully completed
-/// @retval EVDS_ERROR_BAD_PARAMETER "object" is null
-/// @retval EVDS_ERROR_BAD_PARAMETER "p_object" is null
-/// @retval EVDS_ERROR_INVALID_OBJECT Object was destroyed
-////////////////////////////////////////////////////////////////////////////////
-int EVDS_Object_GetParentInertialCoordinateSystem(EVDS_OBJECT* object, EVDS_OBJECT** p_object) {
-	int system_found = 0;
-	EVDS_OBJECT* parent;
-	if (!object) return EVDS_ERROR_BAD_PARAMETER;
-	if (!p_object) return EVDS_ERROR_BAD_PARAMETER;
-#ifndef EVDS_SINGLETHREADED
-	if (object->destroyed) return EVDS_ERROR_INVALID_OBJECT;
-#endif
-
-	parent = object;
-	while (!system_found) {
-		EVDS_STATE_VECTOR state;
-		EVDS_REAL mag_v,mag_w;
-		while (strncmp(parent->type,"propagator",10) != 0) {
-			parent = object->parent;
-		}
-
-		//Get state vector
-		if (parent) {
-			EVDS_Object_GetStateVector(object,&state);
-			EVDS_Vector_Dot(&mag_v,&state.velocity,&state.velocity);
-			EVDS_Vector_Dot(&mag_w,&state.angular_velocity,&state.angular_velocity);
-	
-			//Check if the frame is inertial
-			if ((fabs(mag_v) > EVDS_EPS) && (fabs(mag_w) > EVDS_EPS)) {
-				system_found = 1;
-			}
-		}
 	}
 	*p_object = parent;
 	return EVDS_OK;

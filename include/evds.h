@@ -1046,7 +1046,7 @@ EVDS_API int EVDS_Object_AddVariable(EVDS_OBJECT* object, const char* name, EVDS
 EVDS_API int EVDS_Object_AddFloatVariable(EVDS_OBJECT* object, const char* name, EVDS_REAL value, EVDS_VARIABLE** p_variable);
 
 // Check object type (only after initialized OR only in initializers thread)
-EVDS_API int EVDS_Object_CheckType(EVDS_OBJECT* object, char* type);
+EVDS_API int EVDS_Object_CheckType(EVDS_OBJECT* object, const char* type);
 // Get object type (only after initialized OR only in initializers thread)
 EVDS_API int EVDS_Object_GetType(EVDS_OBJECT* object, char* type, size_t max_length);
 // Get object name (only after initialized OR only in initializers thread)
@@ -1064,10 +1064,8 @@ EVDS_API int EVDS_Object_GetChildren(EVDS_OBJECT* object, SIMC_LIST** p_list);
 EVDS_API int EVDS_Object_GetAllChildren(EVDS_OBJECT* object, SIMC_LIST** p_list);
 // Get parent
 EVDS_API int EVDS_Object_GetParent(EVDS_OBJECT* object, EVDS_OBJECT** p_object);
-// Get parent coordinate system (any object with type "propagator_*")
-EVDS_API int EVDS_Object_GetParentCoordinateSystem(EVDS_OBJECT* object, EVDS_OBJECT** p_object);
-// Get parent inertial coordinate system (any object with type "propagator_*" and zero velocity)
-EVDS_API int EVDS_Object_GetParentInertialCoordinateSystem(EVDS_OBJECT* object, EVDS_OBJECT** p_object);
+// Get first parent object by given type (can contain wildcards)
+EVDS_API int EVDS_Object_GetParentObjectByType(EVDS_OBJECT* object, const char* type, EVDS_OBJECT** p_object);
 
 // Change parent for the object
 EVDS_API int EVDS_Object_SetParent(EVDS_OBJECT* object, EVDS_OBJECT* new_parent);

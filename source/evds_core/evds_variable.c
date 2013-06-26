@@ -43,7 +43,7 @@ int EVDS_Variable_Create(EVDS_SYSTEM* system, const char* name, EVDS_VARIABLE_TY
 	//Setup the variable
 	variable->system = system;
 	variable->type = type;
-	strncpy(variable->name,name,64);
+	EVDS_Variable_SetName(variable,name);
 
 	//Initialize to the given type
 	switch (type) {
@@ -600,7 +600,10 @@ int EVDS_Variable_GetName(EVDS_VARIABLE* variable, char* name, size_t max_length
 /// @brief Sets variables name. @evds_init_only
 ///
 /// Name must be a null-terminated C string, or a string of 256 characters (no null
-/// termination is required then)
+/// termination is required then).
+///
+/// The variables name must not contain the following special characters:
+/// `*`, `/`, `[`, `]`.
 ///
 /// @param[in] variable Pointer to variable
 /// @param[in] name Name (null-terminated string, only first 256 characters are taken)
@@ -615,6 +618,9 @@ int EVDS_Variable_GetName(EVDS_VARIABLE* variable, char* name, size_t max_length
 ///  (or thread that has created the object before initializer was called)
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_Variable_SetName(EVDS_VARIABLE* variable, const char* name) {
+	int count;
+	char clean_name[256];
+	char* clean_name_ptr;
 	if (!variable) return EVDS_ERROR_BAD_PARAMETER;
 	if (!name) return EVDS_ERROR_BAD_PARAMETER;
 	if (variable->object && variable->object->initialized) return EVDS_ERROR_BAD_STATE;
@@ -626,7 +632,26 @@ int EVDS_Variable_SetName(EVDS_VARIABLE* variable, const char* name) {
 	}
 #endif
 
-	strncpy(variable->name,name,256);
+	//Sanitize the name
+	clean_name_ptr = clean_name;
+	for (count = 1; (count <= 256) && (*name); 
+		count++, name++, clean_name_ptr++) {
+		switch (*name) {
+			case '*':
+			case '/':
+			case '[':
+			case ']':
+				*clean_name_ptr = '_';
+			break;
+			default:
+				*clean_name_ptr = *name;
+			break;
+		}
+	}
+	if (count < 256) *clean_name_ptr = '\0';
+
+	//Store it
+	strncpy(variable->name,clean_name,256);
 	return EVDS_OK;
 }
 
