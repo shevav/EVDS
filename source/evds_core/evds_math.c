@@ -403,10 +403,10 @@ void EVDS_Quaternion_ShortConvert(EVDS_QUATERNION* target, EVDS_QUATERNION* q, E
 
 	if (!target_is_child) {
 		//Rotate from child to parent
-		EVDS_Quaternion_MultiplyConjugated(target,q,&child_state->orientation);
+		EVDS_Quaternion_Multiply(target,q,&child_state->orientation);
 	} else {
 		//Rotate from parent to child
-		EVDS_Quaternion_Multiply(target,q,&child_state->orientation);
+		EVDS_Quaternion_MultiplyConjugated(target,q,&child_state->orientation);
 	}
 
 	//Set coordinate system in target vector
