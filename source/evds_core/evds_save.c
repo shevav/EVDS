@@ -36,7 +36,28 @@ int EVDS_Internal_SaveVariable(EVDS_VARIABLE* variable, SIMC_XML_DOCUMENT* doc,
 	SIMC_XML_ELEMENT* element;
 	SIMC_LIST_ENTRY* entry;
 	EVDS_VARIABLE* child;
-	char buffer[1024] = { 0 };
+	char* buffer = alloca(1024*sizeof(char));
+	memset(buffer,0,1024*sizeof(char)); //Make sure buffer is empty beforehand
+
+	//Special case: do not write empty "comments" variables
+	if (strncmp(variable->name,"comments",64) == 0) {
+		char first_char = 0;
+		EVDS_Variable_GetString(variable,&first_char,1,0);
+		if (!first_char) return EVDS_OK;
+	}
+	//Special case: do not write empty "geometry.cross_sections" variables
+	if ((strncmp(variable->name,"geometry.cross_sections",64) == 0) &&
+		(variable->type == EVDS_VARIABLE_TYPE_NESTED)) {
+		int count = 0;
+		if (variable->list) { //Count number of elements inside
+			entry = SIMC_List_GetFirst(variable->list);
+			while (entry) {
+				count++;
+				entry = SIMC_List_GetNext(variable->list,entry);
+			}
+		}
+		if (count <= 1) return EVDS_OK;
+	}
 
 	//Create entry for this object
 	if (!is_attribute) {
@@ -50,7 +71,11 @@ int EVDS_Internal_SaveVariable(EVDS_VARIABLE* variable, SIMC_XML_DOCUMENT* doc,
 
 	//Save value
 	if (variable->type == EVDS_VARIABLE_TYPE_STRING) {
-		EVDS_Variable_GetString(variable,buffer,1023,0); //FIXME: remove arbitrary limit
+		int buffer_length;
+		EVDS_Variable_GetString(variable,0,0,&buffer_length); //Get string length
+		buffer = alloca((buffer_length+1)*sizeof(char)); //Allocate new big buffer
+		EVDS_Variable_GetString(variable,buffer,buffer_length,0); //Read string there
+		buffer[buffer_length] = 0; //Null-terminate
 	} else if (variable->type == EVDS_VARIABLE_TYPE_FLOAT) {
 		EVDS_REAL value;
 		EVDS_Variable_GetReal(variable,&value);
@@ -89,7 +114,7 @@ int EVDS_Internal_SaveVariable(EVDS_VARIABLE* variable, SIMC_XML_DOCUMENT* doc,
 	//Add text value if not tested
 	if (variable->type != EVDS_VARIABLE_TYPE_NESTED) {
 		if (!is_attribute) {
-			SIMC_XML_SetText(doc,element,buffer);
+			SIMC_XML_SetText(doc,element,buffer); //FIXME: does not support null characters in buffer
 
 			//Check if variable value is like a float/quaternion/vector
 			if (variable->type == EVDS_VARIABLE_TYPE_STRING) {

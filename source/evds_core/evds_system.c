@@ -21,6 +21,7 @@
 /// the world wide web at http://www.gnu.org.
 ////////////////////////////////////////////////////////////////////////////////
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include "evds.h"
 
@@ -62,7 +63,15 @@
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_Version(int* version, char* version_string) {
 	if (version) *version = EVDS_VERSION;
-	if (version_string) strcpy(version_string,EVDS_VERSION_STRING);
+	if (version_string) {
+		int major_version = EVDS_VERSION/100;
+		int minor_version = (EVDS_VERSION % 100)-1;
+		if (minor_version < 26) {
+			snprintf(version_string,64,"%d%c",major_version,minor_version+'a');
+		} else {
+			snprintf(version_string,64,"%d%c%c",major_version,((minor_version/26)-1)+'a',(minor_version % 26)+'a');
+		}
+	}
 	return EVDS_OK;
 }
 
