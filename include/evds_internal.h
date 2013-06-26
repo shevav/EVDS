@@ -55,7 +55,7 @@ extern "C" {
 ///		EVDS_VARIABLE* variable;
 ///		EVDS_Object_Create(system,parent,&object);
 ///		EVDS_Object_AddVariable(object,"center_of_mass",EVDS_VARIABLE_TYPE_VECTOR,&variable);
-///		EVDS_Object_AddFloatVariable(object,"mass",5000.0,&variable);
+///		EVDS_Object_AddRealVariable(object,"mass",5000.0,&variable);
 /// ~~~
 ///
 /// If variable already exists when adding, the function simply returns that variable (and does not change

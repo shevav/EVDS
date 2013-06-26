@@ -154,7 +154,7 @@ int EVDS_InternalRocketEngine_DetermineMore(EVDS_SYSTEM* system, EVDS_OBJECT* ob
 	if (EVDS_Object_GetVariable(object,"nozzle.exit_area",&variable) != EVDS_OK) {
 		EVDS_REAL exit_radius;
 		if ((EVDS_Object_GetRealVariable(object,"nozzle.exit_radius",&exit_radius,0) == EVDS_OK)) {
-			EVDS_Object_AddFloatVariable(object,"nozzle.exit_area",EVDS_PI*(exit_radius*exit_radius),0);
+			EVDS_Object_AddRealVariable(object,"nozzle.exit_area",EVDS_PI*(exit_radius*exit_radius),0);
 			return EVDS_OK;
 		}
 	}
@@ -162,7 +162,7 @@ int EVDS_InternalRocketEngine_DetermineMore(EVDS_SYSTEM* system, EVDS_OBJECT* ob
 	if (EVDS_Object_GetVariable(object,"nozzle.exit_radius",&variable) != EVDS_OK) {
 		EVDS_REAL exit_area;
 		if ((EVDS_Object_GetRealVariable(object,"nozzle.exit_area",&exit_area,0) == EVDS_OK)) {
-			EVDS_Object_AddFloatVariable(object,"nozzle.exit_radius",sqrt(exit_area/EVDS_PI),0);
+			EVDS_Object_AddRealVariable(object,"nozzle.exit_radius",sqrt(exit_area/EVDS_PI),0);
 			return EVDS_OK;
 		}
 	}
@@ -176,7 +176,7 @@ int EVDS_InternalRocketEngine_DetermineMore(EVDS_SYSTEM* system, EVDS_OBJECT* ob
 		EVDS_REAL isp,thrust;
 		if ((EVDS_Object_GetRealVariable(object,"vacuum.isp",&isp,0) == EVDS_OK) &&
 			(EVDS_Object_GetRealVariable(object,"vacuum.thrust",&thrust,0) == EVDS_OK)) {
-			EVDS_Object_AddFloatVariable(object,"vacuum.mass_flow",thrust/(EVDS_G0*isp),0);
+			EVDS_Object_AddRealVariable(object,"vacuum.mass_flow",thrust/(EVDS_G0*isp),0);
 			return EVDS_OK;
 		}
 	}
@@ -185,7 +185,7 @@ int EVDS_InternalRocketEngine_DetermineMore(EVDS_SYSTEM* system, EVDS_OBJECT* ob
 		EVDS_REAL of_ratio,mass_flow;
 		if ((EVDS_Object_GetRealVariable(object,"combustion.of_ratio",&of_ratio,0) == EVDS_OK) &&
 			(EVDS_Object_GetRealVariable(object,"vacuum.mass_flow",&mass_flow,0) == EVDS_OK)) {
-			EVDS_Object_AddFloatVariable(object,"vacuum.fuel_flow",mass_flow/(of_ratio+1.0),0);
+			EVDS_Object_AddRealVariable(object,"vacuum.fuel_flow",mass_flow/(of_ratio+1.0),0);
 			return EVDS_OK;
 		}
 	}
@@ -194,7 +194,7 @@ int EVDS_InternalRocketEngine_DetermineMore(EVDS_SYSTEM* system, EVDS_OBJECT* ob
 		EVDS_REAL of_ratio,mass_flow;
 		if ((EVDS_Object_GetRealVariable(object,"combustion.of_ratio",&of_ratio,0) == EVDS_OK) &&
 			(EVDS_Object_GetRealVariable(object,"vacuum.mass_flow",&mass_flow,0) == EVDS_OK)) {
-			EVDS_Object_AddFloatVariable(object,"vacuum.oxidizer_flow",of_ratio*mass_flow/(of_ratio+1.0),0);
+			EVDS_Object_AddRealVariable(object,"vacuum.oxidizer_flow",of_ratio*mass_flow/(of_ratio+1.0),0);
 			return EVDS_OK;
 		}
 	}
@@ -203,7 +203,7 @@ int EVDS_InternalRocketEngine_DetermineMore(EVDS_SYSTEM* system, EVDS_OBJECT* ob
 		EVDS_REAL isp,thrust;
 		if ((EVDS_Object_GetRealVariable(object,"atmospheric.isp",&isp,0) == EVDS_OK) &&
 			(EVDS_Object_GetRealVariable(object,"atmospheric.thrust",&thrust,0) == EVDS_OK)) {
-			EVDS_Object_AddFloatVariable(object,"atmospheric.mass_flow",thrust/(EVDS_G0*isp),0);
+			EVDS_Object_AddRealVariable(object,"atmospheric.mass_flow",thrust/(EVDS_G0*isp),0);
 			return EVDS_OK;
 		}
 	}
@@ -212,7 +212,7 @@ int EVDS_InternalRocketEngine_DetermineMore(EVDS_SYSTEM* system, EVDS_OBJECT* ob
 		EVDS_REAL of_ratio,mass_flow;
 		if ((EVDS_Object_GetRealVariable(object,"combustion.of_ratio",&of_ratio,0) == EVDS_OK) &&
 			(EVDS_Object_GetRealVariable(object,"atmospheric.mass_flow",&mass_flow,0) == EVDS_OK)) {
-			EVDS_Object_AddFloatVariable(object,"atmospheric.fuel_flow",mass_flow/(of_ratio+1.0),0);
+			EVDS_Object_AddRealVariable(object,"atmospheric.fuel_flow",mass_flow/(of_ratio+1.0),0);
 			return EVDS_OK;
 		}
 	}
@@ -221,7 +221,7 @@ int EVDS_InternalRocketEngine_DetermineMore(EVDS_SYSTEM* system, EVDS_OBJECT* ob
 		EVDS_REAL of_ratio,mass_flow;
 		if ((EVDS_Object_GetRealVariable(object,"combustion.of_ratio",&of_ratio,0) == EVDS_OK) &&
 			(EVDS_Object_GetRealVariable(object,"atmospheric.mass_flow",&mass_flow,0) == EVDS_OK)) {
-			EVDS_Object_AddFloatVariable(object,"atmospheric.oxidizer_flow",of_ratio*mass_flow/(of_ratio+1.0),0);
+			EVDS_Object_AddRealVariable(object,"atmospheric.oxidizer_flow",of_ratio*mass_flow/(of_ratio+1.0),0);
 			return EVDS_OK;
 		}
 	}
@@ -234,7 +234,7 @@ int EVDS_InternalRocketEngine_DetermineMore(EVDS_SYSTEM* system, EVDS_OBJECT* ob
 	if (EVDS_Object_GetVariable(object,"vacuum.exhaust_velocity",&variable) != EVDS_OK) {
 		EVDS_REAL isp;
 		if (EVDS_Object_GetRealVariable(object,"vacuum.isp",&isp,0) == EVDS_OK) {
-			EVDS_Object_AddFloatVariable(object,"vacuum.exhaust_velocity",EVDS_G0*isp,0);
+			EVDS_Object_AddRealVariable(object,"vacuum.exhaust_velocity",EVDS_G0*isp,0);
 			return EVDS_OK;
 		}
 	}
@@ -242,7 +242,7 @@ int EVDS_InternalRocketEngine_DetermineMore(EVDS_SYSTEM* system, EVDS_OBJECT* ob
 	if (EVDS_Object_GetVariable(object,"vacuum.isp",&variable) != EVDS_OK) {
 		EVDS_REAL exhaust_velocity;
 		if (EVDS_Object_GetRealVariable(object,"vacuum.exhaust_velocity",&exhaust_velocity,0) == EVDS_OK) {
-			EVDS_Object_AddFloatVariable(object,"vacuum.isp",exhaust_velocity/EVDS_G0,0);
+			EVDS_Object_AddRealVariable(object,"vacuum.isp",exhaust_velocity/EVDS_G0,0);
 			return EVDS_OK;
 		}
 	}
@@ -250,7 +250,7 @@ int EVDS_InternalRocketEngine_DetermineMore(EVDS_SYSTEM* system, EVDS_OBJECT* ob
 	if (EVDS_Object_GetVariable(object,"atmospheric.exhaust_velocity",&variable) != EVDS_OK) {
 		EVDS_REAL isp;
 		if (EVDS_Object_GetRealVariable(object,"atmospheric.isp",&isp,0) == EVDS_OK) {
-			EVDS_Object_AddFloatVariable(object,"atmospheric.exhaust_velocity",EVDS_G0*isp,0);
+			EVDS_Object_AddRealVariable(object,"atmospheric.exhaust_velocity",EVDS_G0*isp,0);
 			return EVDS_OK;
 		}
 	}
@@ -258,7 +258,7 @@ int EVDS_InternalRocketEngine_DetermineMore(EVDS_SYSTEM* system, EVDS_OBJECT* ob
 	if (EVDS_Object_GetVariable(object,"atmospheric.isp",&variable) != EVDS_OK) {
 		EVDS_REAL exhaust_velocity;
 		if (EVDS_Object_GetRealVariable(object,"atmospheric.exhaust_velocity",&exhaust_velocity,0) == EVDS_OK) {
-			EVDS_Object_AddFloatVariable(object,"atmospheric.isp",exhaust_velocity/EVDS_G0,0);
+			EVDS_Object_AddRealVariable(object,"atmospheric.isp",exhaust_velocity/EVDS_G0,0);
 			return EVDS_OK;
 		}
 	}
@@ -273,7 +273,7 @@ int EVDS_InternalRocketEngine_DetermineMore(EVDS_SYSTEM* system, EVDS_OBJECT* ob
 		if ((EVDS_Object_GetRealVariable(object,"vacuum.thrust",&thrust,0) == EVDS_OK) &&
 			(EVDS_Object_GetRealVariable(object,"nozzle.exit_area",&exit_area,0) == EVDS_OK)) {
 			//Fatm = F-(Pe - P0)*Ae
-			EVDS_Object_AddFloatVariable(object,"atmospheric.thrust",thrust - 1e5*exit_area,0);
+			EVDS_Object_AddRealVariable(object,"atmospheric.thrust",thrust - 1e5*exit_area,0);
 			return EVDS_OK;
 		}
 	}
@@ -283,7 +283,7 @@ int EVDS_InternalRocketEngine_DetermineMore(EVDS_SYSTEM* system, EVDS_OBJECT* ob
 		if ((EVDS_Object_GetRealVariable(object,"atmospheric.thrust",&thrust,0) == EVDS_OK) &&
 			(EVDS_Object_GetRealVariable(object,"nozzle.exit_area",&exit_area,0) == EVDS_OK)) {
 			//F = Fatm+(Pe - P0)*Ae
-			EVDS_Object_AddFloatVariable(object,"vacuum.thrust",thrust + 1e5*exit_area,0);
+			EVDS_Object_AddRealVariable(object,"vacuum.thrust",thrust + 1e5*exit_area,0);
 			return EVDS_OK;
 		}
 	}*/
@@ -292,7 +292,7 @@ int EVDS_InternalRocketEngine_DetermineMore(EVDS_SYSTEM* system, EVDS_OBJECT* ob
 		EVDS_REAL mass_flow,thrust;
 		if ((EVDS_Object_GetRealVariable(object,"atmospheric.mass_flow",&mass_flow,0) == EVDS_OK) &&
 			(EVDS_Object_GetRealVariable(object,"atmospheric.thrust",&thrust,0) == EVDS_OK)) {
-			EVDS_Object_AddFloatVariable(object,"atmospheric.exhaust_velocity",thrust/mass_flow,0); //Ve = F/mdot
+			EVDS_Object_AddRealVariable(object,"atmospheric.exhaust_velocity",thrust/mass_flow,0); //Ve = F/mdot
 			return EVDS_OK;
 		}
 	}
@@ -301,7 +301,7 @@ int EVDS_InternalRocketEngine_DetermineMore(EVDS_SYSTEM* system, EVDS_OBJECT* ob
 		EVDS_REAL mass_flow,thrust;
 		if ((EVDS_Object_GetRealVariable(object,"vacuum.mass_flow",&mass_flow,0) == EVDS_OK) &&
 			(EVDS_Object_GetRealVariable(object,"vacuum.thrust",&thrust,0) == EVDS_OK)) {
-			EVDS_Object_AddFloatVariable(object,"vacuum.exhaust_velocity",thrust/mass_flow,0);
+			EVDS_Object_AddRealVariable(object,"vacuum.exhaust_velocity",thrust/mass_flow,0);
 			return EVDS_OK;
 		}
 	}
@@ -314,7 +314,7 @@ int EVDS_InternalRocketEngine_DetermineMore(EVDS_SYSTEM* system, EVDS_OBJECT* ob
 	if (EVDS_Object_GetVariable(object,"atmospheric.thrust",&variable) != EVDS_OK) {
 		EVDS_REAL thrust;
 		if (EVDS_Object_GetRealVariable(object,"vacuum.thrust",&thrust,0) == EVDS_OK) {
-			EVDS_Object_AddFloatVariable(object,"atmospheric.thrust",thrust*0.90,0);
+			EVDS_Object_AddRealVariable(object,"atmospheric.thrust",thrust*0.90,0);
 			return EVDS_OK;
 		}
 	}
@@ -322,7 +322,7 @@ int EVDS_InternalRocketEngine_DetermineMore(EVDS_SYSTEM* system, EVDS_OBJECT* ob
 	if (EVDS_Object_GetVariable(object,"vacuum.thrust",&variable) != EVDS_OK) {
 		EVDS_REAL thrust;
 		if (EVDS_Object_GetRealVariable(object,"atmospheric.thrust",&thrust,0) == EVDS_OK) {
-			EVDS_Object_AddFloatVariable(object,"vacuum.thrust",thrust/0.90,0);
+			EVDS_Object_AddRealVariable(object,"vacuum.thrust",thrust/0.90,0);
 			return EVDS_OK;
 		}
 	}
@@ -330,7 +330,7 @@ int EVDS_InternalRocketEngine_DetermineMore(EVDS_SYSTEM* system, EVDS_OBJECT* ob
 	if (EVDS_Object_GetVariable(object,"atmospheric.isp",&variable) != EVDS_OK) {
 		EVDS_REAL isp;
 		if (EVDS_Object_GetRealVariable(object,"vacuum.isp",&isp,0) == EVDS_OK) {
-			EVDS_Object_AddFloatVariable(object,"atmospheric.isp",isp*0.90,0);
+			EVDS_Object_AddRealVariable(object,"atmospheric.isp",isp*0.90,0);
 			return EVDS_OK;
 		}
 	}
@@ -338,7 +338,7 @@ int EVDS_InternalRocketEngine_DetermineMore(EVDS_SYSTEM* system, EVDS_OBJECT* ob
 	if (EVDS_Object_GetVariable(object,"vacuum.isp",&variable) != EVDS_OK) {
 		EVDS_REAL isp;
 		if (EVDS_Object_GetRealVariable(object,"atmospheric.isp",&isp,0) == EVDS_OK) {
-			EVDS_Object_AddFloatVariable(object,"vacuum.isp",isp/0.90,0);
+			EVDS_Object_AddRealVariable(object,"vacuum.isp",isp/0.90,0);
 			return EVDS_OK;
 		}
 	}
@@ -396,7 +396,7 @@ int EVDS_InternalRocketEngine_DetermineMore(EVDS_SYSTEM* system, EVDS_OBJECT* ob
 
 			//Add O/F ratio if possible
 			if ((total_oxidizer > 0.0) && (total_fuel > 0.0)) {
-				EVDS_Object_AddFloatVariable(object,"combustion.of_ratio",total_oxidizer/total_fuel,0);
+				EVDS_Object_AddRealVariable(object,"combustion.of_ratio",total_oxidizer/total_fuel,0);
 				return EVDS_OK;
 			}
 		}		

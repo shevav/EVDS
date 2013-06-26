@@ -35,8 +35,13 @@
 /// @brief Update planet position and state
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_InternalGimbal_Solve(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVDS_OBJECT* object, EVDS_REAL delta_time) {
+	EVDS_REAL pitch_command,yaw_command;
+	EVDS_REAL pitch,yaw,roll;
 	EVDS_OBJECT* platform;
 	EVDS_Object_GetSolverdata(object,(void*)&platform);
+
+	//EVDS_Object_GetRealVariable(object,"pitch.command",0,0);
+	//EVDS_Object_GetRealVariable(object,"yaw.command",0,0);
 	return EVDS_OK;
 }
 
@@ -64,21 +69,31 @@ int EVDS_InternalGimbal_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVD
 	//Create child object (static body that will collect forces from underlying bodies)
 	EVDS_Object_GetParent(object,&parent);
 	if (EVDS_Object_CreateBy(object,"Gimbal platform",parent,&platform) == EVDS_ERROR_NOT_FOUND) {
+		EVDS_STATE_VECTOR vector;
+
 		//Create new gimbal platform as a static body
 		EVDS_Object_SetType(platform,"static_body");
 		if (EVDS_Object_GetVariable(object,"mass",&variable) == EVDS_OK) {
 			EVDS_REAL mass;
 			EVDS_Variable_GetReal(variable,&mass);
-			EVDS_Object_AddFloatVariable(platform,"mass",mass,0);
+			EVDS_Object_AddRealVariable(platform,"mass",mass,0);
 		}
+
+		//Move the platform into position of gimbal
+		EVDS_Object_GetStateVector(object,&vector);
+		EVDS_Object_SetStateVector(platform,&vector);
 
 		//Move children to that platform
 		EVDS_Object_MoveChildren(object,platform);
 	}
 
 	//Remove mass from gimbal object. It will not take part in mass calculations, but the platform will
-	EVDS_Object_AddFloatVariable(object,"mass",0,&variable);
+	EVDS_Object_AddRealVariable(object,"mass",0,&variable);
 	EVDS_Variable_SetReal(variable,0);
+
+	//Add control variables to this object
+	EVDS_Object_AddRealVariable(object,"pitch.command",0,0);
+	EVDS_Object_AddRealVariable(object,"yaw.command",0,0);
 
 	//Store platform as the solverdata
 	EVDS_Object_SetSolverdata(object,platform);

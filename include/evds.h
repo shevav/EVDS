@@ -1044,7 +1044,7 @@ EVDS_API int EVDS_Object_SetUniqueName(EVDS_OBJECT* object);
 // Add a new variable
 EVDS_API int EVDS_Object_AddVariable(EVDS_OBJECT* object, const char* name, EVDS_VARIABLE_TYPE type, EVDS_VARIABLE** p_variable);
 // Add a new variable (floating point value, can accept 0 as p_variable)
-EVDS_API int EVDS_Object_AddFloatVariable(EVDS_OBJECT* object, const char* name, EVDS_REAL value, EVDS_VARIABLE** p_variable);
+EVDS_API int EVDS_Object_AddRealVariable(EVDS_OBJECT* object, const char* name, EVDS_REAL value, EVDS_VARIABLE** p_variable);
 
 // Check object type (only after initialized OR only in initializers thread)
 EVDS_API int EVDS_Object_CheckType(EVDS_OBJECT* object, const char* type);

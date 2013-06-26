@@ -795,9 +795,9 @@ int EVDS_InternalObject_DestroyData(EVDS_OBJECT* object) {
 ///		EVDS_Object_Create(system,inertial_system,&earth);
 ///		EVDS_Object_SetType(earth,"planet");
 ///		EVDS_Object_SetName(earth,"Earth");
-///		EVDS_Object_AddFloatVariable(earth,"mass",5.97e24,0);		//kg
-///		EVDS_Object_AddFloatVariable(earth,"mu",3.9860044e14,0);	//m3 sec-2
-///		EVDS_Object_AddFloatVariable(earth,"radius",6378.145e3,0);	//m
+///		EVDS_Object_AddRealVariable(earth,"mass",5.97e24,0);		//kg
+///		EVDS_Object_AddRealVariable(earth,"mu",3.9860044e14,0);	//m3 sec-2
+///		EVDS_Object_AddRealVariable(earth,"radius",6378.145e3,0);	//m
 ///		EVDS_Object_Initialize(earth,1);
 /// ~~~
 ///
@@ -1462,7 +1462,7 @@ int EVDS_Object_SetUniqueName(EVDS_OBJECT* object) {
 /// will be cleared out. If variable is a vector or a quaternion, it must be additionally
 /// initialized by user afterwards (using EVDS_Vector_Set() or a similar call).
 ///
-/// For floating point variables, a shortcut call EVDS_Object_AddFloatVariable() is available.
+/// For floating point variables, a shortcut call EVDS_Object_AddRealVariable() is available.
 ///
 /// Example of adding variables:
 /// ~~~{.c}
@@ -1531,8 +1531,8 @@ int EVDS_Object_AddVariable(EVDS_OBJECT* object, const char* name, EVDS_VARIABLE
 /// using floating point variables and variables in general. Example of use:
 /// ~~~{.c}
 ///		EVDS_VARIABLE* mu;
-///		EVDS_Object_AddFloatVariable(earth,"radius",6378.145e3,0);
-///		EVDS_Object_AddFloatVariable(earth,"mu",3.9860044e14,&mu);
+///		EVDS_Object_AddRealVariable(earth,"radius",6378.145e3,0);
+///		EVDS_Object_AddRealVariable(earth,"mu",3.9860044e14,&mu);
 /// ~~~
 ///
 /// Unlike EVDS_Object_AddVariable(), this call will reset value of the floating point variable if it
@@ -1556,7 +1556,7 @@ int EVDS_Object_AddVariable(EVDS_OBJECT* object, const char* name, EVDS_VARIABLE
 ///  (or thread that has created the object before initializer was called)
 /// @retval EVDS_ERROR_MEMORY Error allocating EVDS_VARIABLE data structure
 ////////////////////////////////////////////////////////////////////////////////
-int EVDS_Object_AddFloatVariable(EVDS_OBJECT* object, const char* name, EVDS_REAL value, EVDS_VARIABLE** p_variable) {
+int EVDS_Object_AddRealVariable(EVDS_OBJECT* object, const char* name, EVDS_REAL value, EVDS_VARIABLE** p_variable) {
 	int error_code;
 	EVDS_VARIABLE* variable;
 	if (!object) return EVDS_ERROR_BAD_PARAMETER;

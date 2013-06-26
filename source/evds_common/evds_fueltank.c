@@ -100,7 +100,7 @@ int EVDS_InternalFuelTank_GenerateGeometry(EVDS_OBJECT* object) {
 		EVDS_VARIABLE* inner_rim_aft;
 		EVDS_VARIABLE* inner_middle;
 
-		float half_radius = (inner_radius + outer_radius) / 2;
+		float half_radius = (float)((inner_radius + outer_radius) / 2);
 
 		//Add cross-sections
 		EVDS_Variable_AddNested(geometry,"geometry.cross_sections",EVDS_VARIABLE_TYPE_NESTED,&inner_rim_fwd );
@@ -200,7 +200,7 @@ int EVDS_InternalFuelTank_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, E
 		EVDS_Variable_GetReal(variable,&is_cryogenic);
 	} else {
 		is_cryogenic = 0;
-		EVDS_Object_AddFloatVariable(object,"is_cryogenic",0,0);
+		EVDS_Object_AddRealVariable(object,"is_cryogenic",0,0);
 	}
 	
 	//Calculate total volume
@@ -211,7 +211,7 @@ int EVDS_InternalFuelTank_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, E
 		EVDS_MESH* mesh;
 		EVDS_Mesh_Generate(object,&mesh,50.0f,EVDS_MESH_USE_DIVISIONS);
 			fuel_volume = mesh->total_volume;
-			EVDS_Object_AddFloatVariable(object,"fuel_volume",0,&variable);
+			EVDS_Object_AddRealVariable(object,"fuel_volume",0,&variable);
 			EVDS_Variable_SetReal(variable,fuel_volume);
 		EVDS_Mesh_Destroy(mesh);
 	}
@@ -259,12 +259,12 @@ int EVDS_InternalFuelTank_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, E
 			//Calculate fuel mass
 			fuel_mass = fuel_volume * fuel_density;
 		}
-		EVDS_Object_AddFloatVariable(object,"fuel_mass",0,&variable);
+		EVDS_Object_AddRealVariable(object,"fuel_mass",0,&variable);
 		EVDS_Variable_SetReal(variable,fuel_mass);
 	}
 
 	//Remember the tank capacity
-	EVDS_Object_AddFloatVariable(object,"fuel_capacity",0,&variable);
+	EVDS_Object_AddRealVariable(object,"fuel_capacity",0,&variable);
 	EVDS_Variable_SetReal(variable,fuel_mass);
 
 	//Apply fuel load ratio
@@ -276,9 +276,9 @@ int EVDS_InternalFuelTank_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, E
 
 	//Fuel tanks have mass
 	if (EVDS_Object_GetVariable(object,"mass",&variable) != EVDS_OK) {
-		EVDS_Object_AddFloatVariable(object,"mass",0,0);
+		EVDS_Object_AddRealVariable(object,"mass",0,0);
 	}
-	EVDS_Object_AddFloatVariable(object,"total_mass",0,0);
+	EVDS_Object_AddRealVariable(object,"total_mass",0,0);
 	return EVDS_CLAIM_OBJECT;
 }
 
