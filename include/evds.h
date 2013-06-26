@@ -998,6 +998,8 @@ EVDS_API int EVDS_Object_Copy(EVDS_OBJECT* source, EVDS_OBJECT* parent, EVDS_OBJ
 EVDS_API int EVDS_Object_CopySingle(EVDS_OBJECT* source, EVDS_OBJECT* parent, EVDS_OBJECT** p_object);
 // Create copy of objects children under another parent (only copies objects children)
 EVDS_API int EVDS_Object_CopyChildren(EVDS_OBJECT* source_parent, EVDS_OBJECT* parent);
+// Move all objects children to another parent (only moves objects children)
+EVDS_API int EVDS_Object_MoveChildren(EVDS_OBJECT* source_parent, EVDS_OBJECT* parent);
 // Save object and its children to file
 EVDS_API int EVDS_Object_SaveToFile(EVDS_OBJECT* object, const char* filename);
 // Save object and return its description

@@ -56,6 +56,7 @@ int EVDS_InternalGimbal_Integrate(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVDS
 /// @brief Initialize solver
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_InternalGimbal_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVDS_OBJECT* object) {
+	EVDS_VARIABLE* variable;
 	EVDS_OBJECT* parent;
 	EVDS_OBJECT* platform;
 	if (EVDS_Object_CheckType(object,"gimbal") != EVDS_OK) return EVDS_IGNORE_OBJECT; 
@@ -63,13 +64,21 @@ int EVDS_InternalGimbal_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVD
 	//Create child object (static body that will collect forces from underlying bodies)
 	EVDS_Object_GetParent(object,&parent);
 	if (EVDS_Object_CreateBy(object,"Gimbal platform",parent,&platform) == EVDS_ERROR_NOT_FOUND) {
-		//FIXME: copy physics properties of gimbal too
+		//Create new gimbal platform as a static body
 		EVDS_Object_SetType(platform,"static_body");
-		EVDS_Object_CopyChildren(object,platform);
+		if (EVDS_Object_GetVariable(object,"mass",&variable) == EVDS_OK) {
+			EVDS_REAL mass;
+			EVDS_Variable_GetReal(variable,&mass);
+			EVDS_Object_AddFloatVariable(platform,"mass",mass,0);
+		}
+
+		//Move children to that platform
+		EVDS_Object_MoveChildren(object,platform);
 	}
 
 	//Remove mass from gimbal object. It will not take part in mass calculations, but the platform will
-	EVDS_Object_AddFloatVariable(object,"mass",0,0);
+	EVDS_Object_AddFloatVariable(object,"mass",0,&variable);
+	EVDS_Variable_SetReal(variable,0);
 
 	//Store platform as the solverdata
 	EVDS_Object_SetSolverdata(object,platform);

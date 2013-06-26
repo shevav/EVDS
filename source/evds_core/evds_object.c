@@ -433,11 +433,24 @@ void EVDS_InternalThread_Initialize_Object(EVDS_OBJECT* object) {
 	entry = SIMC_List_GetFirst(object->raw_children);
 	while (entry) {
 		EVDS_OBJECT* child = (EVDS_OBJECT*)SIMC_List_GetData(object->raw_children,entry);
-#ifndef EVDS_SINGLETHREADED
-		child->initialize_thread = SIMC_Thread_GetUniqueID();
-#endif
 		SIMC_List_Stop(object->raw_children,entry); //Stop iterator so initializer can change list of children
-		EVDS_InternalThread_Initialize_Object(child); //Blocking initialization
+
+		//During this moment child can lose its parent. It's not likely somebody will be
+		// trying to steal body actively from another (currently initializing) object.
+		//If this ever becomes an issue, additional locking for objects against changing their
+		//parent must be added.
+		//
+		//FIXME: see if any similar problems appear in similar other places (e.g. destroying objects)
+
+		//Initialize this child, unless it has already been initialized before
+		// (the latter can happen if some other thread has moved its initialized child into
+		//  this object, before this object finished its initialization).
+		if (!child->initialized) {
+#ifndef EVDS_SINGLETHREADED
+			child->initialize_thread = SIMC_Thread_GetUniqueID();
+#endif
+			EVDS_InternalThread_Initialize_Object(child); //Blocking initialization
+		}
 		
 		//Find next un-initialized child
 		entry = SIMC_List_GetFirst(object->raw_children);
@@ -941,6 +954,41 @@ int EVDS_Object_CopyChildren(EVDS_OBJECT* source_parent, EVDS_OBJECT* parent) {
 
 
 ////////////////////////////////////////////////////////////////////////////////
+/// @brief Moves all children of the source object to a new parent.
+///
+/// Moves all children (including non-initialized ones) from one parent into another parent
+/// using EVDS_Object_SetParent() for each child.
+///
+/// @note See EVDS_Object_SetParent() for more information.
+///
+/// @param[in] source_parent Pointer to the source parent object
+/// @param[in] parent Pointer to target parent object (can be null)
+///
+/// @returns Error code
+/// @retval EVDS_OK Successfully completed
+/// @retval EVDS_ERROR_BAD_PARAMETER "source_parent" is null
+////////////////////////////////////////////////////////////////////////////////
+int EVDS_Object_MoveChildren(EVDS_OBJECT* source_parent, EVDS_OBJECT* parent) {
+	SIMC_LIST_ENTRY* entry;
+	if (!source_parent) return EVDS_ERROR_BAD_PARAMETER;
+
+	//Move children
+	entry = SIMC_List_GetFirst(source_parent->raw_children);
+	while (entry) {	
+		EVDS_OBJECT* child = (EVDS_OBJECT*)SIMC_List_GetData(source_parent->raw_children,entry);
+		SIMC_List_Stop(source_parent->raw_children, entry);
+
+		//Set parent (the list must be unlocked)
+		EVDS_ERRCHECK(EVDS_Object_SetParent(child,parent));
+
+		//Restart iterator
+		entry = SIMC_List_GetFirst(source_parent->raw_children);
+	}
+	return EVDS_OK;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
 /// @brief Create new object as a copy of a different object, but do not copy its children.
 ///
 /// Creates a new object using EVDS_Object_Create() and copies all internal data (excluding children)
@@ -1003,6 +1051,7 @@ int EVDS_Object_CopySingle(EVDS_OBJECT* source, EVDS_OBJECT* parent, EVDS_OBJECT
 	object->state.orientation.coordinate_system = parent;
 	object->state.angular_velocity.coordinate_system = parent;
 	object->state.angular_acceleration.coordinate_system = parent;
+	//if (object->state.velocity.pcoordinate_system) object->state.velocity.pcoordinate_system = parent;
 
 	//Copy variables
 	entry = SIMC_List_GetFirst(source->variables);
@@ -1081,7 +1130,7 @@ int EVDS_Object_CreateBy(EVDS_OBJECT* origin, const char* sub_name, EVDS_OBJECT*
 	if (!p_object) return EVDS_ERROR_BAD_PARAMETER;
 
 	//Get full name of the sub-object
-	snprintf(full_name,256,"%s [%s]",origin->name,sub_name);
+	snprintf(full_name,256,"%s (%s)",origin->name,sub_name);
 
 	//Find this object inside parent or inside the entire system, or create new one
 	if (EVDS_System_GetObjectByName(origin->system,full_name,parent,p_object) != EVDS_OK) {
@@ -1967,10 +2016,53 @@ int EVDS_Object_GetParentObjectByType(EVDS_OBJECT* object, const char* type, EVD
 ////////////////////////////////////////////////////////////////////////////////
 /// @brief Change the objects parent.
 ///
-/// @bug Not fully implemented, not fully documented
+/// @todo Add documentation.
+///
+/// @note Do not steal children away from parents which are currently initializing them.
+///       It is possible that object will be initialized twice if it is taken away from
+///       its original object and initialized under new parent as well.
+///
+/// @param[in] object Pointer to object which must be moved
+/// @param[in] parent Pointer to new objects parent
+///
+/// @returns Error code
+/// @retval EVDS_OK Successfully completed
+/// @retval EVDS_ERROR_BAD_PARAMETER "object" is null
+/// @retval EVDS_ERROR_BAD_PARAMETER "new_parent" is null
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_Object_SetParent(EVDS_OBJECT* object, EVDS_OBJECT* new_parent) {
-	//FIXME: lock object lists in parent and new parent
+	if (!object) return EVDS_ERROR_BAD_PARAMETER;
+	if (!new_parent) return EVDS_ERROR_BAD_PARAMETER;
+
+	//Remove object from the previous parents list
+	if (object->parent && object->parent_entry) {
+		SIMC_List_GetFirst(object->parent->children);
+		SIMC_List_Remove(object->parent->children,object->parent_entry);
+	}
+	if (object->parent && object->rparent_entry) {
+		SIMC_List_GetFirst(object->parent->raw_children);
+		SIMC_List_Remove(object->parent->raw_children,object->rparent_entry);
+	}
+
+	//Update objects parent and coordinate system
+	SIMC_SRW_EnterRead(object->state_lock); //Prevent state vector from being read in indeterminate state
+		object->parent = new_parent; //Make object belong to this parent even before it is in lists
+									 // to avoid iterators getting objects with parent field not properly set
+		object->parent_level = new_parent->parent_level+1; //Update parent level
+		
+		EVDS_Vector_Convert(&object->state.position,				&object->state.position,new_parent);
+		EVDS_Vector_Convert(&object->state.velocity,				&object->state.velocity,new_parent);
+		EVDS_Vector_Convert(&object->state.acceleration,			&object->state.acceleration,new_parent);
+		EVDS_Quaternion_Convert(&object->state.orientation,			&object->state.orientation,new_parent);
+		EVDS_Vector_Convert(&object->state.angular_velocity,		&object->state.angular_velocity,new_parent);
+		EVDS_Vector_Convert(&object->state.angular_acceleration,	&object->state.angular_acceleration,new_parent);
+	SIMC_SRW_LeaveRead(object->state_lock);
+
+	//Add object to new parents list
+	object->rparent_entry = SIMC_List_Append(new_parent->raw_children,object);
+	if (object->parent_entry) { //Object was listed amongst initialized children in old parent
+		object->parent_entry = SIMC_List_Append(new_parent->children,object);
+	}
 	return EVDS_OK;
 }
 
@@ -2085,17 +2177,31 @@ int EVDS_Object_SetStateVector(EVDS_OBJECT* object, EVDS_STATE_VECTOR* vector) {
 	if (object->destroyed) return EVDS_ERROR_INVALID_OBJECT;
 #endif
 
+	//Set previous state vector
 	SIMC_SRW_EnterWrite(object->state_lock);
 	SIMC_SRW_EnterRead(object->previous_state_lock);
 	memcpy(&object->previous_state,&object->state,sizeof(EVDS_STATE_VECTOR));
 	SIMC_SRW_LeaveRead(object->previous_state_lock);
 	SIMC_SRW_LeaveWrite(object->state_lock);
 
+	//Copy new state vector and reset vector positions/velocities
 	SIMC_SRW_EnterWrite(object->state_lock);
-	memcpy(&object->state,vector,sizeof(EVDS_STATE_VECTOR));
+		memcpy(&object->state,vector,sizeof(EVDS_STATE_VECTOR));
+
+		object->state.position.pcoordinate_system = 0;
+		object->state.position.vcoordinate_system = 0;
+		object->state.velocity.pcoordinate_system = 0;
+		object->state.velocity.vcoordinate_system = 0;
+		object->state.acceleration.pcoordinate_system = 0;
+		object->state.acceleration.vcoordinate_system = 0;
+
+		object->state.angular_acceleration.pcoordinate_system = 0;
+		object->state.angular_acceleration.vcoordinate_system = 0;
+		object->state.angular_velocity.pcoordinate_system = 0;
+		object->state.angular_velocity.vcoordinate_system = 0;
 	SIMC_SRW_LeaveWrite(object->state_lock);
 #ifndef EVDS_SINGLETHREADED
-	memcpy(&object->private_state,vector,sizeof(EVDS_STATE_VECTOR));
+	memcpy(&object->private_state,vector,sizeof(EVDS_STATE_VECTOR)); //FIXME: this must be locked!!
 #endif
 	return EVDS_OK;
 }

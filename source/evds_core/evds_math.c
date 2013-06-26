@@ -294,7 +294,7 @@ void EVDS_Vector_Convert(EVDS_VECTOR* target, EVDS_VECTOR* v, EVDS_OBJECT* targe
 		int target_level = target_coordinates->parent_level;
 
 		//Consistency checks
-		EVDS_ASSERT(vector_level != target_level);
+		//EVDS_ASSERT(vector_level != target_level); //FIXME: verify when I'm not sleepy
 		EVDS_ASSERT(vector_level >= 0);
 		EVDS_ASSERT(target_level >= 0);
 
@@ -444,7 +444,7 @@ void EVDS_Quaternion_Convert(EVDS_QUATERNION* target, EVDS_QUATERNION* q, EVDS_O
 		int target_level = target_coordinates->parent_level;
 
 		//Consistency checks
-		EVDS_ASSERT(vector_level != target_level);
+		//EVDS_ASSERT(vector_level != target_level); //FIXME: verify when I'm not sleepy
 		EVDS_ASSERT(vector_level >= 0);
 		EVDS_ASSERT(target_level >= 0);
 
