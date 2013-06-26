@@ -1786,11 +1786,12 @@ int EVDS_Object_GetRealVariable(EVDS_OBJECT* object, const char* name, EVDS_REAL
 	if (EVDS_Object_GetVariable(object,name,&variable) == EVDS_OK) {
 		if (value) EVDS_Variable_GetReal(variable,value);
 		if (p_variable) *p_variable = variable;
+		return EVDS_OK;
 	} else {
 		if (value) *value = 0.0;
 		if (p_variable) *p_variable = 0;
+		return EVDS_ERROR_NOT_FOUND;
 	}
-	return EVDS_OK;
 }
 
 

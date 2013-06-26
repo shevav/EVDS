@@ -40,6 +40,9 @@
 #include <math.h>
 #include "evds.h"
 
+//Temporary definition of standard gravity
+#define EVDS_G0	9.80665
+
 
 #ifndef DOXYGEN_INTERNAL_STRUCTS
 typedef struct EVDS_SOLVER_ENGINE_USERDATA_TAG {
@@ -72,12 +75,12 @@ int EVDS_InternalRocketEngine_GenerateGeometry(EVDS_OBJECT* object) {
 	EVDS_Object_AddVariable(object,"geometry.cross_sections",EVDS_VARIABLE_TYPE_NESTED,&geometry);
 
 	//Get engine parameters (FIXME: use userdata)
-	EVDS_Object_GetRealVariable(object,"exit_radius",&exit_radius,0);
-	EVDS_Object_GetRealVariable(object,"chamber_radius",&chamber_radius,0);
-	EVDS_Object_GetRealVariable(object,"chamber_length",&chamber_length,0);
-	EVDS_Object_GetRealVariable(object,"area_ratio",&area_ratio,0);
-	EVDS_Object_GetRealVariable(object,"nozzle_length",&nozzle_length,0);
-	EVDS_Object_GetRealVariable(object,"divergence_angle",&divergence_angle,0);
+	EVDS_Object_GetRealVariable(object,"nozzle.exit_radius",&exit_radius,0);
+	EVDS_Object_GetRealVariable(object,"nozzle.area_ratio",&area_ratio,0);
+	EVDS_Object_GetRealVariable(object,"nozzle.length",&nozzle_length,0);
+	EVDS_Object_GetRealVariable(object,"nozzle.divergence_angle",&divergence_angle,0);
+	EVDS_Object_GetRealVariable(object,"combustion.chamber_radius",&chamber_radius,0);
+	EVDS_Object_GetRealVariable(object,"combustion.chamber_length",&chamber_length,0);
 
 	//Sanity checks and limits for inputs
 	if (divergence_angle > 0.0) {
@@ -143,8 +146,205 @@ int EVDS_InternalRocketEngine_GenerateGeometry(EVDS_OBJECT* object) {
 int EVDS_InternalRocketEngine_DetermineMore(EVDS_SYSTEM* system, EVDS_OBJECT* object) {
 	EVDS_VARIABLE* variable;
 
+
+	////////////////////////////////////////////////////////////////////////////////
+	// Nozzle parameters
+	////////////////////////////////////////////////////////////////////////////////
+	// Determine nozzle exit area from exit radius
+	if (EVDS_Object_GetVariable(object,"nozzle.exit_area",&variable) != EVDS_OK) {
+		EVDS_REAL exit_radius;
+		if ((EVDS_Object_GetRealVariable(object,"nozzle.exit_radius",&exit_radius,0) == EVDS_OK)) {
+			EVDS_Object_AddFloatVariable(object,"nozzle.exit_area",EVDS_PI*(exit_radius*exit_radius),0);
+			return EVDS_OK;
+		}
+	}
+	// Determine nozzle exit radius from exit area
+	if (EVDS_Object_GetVariable(object,"nozzle.exit_radius",&variable) != EVDS_OK) {
+		EVDS_REAL exit_area;
+		if ((EVDS_Object_GetRealVariable(object,"nozzle.exit_area",&exit_area,0) == EVDS_OK)) {
+			EVDS_Object_AddFloatVariable(object,"nozzle.exit_radius",sqrt(exit_area/EVDS_PI),0);
+			return EVDS_OK;
+		}
+	}
+
+
+	////////////////////////////////////////////////////////////////////////////////
+	// Mass flow
+	////////////////////////////////////////////////////////////////////////////////
+	// Determine mass flow from from Isp
+	if (EVDS_Object_GetVariable(object,"vacuum.mass_flow",&variable) != EVDS_OK) {
+		EVDS_REAL isp,thrust;
+		if ((EVDS_Object_GetRealVariable(object,"vacuum.isp",&isp,0) == EVDS_OK) &&
+			(EVDS_Object_GetRealVariable(object,"vacuum.thrust",&thrust,0) == EVDS_OK)) {
+			EVDS_Object_AddFloatVariable(object,"vacuum.mass_flow",thrust/(EVDS_G0*isp),0);
+			return EVDS_OK;
+		}
+	}
+	// Determine fuel flow from mass flow
+	if (EVDS_Object_GetVariable(object,"vacuum.fuel_flow",&variable) != EVDS_OK) {
+		EVDS_REAL of_ratio,mass_flow;
+		if ((EVDS_Object_GetRealVariable(object,"combustion.of_ratio",&of_ratio,0) == EVDS_OK) &&
+			(EVDS_Object_GetRealVariable(object,"vacuum.mass_flow",&mass_flow,0) == EVDS_OK)) {
+			EVDS_Object_AddFloatVariable(object,"vacuum.fuel_flow",mass_flow/(of_ratio+1.0),0);
+			return EVDS_OK;
+		}
+	}
+	// Determine oxidizer flow from mass flow
+	if (EVDS_Object_GetVariable(object,"vacuum.oxidizer_flow",&variable) != EVDS_OK) {
+		EVDS_REAL of_ratio,mass_flow;
+		if ((EVDS_Object_GetRealVariable(object,"combustion.of_ratio",&of_ratio,0) == EVDS_OK) &&
+			(EVDS_Object_GetRealVariable(object,"vacuum.mass_flow",&mass_flow,0) == EVDS_OK)) {
+			EVDS_Object_AddFloatVariable(object,"vacuum.oxidizer_flow",of_ratio*mass_flow/(of_ratio+1.0),0);
+			return EVDS_OK;
+		}
+	}
+	// Determine mass flow from from Isp [atmospheric]
+	if (EVDS_Object_GetVariable(object,"atmospheric.mass_flow",&variable) != EVDS_OK) {
+		EVDS_REAL isp,thrust;
+		if ((EVDS_Object_GetRealVariable(object,"atmospheric.isp",&isp,0) == EVDS_OK) &&
+			(EVDS_Object_GetRealVariable(object,"atmospheric.thrust",&thrust,0) == EVDS_OK)) {
+			EVDS_Object_AddFloatVariable(object,"atmospheric.mass_flow",thrust/(EVDS_G0*isp),0);
+			return EVDS_OK;
+		}
+	}
+	// Determine fuel flow from mass flow [atmospheric]
+	if (EVDS_Object_GetVariable(object,"atmospheric.fuel_flow",&variable) != EVDS_OK) {
+		EVDS_REAL of_ratio,mass_flow;
+		if ((EVDS_Object_GetRealVariable(object,"combustion.of_ratio",&of_ratio,0) == EVDS_OK) &&
+			(EVDS_Object_GetRealVariable(object,"atmospheric.mass_flow",&mass_flow,0) == EVDS_OK)) {
+			EVDS_Object_AddFloatVariable(object,"atmospheric.fuel_flow",mass_flow/(of_ratio+1.0),0);
+			return EVDS_OK;
+		}
+	}
+	// Determine oxidizer flow from mass flow [atmospheric]
+	if (EVDS_Object_GetVariable(object,"atmospheric.oxidizer_flow",&variable) != EVDS_OK) {
+		EVDS_REAL of_ratio,mass_flow;
+		if ((EVDS_Object_GetRealVariable(object,"combustion.of_ratio",&of_ratio,0) == EVDS_OK) &&
+			(EVDS_Object_GetRealVariable(object,"atmospheric.mass_flow",&mass_flow,0) == EVDS_OK)) {
+			EVDS_Object_AddFloatVariable(object,"atmospheric.oxidizer_flow",of_ratio*mass_flow/(of_ratio+1.0),0);
+			return EVDS_OK;
+		}
+	}
+
+
+	////////////////////////////////////////////////////////////////////////////////
+	// Isp and exhaust velocity
+	////////////////////////////////////////////////////////////////////////////////
+	//Determine Ve from Isp
+	if (EVDS_Object_GetVariable(object,"vacuum.exhaust_velocity",&variable) != EVDS_OK) {
+		EVDS_REAL isp;
+		if (EVDS_Object_GetRealVariable(object,"vacuum.isp",&isp,0) == EVDS_OK) {
+			EVDS_Object_AddFloatVariable(object,"vacuum.exhaust_velocity",EVDS_G0*isp,0);
+			return EVDS_OK;
+		}
+	}
+	//Determine Isp from Ve
+	if (EVDS_Object_GetVariable(object,"vacuum.isp",&variable) != EVDS_OK) {
+		EVDS_REAL exhaust_velocity;
+		if (EVDS_Object_GetRealVariable(object,"vacuum.exhaust_velocity",&exhaust_velocity,0) == EVDS_OK) {
+			EVDS_Object_AddFloatVariable(object,"vacuum.isp",exhaust_velocity/EVDS_G0,0);
+			return EVDS_OK;
+		}
+	}
+	//Determine Ve from Isp [atmospheric]
+	if (EVDS_Object_GetVariable(object,"atmospheric.exhaust_velocity",&variable) != EVDS_OK) {
+		EVDS_REAL isp;
+		if (EVDS_Object_GetRealVariable(object,"atmospheric.isp",&isp,0) == EVDS_OK) {
+			EVDS_Object_AddFloatVariable(object,"atmospheric.exhaust_velocity",EVDS_G0*isp,0);
+			return EVDS_OK;
+		}
+	}
+	//Determine Isp from Ve [atmospheric]
+	if (EVDS_Object_GetVariable(object,"atmospheric.isp",&variable) != EVDS_OK) {
+		EVDS_REAL exhaust_velocity;
+		if (EVDS_Object_GetRealVariable(object,"atmospheric.exhaust_velocity",&exhaust_velocity,0) == EVDS_OK) {
+			EVDS_Object_AddFloatVariable(object,"atmospheric.isp",exhaust_velocity/EVDS_G0,0);
+			return EVDS_OK;
+		}
+	}
+
+
+	////////////////////////////////////////////////////////////////////////////////
+	// Thrust and Ve
+	////////////////////////////////////////////////////////////////////////////////
+	//Determine atmospheric F from vacuum F, assuming 1 bar atmospheric
+	/*if (EVDS_Object_GetVariable(object,"atmospheric.thrust",&variable) != EVDS_OK) {
+		EVDS_REAL thrust,exit_area;
+		if ((EVDS_Object_GetRealVariable(object,"vacuum.thrust",&thrust,0) == EVDS_OK) &&
+			(EVDS_Object_GetRealVariable(object,"nozzle.exit_area",&exit_area,0) == EVDS_OK)) {
+			//Fatm = F-(Pe - P0)*Ae
+			EVDS_Object_AddFloatVariable(object,"atmospheric.thrust",thrust - 1e5*exit_area,0);
+			return EVDS_OK;
+		}
+	}
+	//Determine vacuum F from atmospheric F, assuming 1 bar atmospheric
+	if (EVDS_Object_GetVariable(object,"vacuum.thrust",&variable) != EVDS_OK) {
+		EVDS_REAL thrust,exit_area;
+		if ((EVDS_Object_GetRealVariable(object,"atmospheric.thrust",&thrust,0) == EVDS_OK) &&
+			(EVDS_Object_GetRealVariable(object,"nozzle.exit_area",&exit_area,0) == EVDS_OK)) {
+			//F = Fatm+(Pe - P0)*Ae
+			EVDS_Object_AddFloatVariable(object,"vacuum.thrust",thrust + 1e5*exit_area,0);
+			return EVDS_OK;
+		}
+	}*/
+	//Determine atmospheric Ve (effective)
+	if (EVDS_Object_GetVariable(object,"atmospheric.exhaust_velocity",&variable) != EVDS_OK) {
+		EVDS_REAL mass_flow,thrust;
+		if ((EVDS_Object_GetRealVariable(object,"atmospheric.mass_flow",&mass_flow,0) == EVDS_OK) &&
+			(EVDS_Object_GetRealVariable(object,"atmospheric.thrust",&thrust,0) == EVDS_OK)) {
+			EVDS_Object_AddFloatVariable(object,"atmospheric.exhaust_velocity",thrust/mass_flow,0); //Ve = F/mdot
+			return EVDS_OK;
+		}
+	}
+	//Determine Ve
+	if (EVDS_Object_GetVariable(object,"vacuum.exhaust_velocity",&variable) != EVDS_OK) {
+		EVDS_REAL mass_flow,thrust;
+		if ((EVDS_Object_GetRealVariable(object,"vacuum.mass_flow",&mass_flow,0) == EVDS_OK) &&
+			(EVDS_Object_GetRealVariable(object,"vacuum.thrust",&thrust,0) == EVDS_OK)) {
+			EVDS_Object_AddFloatVariable(object,"vacuum.exhaust_velocity",thrust/mass_flow,0);
+			return EVDS_OK;
+		}
+	}
+
+
+	////////////////////////////////////////////////////////////////////////////////
+	// Fall-back hacks (must be last in list)
+	////////////////////////////////////////////////////////////////////////////////
+	//Determine atmospheric F from vacuum F, in a hacky way
+	if (EVDS_Object_GetVariable(object,"atmospheric.thrust",&variable) != EVDS_OK) {
+		EVDS_REAL thrust;
+		if (EVDS_Object_GetRealVariable(object,"vacuum.thrust",&thrust,0) == EVDS_OK) {
+			EVDS_Object_AddFloatVariable(object,"atmospheric.thrust",thrust*0.90,0);
+			return EVDS_OK;
+		}
+	}
+	//Determine vacuum F from atmospheric F, in a hacky way
+	if (EVDS_Object_GetVariable(object,"vacuum.thrust",&variable) != EVDS_OK) {
+		EVDS_REAL thrust;
+		if (EVDS_Object_GetRealVariable(object,"atmospheric.thrust",&thrust,0) == EVDS_OK) {
+			EVDS_Object_AddFloatVariable(object,"vacuum.thrust",thrust/0.90,0);
+			return EVDS_OK;
+		}
+	}
+	//Determine atmospheric Isp from vacuum Isp, in a hacky way
+	if (EVDS_Object_GetVariable(object,"atmospheric.isp",&variable) != EVDS_OK) {
+		EVDS_REAL isp;
+		if (EVDS_Object_GetRealVariable(object,"vacuum.isp",&isp,0) == EVDS_OK) {
+			EVDS_Object_AddFloatVariable(object,"atmospheric.isp",isp*0.90,0);
+			return EVDS_OK;
+		}
+	}
+	//Determine vacuum Isp from atmospheric Isp, in a hacky way
+	if (EVDS_Object_GetVariable(object,"vacuum.isp",&variable) != EVDS_OK) {
+		EVDS_REAL isp;
+		if (EVDS_Object_GetRealVariable(object,"atmospheric.isp",&isp,0) == EVDS_OK) {
+			EVDS_Object_AddFloatVariable(object,"vacuum.isp",isp/0.90,0);
+			return EVDS_OK;
+		}
+	}
+
 	//Try to determine oxidizer:fuel ratio from fuel tanks
-	if (EVDS_Object_GetVariable(object,"combustion.of_ratio",&variable) != EVDS_OK) {
+	/*if (EVDS_Object_GetVariable(object,"combustion.of_ratio",&variable) != EVDS_OK) {
 		EVDS_OBJECT* vessel;
 		if (EVDS_Object_GetParentObjectByType(object,"vessel",&vessel) == EVDS_OK) {
 			//Total mass of fuel and oxidizer
@@ -200,7 +400,7 @@ int EVDS_InternalRocketEngine_DetermineMore(EVDS_SYSTEM* system, EVDS_OBJECT* ob
 				return EVDS_OK;
 			}
 		}		
-	}
+	}*/
 	return EVDS_ERROR_INTERNAL;
 }
 
