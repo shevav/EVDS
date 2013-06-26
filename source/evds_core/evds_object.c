@@ -2152,7 +2152,15 @@ int EVDS_Object_GetStateVector(EVDS_OBJECT* object, EVDS_STATE_VECTOR* vector) {
 ////////////////////////////////////////////////////////////////////////////////
 /// @brief Set state vector of an object.
 ///
-/// State vector components will be converted to parent objects coordinate system.
+/// The state vector components must be specified in the objects parent coordinate system.
+/// The additional information (location of velocity vector, etc) will be discarded - it is
+/// assumed that all components of state vector are consistent between themselves.
+///
+/// The consistency means that objects velocity vector is always assumed to lie in objects
+/// position, and any information about otherwise is discarded.
+///
+/// @note No automatic conversion is performed. The state vector must be correctly defined
+///       when passed into this function.
 ///
 /// Example of use:
 /// ~~~{.c}
@@ -2188,6 +2196,9 @@ int EVDS_Object_SetStateVector(EVDS_OBJECT* object, EVDS_STATE_VECTOR* vector) {
 	SIMC_SRW_EnterWrite(object->state_lock);
 		memcpy(&object->state,vector,sizeof(EVDS_STATE_VECTOR));
 
+		//Objects state vector is always specified in parent coordinates, all vectors
+		//are assumed to be located in objects reference points. To avoid any mathematical
+		//errors, any other suggestions from user are rejected.
 		object->state.position.pcoordinate_system = 0;
 		object->state.position.vcoordinate_system = 0;
 		object->state.velocity.pcoordinate_system = 0;
