@@ -1598,7 +1598,7 @@ int EVDS_Object_GetUID(EVDS_OBJECT* object, unsigned int* uid) {
 ///
 /// @returns Error code
 /// @retval EVDS_OK Successfully completed (object matches type)
-/// @retval EVDS_ERROR_NOT_FOUND Object is not of the given type
+/// @retval EVDS_ERROR_INVALID_TYPE Object is not of the given type
 /// @retval EVDS_ERROR_BAD_PARAMETER "object" is null
 /// @retval EVDS_ERROR_BAD_PARAMETER "type" is null
 /// @retval EVDS_ERROR_INVALID_OBJECT Object was destroyed
@@ -1935,7 +1935,11 @@ int EVDS_Object_GetParent(EVDS_OBJECT* object, EVDS_OBJECT** p_object) {
 /// @retval EVDS_ERROR_BAD_PARAMETER "object" is null
 /// @retval EVDS_ERROR_BAD_PARAMETER "type" is null
 /// @retval EVDS_ERROR_BAD_PARAMETER "p_object" is null
+/// @retval EVDS_ERROR_INVALID_TYPE Parent not found, or is not of the given type
 /// @retval EVDS_ERROR_INVALID_OBJECT Object was destroyed
+/// @retval EVDS_ERROR_INTERTHREAD_CALL The function can only be called from thread that is initializing the object 
+///  (or thread that has created the object before initializer was called)
+
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_Object_GetParentObjectByType(EVDS_OBJECT* object, const char* type, EVDS_OBJECT** p_object) {
 	EVDS_OBJECT* parent;
@@ -1947,11 +1951,15 @@ int EVDS_Object_GetParentObjectByType(EVDS_OBJECT* object, const char* type, EVD
 #endif
 
 	parent = object;
-	while (EVDS_Object_CheckType(parent,type) != EVDS_OK) {
-		parent = object->parent;
+	while (parent && (EVDS_Object_CheckType(parent,type) != EVDS_OK)) {
+		parent = parent->parent;
 	}
 	*p_object = parent;
-	return EVDS_OK;
+	if (!parent) {
+		return EVDS_ERROR_INVALID_TYPE;
+	} else {
+		return EVDS_Object_CheckType(parent,type);
+	}
 }
 
 

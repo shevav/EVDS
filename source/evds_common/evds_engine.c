@@ -135,6 +135,114 @@ int EVDS_InternalRocketEngine_GenerateGeometry(EVDS_OBJECT* object) {
 
 
 ////////////////////////////////////////////////////////////////////////////////
+/// @brief Try to determine one or more rocket engine variables.
+///
+/// Returns EVDS_OK if one or more variables could be determined - the rocket engine initializer
+/// stops working when all possible variables have been determined
+////////////////////////////////////////////////////////////////////////////////
+int EVDS_InternalRocketEngine_DetermineMore(EVDS_SYSTEM* system, EVDS_OBJECT* object) {
+	EVDS_VARIABLE* variable;
+
+	//Try to determine oxidizer:fuel ratio from fuel tanks
+	if (EVDS_Object_GetVariable(object,"combustion.of_ratio",&variable) != EVDS_OK) {
+		EVDS_OBJECT* vessel;
+		if (EVDS_Object_GetParentObjectByType(object,"vessel",&vessel) == EVDS_OK) {
+			//Total mass of fuel and oxidizer
+			EVDS_REAL total_fuel = 0.0;
+			EVDS_REAL total_oxidizer = 0.0;
+
+			//Method 1: find all fuel/oxidizer tanks in vessel, divide total oxy by total mass
+			SIMC_LIST* list;
+			SIMC_LIST_ENTRY* entry;
+			EVDS_Object_GetChildren(vessel,&list);
+
+			entry = SIMC_List_GetFirst(list);
+			while (entry) {
+				char fuel_type_str[256] = { 0 };
+				EVDS_REAL fuel_mass_value;
+				EVDS_VARIABLE* fuel_type;
+				EVDS_VARIABLE* fuel_mass;
+				EVDS_OBJECT* fuel_tank = (EVDS_OBJECT*)SIMC_List_GetData(list,entry);
+
+				//Check if object is really a fuel tank
+				if (EVDS_Object_CheckType(fuel_tank,"fuel_tank") != EVDS_OK) {
+					entry = SIMC_List_GetNext(list,entry);
+					continue;
+				}
+
+				//Check if fuel type is explicitly defined
+				if (EVDS_Object_GetVariable(fuel_tank,"fuel_type",&fuel_type) != EVDS_OK) {
+					entry = SIMC_List_GetNext(list,entry);
+					continue;
+				}
+				EVDS_Variable_GetString(fuel_type,fuel_type_str,255,0);
+
+				//Check if fuel mass information is present
+				if (EVDS_Object_GetVariable(fuel_tank,"fuel_mass",&fuel_mass) != EVDS_OK) {
+					entry = SIMC_List_GetNext(list,entry);
+					continue;
+				}
+				EVDS_Variable_GetReal(fuel_mass,&fuel_mass_value);
+
+				//Add up
+				if (EVDS_Material_IsOxidizer(system,fuel_type_str) == EVDS_OK) {
+					total_oxidizer += fuel_mass_value;
+				}
+				if (EVDS_Material_IsFuel(system,fuel_type_str) == EVDS_OK) {
+					total_fuel += fuel_mass_value;
+				}
+				entry = SIMC_List_GetNext(list,entry);
+			}
+
+			//Add O/F ratio if possible
+			if ((total_oxidizer > 0.0) && (total_fuel > 0.0)) {
+				EVDS_Object_AddFloatVariable(object,"combustion.of_ratio",total_oxidizer/total_fuel,0);
+				return EVDS_OK;
+			}
+		}		
+	}
+	return EVDS_ERROR_INTERNAL;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// @brief Initialize solver
+////////////////////////////////////////////////////////////////////////////////
+int EVDS_InternalRocketEngine_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVDS_OBJECT* object) {
+	EVDS_REAL mass = 1.0;
+	EVDS_SOLVER_ENGINE_USERDATA* userdata;
+	if (EVDS_Object_CheckType(object,"rocket_engine") != EVDS_OK) return EVDS_IGNORE_OBJECT; 
+
+	//Create userdata
+	userdata = (EVDS_SOLVER_ENGINE_USERDATA*)malloc(sizeof(EVDS_SOLVER_ENGINE_USERDATA));
+	memset(userdata,0,sizeof(EVDS_SOLVER_ENGINE_USERDATA));
+	EVDS_ERRCHECK(EVDS_Object_SetSolverdata(object,userdata));
+
+	//Add utility variables
+	EVDS_Object_AddVariable(object,"key",EVDS_VARIABLE_TYPE_STRING,&userdata->key);
+	EVDS_Object_AddVariable(object,"force",EVDS_VARIABLE_TYPE_FLOAT,&userdata->force);
+
+	//Add all possible rocket engine variables
+	while (EVDS_InternalRocketEngine_DetermineMore(system,object) == EVDS_OK) ;
+
+	//Generate geometry for the rocket engine
+	EVDS_InternalRocketEngine_GenerateGeometry(object);
+	return EVDS_CLAIM_OBJECT;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// @brief Deinitialize engine solver
+////////////////////////////////////////////////////////////////////////////////
+int EVDS_InternalRocketEngine_Deinitialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVDS_OBJECT* object) {
+	EVDS_SOLVER_ENGINE_USERDATA* userdata;
+	EVDS_ERRCHECK(EVDS_Object_GetSolverdata(object,(void**)&userdata));
+	free(userdata);
+	return EVDS_OK;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
 /// @brief Update engine internal state
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_InternalRocketEngine_Solve(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVDS_OBJECT* object, EVDS_REAL delta_time) {
@@ -170,40 +278,6 @@ int EVDS_InternalRocketEngine_Integrate(EVDS_SYSTEM* system, EVDS_SOLVER* solver
 	//}
 	EVDS_Vector_Set(&derivative->force,EVDS_VECTOR_FORCE,object,-100.0,0.0,0.0);
 	EVDS_Vector_SetPosition(&derivative->force,object,0.0,0.0,0.0);
-	return EVDS_OK;
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-/// @brief Initialize solver
-////////////////////////////////////////////////////////////////////////////////
-int EVDS_InternalRocketEngine_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVDS_OBJECT* object) {
-	EVDS_REAL mass = 1.0;
-	EVDS_SOLVER_ENGINE_USERDATA* userdata;
-	if (EVDS_Object_CheckType(object,"rocket_engine") != EVDS_OK) return EVDS_IGNORE_OBJECT; 
-
-	//Create userdata
-	userdata = (EVDS_SOLVER_ENGINE_USERDATA*)malloc(sizeof(EVDS_SOLVER_ENGINE_USERDATA));
-	memset(userdata,0,sizeof(EVDS_SOLVER_ENGINE_USERDATA));
-	EVDS_ERRCHECK(EVDS_Object_SetSolverdata(object,userdata));
-
-	//Add variables
-	EVDS_Object_AddVariable(object,"key",EVDS_VARIABLE_TYPE_STRING,&userdata->key);
-	EVDS_Object_AddVariable(object,"force",EVDS_VARIABLE_TYPE_FLOAT,&userdata->force);
-
-	//Generate geometry for the rocket engine
-	EVDS_InternalRocketEngine_GenerateGeometry(object);
-	return EVDS_CLAIM_OBJECT;
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-/// @brief Deinitialize engine solver
-////////////////////////////////////////////////////////////////////////////////
-int EVDS_InternalRocketEngine_Deinitialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVDS_OBJECT* object) {
-	EVDS_SOLVER_ENGINE_USERDATA* userdata;
-	EVDS_ERRCHECK(EVDS_Object_GetSolverdata(object,(void**)&userdata));
-	free(userdata);
 	return EVDS_OK;
 }
 

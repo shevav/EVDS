@@ -268,6 +268,7 @@ int EVDS_InternalFuelTank_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, E
 	EVDS_Variable_SetReal(variable,fuel_mass);
 
 	//Apply fuel load ratio
+	if (load_ratio == 0.0) load_ratio = 1.0;
 	if (load_ratio > 1.0) load_ratio = 1.0;
 	if (load_ratio < 0.0) load_ratio = 0.0;
 	EVDS_Object_GetVariable(object,"fuel_mass",&variable);

@@ -111,6 +111,10 @@ EVDS_API int EVDS_Propagator_Heun_Register(EVDS_SYSTEM* system);
 EVDS_API int EVDS_Propagator_RK4_Register(EVDS_SYSTEM* system);
 
 
+// Check if material is oxidier
+EVDS_API int EVDS_Material_IsOxidizer(EVDS_SYSTEM* system, const char* name);
+// Check if material is fuel
+EVDS_API int EVDS_Material_IsFuel(EVDS_SYSTEM* system, const char* name);
 // Load default databases
 EVDS_API int EVDS_Common_LoadDatabase(EVDS_SYSTEM* system);
 
