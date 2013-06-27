@@ -403,10 +403,10 @@ void EVDS_Quaternion_ShortConvert(EVDS_QUATERNION* target, EVDS_QUATERNION* q, E
 
 	if (!target_is_child) {
 		//Rotate from child to parent
-		EVDS_Quaternion_Multiply(target,q,&child_state->orientation);
+		EVDS_Quaternion_Multiply(target,&child_state->orientation,q);
 	} else {
 		//Rotate from parent to child
-		EVDS_Quaternion_MultiplyConjugated(target,q,&child_state->orientation);
+		EVDS_Quaternion_MultiplyConjugatedQ(target,&child_state->orientation,q);
 	}
 
 	//Set coordinate system in target vector
@@ -722,8 +722,8 @@ void EVDS_Quaternion_ToLVLHCoordinates(EVDS_OBJECT* object, EVDS_QUATERNION* q_l
 
 	//Rotate quaternion Q from inertial to LVLH coordinates
 	EVDS_Quaternion_Convert(q_lvlh,q,object);
-	EVDS_Quaternion_MultiplyConjugated(q_lvlh,q_lvlh,&q_lon);
-	EVDS_Quaternion_MultiplyConjugated(q_lvlh,q_lvlh,&q_lat);
+	EVDS_Quaternion_MultiplyConjugatedQ(q_lvlh,&q_lon,q_lvlh);
+	EVDS_Quaternion_MultiplyConjugatedQ(q_lvlh,&q_lat,q_lvlh);
 }
 
 
@@ -740,8 +740,8 @@ void EVDS_Quaternion_FromLVLHCoordinates(EVDS_OBJECT* object, EVDS_QUATERNION* q
 
 	//Rotate quaternion Q from LVLH to inertial coordinates
 	EVDS_Quaternion_Convert(q_lvlh,q,object);
-	EVDS_Quaternion_Multiply(q_lvlh,q_lvlh,&q_lat);
-	EVDS_Quaternion_Multiply(q_lvlh,q_lvlh,&q_lon);
+	EVDS_Quaternion_Multiply(q_lvlh,&q_lat,q_lvlh);
+	EVDS_Quaternion_Multiply(q_lvlh,&q_lon,q_lvlh);
 }
 
 
@@ -1287,7 +1287,44 @@ void EVDS_Quaternion_ToMatrix(EVDS_QUATERNION* q, EVDS_MATRIX m)
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// @brief Multiply quaternion q by r
+/// @brief Multiply quaternion \f$q\f$ by \f$r\f$.
+///
+/// This operation rotates attitude specified by quaternion \f$r\f$ by quaternion \f$q\f$.
+/// For example:
+/// ~~~{.c}
+///		EVDS_QUATERNION attitude;
+///		EVDS_QUATERNION delta;
+///		EVDS_Quaternion_Multiply(&attitude,&delta,&attitude); //Rotate attitude by delta
+/// ~~~
+///
+/// The operation requires both quaternions to be in same coordinate system, or quaternion
+/// \f$q\f$ must be specified in parent coordinates of \f$r\f$. In the latter case the
+/// operation is equal to transformation of quaternion \f$r\f$ in child coordinates to
+/// parent coordinates (child coordinates rotated in parent coordinates by \f$q\f$).
+///
+/// The quaternion multiplication operation is defined as following:
+/// \f{eqnarray*}{
+///		q \cdot r &=&
+///		\left[ \begin{array}{c} 
+///			q_0 \\
+///			q_1 \\
+///			q_2 \\
+///			q_3 \\
+///		\end{array} \right] \cdot
+///		\left[ \begin{array}{c} 
+///			r_0 \\
+///			r_1 \\
+///			r_2 \\
+///			r_3 \\
+///		\end{array} \right]
+///		&=&
+///		\left[ \begin{array}{c} 
+///			r_0 q_0 - r_1 q_1 - r_2 q_2 - r_3 q_3 \\
+///			r_0 q_1 + r_1 q_0 - r_2 q_3 + r_3 q_2 \\
+///			r_0 q_2 + r_1 q_3 + r_2 q_0 - r_3 q_1 \\
+///			r_0 q_3 - r_1 q_2 + r_2 q_1 + r_3 q_0 \\
+///		\end{array} \right] \\
+/// \f}
 ////////////////////////////////////////////////////////////////////////////////
 void EVDS_Quaternion_Multiply(EVDS_QUATERNION* target, EVDS_QUATERNION* q, EVDS_QUATERNION* r)
 {
@@ -1296,7 +1333,7 @@ void EVDS_Quaternion_Multiply(EVDS_QUATERNION* target, EVDS_QUATERNION* q, EVDS_
 
 	//EVDS_Quaternion_Convert(r,r,q->coordinate_system);
 	EVDS_ASSERT((q->coordinate_system == r->coordinate_system) ||
-		(q->coordinate_system->parent == r->coordinate_system));
+				(q->coordinate_system == r->coordinate_system->parent));
 
 	q0 = q->q[0]; q1 = q->q[1]; q2 = q->q[2]; q3 = q->q[3];
 	r0 = r->q[0]; r1 = r->q[1]; r2 = r->q[2]; r3 = r->q[3];
@@ -1305,21 +1342,104 @@ void EVDS_Quaternion_Multiply(EVDS_QUATERNION* target, EVDS_QUATERNION* q, EVDS_
 	target->q[1] = r0 * q1 + r1 * q0 - r2 * q3 + r3 * q2;
 	target->q[2] = r0 * q2 + r1 * q3 + r2 * q0 - r3 * q1;
 	target->q[3] = r0 * q3 - r1 * q2 + r2 * q1 + r3 * q0;
-	target->coordinate_system = r->coordinate_system;
+	target->coordinate_system = q->coordinate_system;
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// @brief Multiply quaternion q by conjugate of r
+/// @brief Multiply conjugate of quaternion \f$q\f$ by \f$r\f$.
+///
+/// This operation rotates attitude specified by quaternion \f$r\f$ by opposite to quaternion \f$q\f$.
+/// For example:
+/// ~~~{.c}
+///		EVDS_QUATERNION attitude;
+///		EVDS_QUATERNION delta;
+///		EVDS_Quaternion_Multiply(&attitude,&delta,&attitude); //Rotate attitude by delta
+///		EVDS_Quaternion_MultiplyQ(&attitude,&delta,&attitude); //Undo the rotation
+/// ~~~
+///
+/// The operation requires both quaternions to be in same coordinate system. This operation
+/// can be used to transform quaternion from parent coordinates to child coordinates
+/// (child coordinates rotated in parent coordinates by \f$q\f$).
+///
+/// This operation is defined as following:
+/// \f{eqnarray*}{
+///		q^{-1} \cdot r &=&
+///		\left[ \begin{array}{c} 
+///			q_0 \\
+///			q_1 \\
+///			q_2 \\
+///			q_3 \\
+///		\end{array} \right]^{-1} \cdot
+///		\left[ \begin{array}{c} 
+///			r_0 \\
+///			r_1 \\
+///			r_2 \\
+///			r_3 \\
+///		\end{array} \right]
+///		&=&
+///		\left[ \begin{array}{c} 
+///			  r_0 q_0 + r_1 q_1 + r_2 q_2 + r_3 q_3 \\
+///			- r_0 q_1 + r_1 q_0 + r_2 q_3 - r_3 q_2 \\
+///			- r_0 q_2 - r_1 q_3 + r_2 q_0 + r_3 q_1 \\
+///			- r_0 q_3 + r_1 q_2 - r_2 q_1 + r_3 q_0 \\
+///		\end{array} \right] \\
+/// \f}
 ////////////////////////////////////////////////////////////////////////////////
-void EVDS_Quaternion_MultiplyConjugated(EVDS_QUATERNION* target, EVDS_QUATERNION* q, EVDS_QUATERNION* r)
+void EVDS_Quaternion_MultiplyConjugatedQ(EVDS_QUATERNION* target, EVDS_QUATERNION* q, EVDS_QUATERNION* r)
 {
 	double q0,q1,q2,q3;
 	double r0,r1,r2,r3;
 
 	//EVDS_Quaternion_Convert(r,r,q->coordinate_system);
-	EVDS_ASSERT((q->coordinate_system == r->coordinate_system) ||
-		(q->coordinate_system->parent == r->coordinate_system));
+	EVDS_ASSERT(q->coordinate_system == r->coordinate_system);
+
+	q0 = q->q[0]; q1 = -q->q[1]; q2 = -q->q[2]; q3 = -q->q[3];
+	r0 = r->q[0]; r1 =  r->q[1]; r2 =  r->q[2]; r3 =  r->q[3];
+
+	target->q[0] = r0 * q0 - r1 * q1 - r2 * q2 - r3 * q3;
+	target->q[1] = r0 * q1 + r1 * q0 - r2 * q3 + r3 * q2;
+	target->q[2] = r0 * q2 + r1 * q3 + r2 * q0 - r3 * q1;
+	target->q[3] = r0 * q3 - r1 * q2 + r2 * q1 + r3 * q0;
+	target->coordinate_system = q->coordinate_system;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// @brief Multiply quaternion \f$q\f$ by conjugate of \f$r\f$.
+///
+/// This operation provides a shortcut, as similar to EVDS_Quaternion_MultiplyConjugatedQ().
+/// It is only provided for consistency, and defined as following:
+/// \f{eqnarray*}{
+///		q \cdot r^{-1} &=&
+///		\left[ \begin{array}{c} 
+///			q_0 \\
+///			q_1 \\
+///			q_2 \\
+///			q_3 \\
+///		\end{array} \right] \cdot
+///		\left[ \begin{array}{c} 
+///			r_0 \\
+///			r_1 \\
+///			r_2 \\
+///			r_3 \\
+///		\end{array} \right]^{-1}
+///		&=&
+///		\left[ \begin{array}{c} 
+///			r_0 q_0 + r_1 q_1 + r_2 q_2 + r_3 q_3 \\
+///			r_0 q_1 - r_1 q_0 + r_2 q_3 - r_3 q_2 \\
+///			r_0 q_2 - r_1 q_3 - r_2 q_0 + r_3 q_1 \\
+///			r_0 q_3 + r_1 q_2 - r_2 q_1 - r_3 q_0 \\
+///		\end{array} \right] \\
+/// \f}
+////////////////////////////////////////////////////////////////////////////////
+void EVDS_Quaternion_MultiplyConjugatedR(EVDS_QUATERNION* target, EVDS_QUATERNION* q, EVDS_QUATERNION* r)
+{
+	double q0,q1,q2,q3;
+	double r0,r1,r2,r3;
+
+	//EVDS_Quaternion_Convert(r,r,q->coordinate_system);
+	EVDS_ASSERT(q->coordinate_system == r->coordinate_system);
 
 	q0 = q->q[0]; q1 =  q->q[1]; q2 =  q->q[2]; q3 =  q->q[3];
 	r0 = r->q[0]; r1 = -r->q[1]; r2 = -r->q[2]; r3 = -r->q[3];
@@ -1328,7 +1448,7 @@ void EVDS_Quaternion_MultiplyConjugated(EVDS_QUATERNION* target, EVDS_QUATERNION
 	target->q[1] = r0 * q1 + r1 * q0 - r2 * q3 + r3 * q2;
 	target->q[2] = r0 * q2 + r1 * q3 + r2 * q0 - r3 * q1;
 	target->q[3] = r0 * q3 - r1 * q2 + r2 * q1 + r3 * q0;
-	target->coordinate_system = r->coordinate_system;
+	target->coordinate_system = q->coordinate_system;
 }
 
 

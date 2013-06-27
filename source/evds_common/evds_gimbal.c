@@ -134,7 +134,7 @@ int EVDS_InternalGimbal_Solve(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVDS_OBJ
 	//Turn the gimbal platform itself
 	EVDS_Object_GetStateVector(userdata->platform,&vector);
 	EVDS_Quaternion_FromEuler(&delta_quaternion,zero_quaternion.coordinate_system,0,EVDS_RAD(pitch_current),EVDS_RAD(yaw_current));
-	EVDS_Quaternion_Multiply(&vector.orientation,&zero_quaternion,&delta_quaternion);
+	EVDS_Quaternion_Multiply(&vector.orientation,&delta_quaternion,&zero_quaternion);
 	EVDS_Object_SetStateVector(userdata->platform,&vector);
 	return EVDS_OK;
 }

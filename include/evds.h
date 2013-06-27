@@ -1303,8 +1303,10 @@ EVDS_API void EVDS_Quaternion_ToEuler(EVDS_QUATERNION* q, EVDS_OBJECT* target_co
 EVDS_API void EVDS_Quaternion_ToMatrix(EVDS_QUATERNION* q, EVDS_MATRIX m);
 // Multiply two quaternions (must be specified in the same coordinate system)
 EVDS_API void EVDS_Quaternion_Multiply(EVDS_QUATERNION* target, EVDS_QUATERNION* q, EVDS_QUATERNION* r);
+// Multiply  conjugated first quaternion by second quaternion
+EVDS_API void EVDS_Quaternion_MultiplyConjugatedQ(EVDS_QUATERNION* target, EVDS_QUATERNION* q, EVDS_QUATERNION* r);
 // Multiply first quaternion by conjugated second quaternion
-EVDS_API void EVDS_Quaternion_MultiplyConjugated(EVDS_QUATERNION* target, EVDS_QUATERNION* q, EVDS_QUATERNION* r);
+EVDS_API void EVDS_Quaternion_MultiplyConjugatedR(EVDS_QUATERNION* target, EVDS_QUATERNION* q, EVDS_QUATERNION* r);
 // Multiply by a scalar
 EVDS_API void EVDS_Quaternion_MultiplyScalar(EVDS_QUATERNION* target, EVDS_QUATERNION* source, EVDS_REAL scalar);
 // Multiply and add
