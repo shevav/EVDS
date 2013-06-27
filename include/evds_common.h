@@ -47,6 +47,9 @@ extern "C" {
 /// - @subpage EVDS_Solver_Planet "'planet'"
 ///		Planet or moon with built-in coordinate systems. Planetary position can be
 ///		updated from an ephemeris, orbital information, or be physically simulated.
+/// - @subpage EVDS_Solver_Wiring "'wire'", "'wire.node'", "'wire.connector'"
+///		Wiring or piping connecting nodes and connectors.
+///
 ///
 /// The following propagators are available:
 /// - @subpage EVDS_Propagator_RK4 "'propagator_rk4'":
@@ -105,6 +108,10 @@ EVDS_API int EVDS_Planet_Register(EVDS_SYSTEM* system);
 EVDS_API int EVDS_Planet_GetNearest(EVDS_OBJECT* object, EVDS_OBJECT** p_planet);
 
 
+// Wiring, piping, connectors, etc
+EVDS_API int EVDS_Wiring_Register(EVDS_SYSTEM* system);
+
+
 // Heun propagator-corrector solver
 EVDS_API int EVDS_Propagator_Heun_Register(EVDS_SYSTEM* system);
 // Runge-Kutta 4th order propagator
@@ -127,6 +134,7 @@ EVDS_RocketEngine_Register(system); \
 EVDS_FuelTank_Register(system); \
 EVDS_Gimbal_Register(system); \
 EVDS_Planet_Register(system); \
+EVDS_Wiring_Register(system); \
 EVDS_Propagator_Heun_Register(system); \
 EVDS_Propagator_RK4_Register(system);
 ////////////////////////////////////////////////////////////////////////////////

@@ -418,12 +418,12 @@ int EVDS_InternalRocketEngine_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solve
 	memset(userdata,0,sizeof(EVDS_SOLVER_ENGINE_USERDATA));
 	EVDS_ERRCHECK(EVDS_Object_SetSolverdata(object,userdata));
 
-	//Add utility variables
-	EVDS_Object_AddVariable(object,"key",EVDS_VARIABLE_TYPE_STRING,&userdata->key);
-	EVDS_Object_AddVariable(object,"force",EVDS_VARIABLE_TYPE_FLOAT,&userdata->force);
-
 	//Add all possible rocket engine variables
 	while (EVDS_InternalRocketEngine_DetermineMore(system,object) == EVDS_OK) ;
+
+	//Remember some of the variables for userdata
+	EVDS_Object_AddVariable(object,"key",EVDS_VARIABLE_TYPE_STRING,&userdata->key);
+	EVDS_Object_AddVariable(object,"force",EVDS_VARIABLE_TYPE_FLOAT,&userdata->force);
 
 	//Generate geometry for the rocket engine
 	EVDS_InternalRocketEngine_GenerateGeometry(object);
