@@ -423,7 +423,7 @@ int EVDS_InternalRocketEngine_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solve
 
 	//Remember some of the variables for userdata
 	EVDS_Object_AddVariable(object,"key",EVDS_VARIABLE_TYPE_STRING,&userdata->key);
-	EVDS_Object_AddVariable(object,"force",EVDS_VARIABLE_TYPE_FLOAT,&userdata->force);
+	EVDS_Object_AddVariable(object,"vacuum.thrust",EVDS_VARIABLE_TYPE_FLOAT,&userdata->force);
 
 	//Generate geometry for the rocket engine
 	EVDS_InternalRocketEngine_GenerateGeometry(object);
@@ -461,8 +461,26 @@ int EVDS_InternalRocketEngine_Integrate(EVDS_SYSTEM* system, EVDS_SOLVER* solver
 	EVDS_ERRCHECK(EVDS_Object_GetSolverdata(object,(void**)&userdata));
 
 	//Get variables
+	{
+		static shut = 0;
+		EVDS_OBJECT* inertial;
+		EVDS_STATE_VECTOR vector;
+		EVDS_VECTOR vel;
+		EVDS_REAL mag2;
+		EVDS_System_GetRootInertialSpace(system,&inertial);
+		EVDS_Object_GetStateVector(object,&vector);
+		EVDS_Vector_Convert(&vel,&vector.velocity,inertial);
+		EVDS_Vector_Dot(&mag2,&vel,&vel);
+		mag2 = sqrt(mag2);
+		if (mag2 > 500.0) shut = 1;
+		if (shut) return EVDS_OK;
+	}
+
+
 	EVDS_Variable_GetReal(userdata->force,&force);
-	EVDS_Variable_GetString(userdata->key,&key,1,0);
+	//EVDS_Variable_GetString(userdata->key,&key,1,0);
+	//EVDS_Vector_Set(&derivative->force,EVDS_VECTOR_FORCE,object,-force,0.0,0.0);
+	//EVDS_Vector_SetPosition(&derivative->force,object,0.0,0.0,0.0);
 
 	//Calculate force
 	//if (key) {
@@ -476,8 +494,8 @@ int EVDS_InternalRocketEngine_Integrate(EVDS_SYSTEM* system, EVDS_SOLVER* solver
 	//} else {
 		//EVDS_Vector_Set(&derivative->force,EVDS_VECTOR_FORCE,object,0.0,0.0,0.0);
 	//}
-	EVDS_Vector_Set(&derivative->force,EVDS_VECTOR_FORCE,object,-100.0,0.0,0.0);
-	EVDS_Vector_SetPosition(&derivative->force,object,0.0,0.0,0.0);
+	//EVDS_Vector_Set(&derivative->force,EVDS_VECTOR_FORCE,object,-100.0,0.0,0.0);
+	//EVDS_Vector_SetPosition(&derivative->force,object,0.0,0.0,0.0);
 	return EVDS_OK;
 }
 

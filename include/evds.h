@@ -1242,12 +1242,12 @@ EVDS_API void EVDS_Vector_GetVelocityVector(EVDS_VECTOR* v, EVDS_VECTOR* velocit
 // Shortcut to set velocity by vector
 EVDS_API void EVDS_Vector_SetVelocityVector(EVDS_VECTOR* v, EVDS_VECTOR* velocity);
 
-// Convert position vector into geographic coordinates of the object
-EVDS_API void EVDS_Vector_ToGeographicCoordinates(EVDS_OBJECT* object, EVDS_VECTOR* v, 
-												  EVDS_REAL* latitude, EVDS_REAL* longitude, EVDS_REAL* altitude);
 // Convert geographic coordinates of the object to a position vector
 EVDS_API void EVDS_Vector_FromGeographicCoordinates(EVDS_OBJECT* object, EVDS_VECTOR* target, 
 												    EVDS_REAL latitude, EVDS_REAL longitude, EVDS_REAL altitude);
+// Convert position vector into geographic coordinates of the object
+EVDS_API void EVDS_Vector_ToGeographicCoordinates(EVDS_OBJECT* object, EVDS_VECTOR* v, 
+												  EVDS_REAL* latitude, EVDS_REAL* longitude, EVDS_REAL* altitude);
 
 // Copy one vector into another
 EVDS_API void EVDS_Vector_Copy(EVDS_VECTOR* target, EVDS_VECTOR* v);
@@ -1288,9 +1288,9 @@ EVDS_API void EVDS_StateVector_MultiplyByTimeAndAdd(EVDS_STATE_VECTOR* target, E
 EVDS_API void EVDS_StateVector_Interpolate(EVDS_STATE_VECTOR* target, EVDS_STATE_VECTOR* v1, EVDS_STATE_VECTOR* v2, EVDS_REAL t);
 
 // Set euler angles in a target coordinate system
-EVDS_API void EVDS_Quaternion_SetEuler(EVDS_QUATERNION* target, EVDS_OBJECT* target_coordinates, EVDS_REAL x, EVDS_REAL y, EVDS_REAL z);
+EVDS_API void EVDS_Quaternion_FromEuler(EVDS_QUATERNION* target, EVDS_OBJECT* target_coordinates, EVDS_REAL x, EVDS_REAL y, EVDS_REAL z);
 // Get euler angles in a target coordinate system
-EVDS_API void EVDS_Quaternion_GetEuler(EVDS_QUATERNION* q, EVDS_OBJECT* target_coordinates, EVDS_REAL* x, EVDS_REAL* y, EVDS_REAL* z);
+EVDS_API void EVDS_Quaternion_ToEuler(EVDS_QUATERNION* q, EVDS_OBJECT* target_coordinates, EVDS_REAL* x, EVDS_REAL* y, EVDS_REAL* z);
 // Convert quaternion to a matrix
 EVDS_API void EVDS_Quaternion_ToMatrix(EVDS_QUATERNION* q, EVDS_MATRIX m);
 // Multiply two quaternions (must be specified in the same coordinate system)

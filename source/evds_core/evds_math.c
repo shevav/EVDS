@@ -708,8 +708,6 @@ void EVDS_Vector_FromGeographicCoordinates(EVDS_OBJECT* object, EVDS_VECTOR* tar
 }
 
 
-
-
 ////////////////////////////////////////////////////////////////////////////////
 /// @brief Copies data from source vector to target vector
 ////////////////////////////////////////////////////////////////////////////////
@@ -1181,7 +1179,7 @@ void EVDS_StateVector_Interpolate(EVDS_STATE_VECTOR* target, EVDS_STATE_VECTOR* 
 ////////////////////////////////////////////////////////////////////////////////
 /// @brief Set quaternion from euler angles
 ////////////////////////////////////////////////////////////////////////////////
-void EVDS_Quaternion_SetEuler(EVDS_QUATERNION* target, EVDS_OBJECT* target_coordinates, EVDS_REAL x, EVDS_REAL y, EVDS_REAL z)
+void EVDS_Quaternion_FromEuler(EVDS_QUATERNION* target, EVDS_OBJECT* target_coordinates, EVDS_REAL x, EVDS_REAL y, EVDS_REAL z)
 {
 	double c1 = cos(x*0.5);
 	double c2 = cos(y*0.5);
@@ -1202,7 +1200,7 @@ void EVDS_Quaternion_SetEuler(EVDS_QUATERNION* target, EVDS_OBJECT* target_coord
 ////////////////////////////////////////////////////////////////////////////////
 /// @brief Get quaternion from euler angles
 ////////////////////////////////////////////////////////////////////////////////
-void EVDS_Quaternion_GetEuler(EVDS_QUATERNION* q, EVDS_OBJECT* target_coordinates, EVDS_REAL* x, EVDS_REAL* y, EVDS_REAL* z) {
+void EVDS_Quaternion_ToEuler(EVDS_QUATERNION* q, EVDS_OBJECT* target_coordinates, EVDS_REAL* x, EVDS_REAL* y, EVDS_REAL* z) {
 	//      w  x  y  z
 	double q0,q1,q2,q3;
 	double sine;

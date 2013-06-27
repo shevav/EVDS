@@ -2472,7 +2472,7 @@ int EVDS_Object_SetOrientation(EVDS_OBJECT* object, EVDS_OBJECT* target_coordina
 #endif
 
 	SIMC_SRW_EnterWrite(object->state_lock);
-	EVDS_Quaternion_SetEuler(&object->state.orientation,target_coordinates,roll,pitch,yaw);
+	EVDS_Quaternion_FromEuler(&object->state.orientation,target_coordinates,roll,pitch,yaw);
 	SIMC_SRW_LeaveWrite(object->state_lock);
 	return EVDS_OK;
 }

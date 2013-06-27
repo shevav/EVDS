@@ -189,7 +189,7 @@ int EVDS_Internal_SaveObject(EVDS_OBJECT* object, SIMC_XML_DOCUMENT* doc,
 
 	//Write position/orientation
 	EVDS_Object_GetStateVector(object,&vector);
-	EVDS_Quaternion_GetEuler(&vector.orientation,vector.orientation.coordinate_system,&roll,&pitch,&yaw);
+	EVDS_Quaternion_ToEuler(&vector.orientation,vector.orientation.coordinate_system,&roll,&pitch,&yaw);
 	EVDS_ERRCHECK(SIMC_XML_AddAttributeDouble(doc,element,"x",vector.position.x));
 	EVDS_ERRCHECK(SIMC_XML_AddAttributeDouble(doc,element,"y",vector.position.y));
 	EVDS_ERRCHECK(SIMC_XML_AddAttributeDouble(doc,element,"z",vector.position.z));
