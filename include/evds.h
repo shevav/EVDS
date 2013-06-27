@@ -1100,6 +1100,8 @@ EVDS_API int EVDS_Object_SetPosition(EVDS_OBJECT* object, EVDS_OBJECT* target_co
 EVDS_API int EVDS_Object_SetVelocity(EVDS_OBJECT* object, EVDS_OBJECT* target_coordinates, EVDS_REAL vx, EVDS_REAL vy, EVDS_REAL vz);
 // Shortcut to set orientation (in euler angles)
 EVDS_API int EVDS_Object_SetOrientation(EVDS_OBJECT* object, EVDS_OBJECT* target_coordinates, EVDS_REAL roll, EVDS_REAL pitch, EVDS_REAL yaw);
+// Shortcut to set orientation (as a quaternion)
+EVDS_API int EVDS_Object_SetOrientationQuaterion(EVDS_OBJECT* object, EVDS_QUATERNION* q);
 // Shortcut to set angular velocity (roll-pitch-yaw order)
 EVDS_API int EVDS_Object_SetAngularVelocity(EVDS_OBJECT* object, EVDS_OBJECT* target_coordinates, EVDS_REAL r, EVDS_REAL p, EVDS_REAL q);
 // Set time for which object position is valid
@@ -1248,6 +1250,12 @@ EVDS_API void EVDS_Vector_FromGeographicCoordinates(EVDS_OBJECT* object, EVDS_VE
 // Convert position vector into geographic coordinates of the object
 EVDS_API void EVDS_Vector_ToGeographicCoordinates(EVDS_OBJECT* object, EVDS_VECTOR* v, 
 												  EVDS_REAL* latitude, EVDS_REAL* longitude, EVDS_REAL* altitude);
+// Convert quaternion to objects LVLH frame
+EVDS_API void EVDS_Quaternion_ToLVLHCoordinates(EVDS_OBJECT* object, EVDS_QUATERNION* q_lvlh, EVDS_QUATERNION* q,
+											    EVDS_REAL latitude, EVDS_REAL longitude);
+// Convert quaternion from objects LVLH frame
+EVDS_API void EVDS_Quaternion_FromLVLHCoordinates(EVDS_OBJECT* object, EVDS_QUATERNION* q_lvlh, EVDS_QUATERNION* q,
+												  EVDS_REAL latitude, EVDS_REAL longitude);
 
 // Copy one vector into another
 EVDS_API void EVDS_Vector_Copy(EVDS_VECTOR* target, EVDS_VECTOR* v);

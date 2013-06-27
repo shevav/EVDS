@@ -2479,6 +2479,36 @@ int EVDS_Object_SetOrientation(EVDS_OBJECT* object, EVDS_OBJECT* target_coordina
 
 
 ////////////////////////////////////////////////////////////////////////////////
+/// @brief Set objects orientation as a quaternion.
+///
+/// The quaternion will be converted to parent coordinate system. If object is the root object, this call will fail.
+///
+/// @param[in] object Pointer to object
+/// @param[in] q Quaternion representing target objects orientation
+///
+/// @returns Error code, pointer to userdata
+/// @retval EVDS_OK Successfully completed (object matches type)
+/// @retval EVDS_ERROR_BAD_PARAMETER "object" is null
+/// @retval EVDS_ERROR_BAD_PARAMETER "q" is null
+/// @retval EVDS_ERROR_BAD_PARAMETER Object is a root object
+/// @retval EVDS_ERROR_INVALID_OBJECT Object was destroyed
+////////////////////////////////////////////////////////////////////////////////
+int EVDS_Object_SetOrientationQuaternion(EVDS_OBJECT* object, EVDS_QUATERNION* q) {
+	if (!object) return EVDS_ERROR_BAD_PARAMETER;
+	if (!q) return EVDS_ERROR_BAD_PARAMETER;
+	if (!object->parent) return EVDS_ERROR_BAD_PARAMETER;
+#ifndef EVDS_SINGLETHREADED
+	if (object->destroyed) return EVDS_ERROR_INVALID_OBJECT;
+#endif
+
+	SIMC_SRW_EnterWrite(object->state_lock);
+	EVDS_Quaternion_Convert(&object->state.orientation,q,object->parent);
+	SIMC_SRW_LeaveWrite(object->state_lock);
+	return EVDS_OK;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
 /// @brief Set objects angular velocity in the target coordinates.
 ///
 /// If target coordinates are null, objects parent will be used. If object is the root object, this call will fail.

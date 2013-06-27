@@ -709,6 +709,43 @@ void EVDS_Vector_FromGeographicCoordinates(EVDS_OBJECT* object, EVDS_VECTOR* tar
 
 
 ////////////////////////////////////////////////////////////////////////////////
+/// @brief Convert quaternion to objects LVLH frame
+///
+/// Returns quaternion in objects coordinate frame (although the quaternion represents
+/// attitude in LVLH coordinate system).
+////////////////////////////////////////////////////////////////////////////////
+void EVDS_Quaternion_ToLVLHCoordinates(EVDS_OBJECT* object, EVDS_QUATERNION* q_lvlh, EVDS_QUATERNION* q,
+									   EVDS_REAL latitude, EVDS_REAL longitude) {
+	EVDS_QUATERNION q_lon,q_lat; //Rotations to go from North pole to given latitude/longitude
+	EVDS_Quaternion_FromEuler(&q_lon,object,0,0,EVDS_DEG(longitude));
+	EVDS_Quaternion_FromEuler(&q_lat,object,0,EVDS_DEG(90-latitude),0);
+
+	//Rotate quaternion Q from inertial to LVLH coordinates
+	EVDS_Quaternion_Convert(q_lvlh,q,object);
+	EVDS_Quaternion_Multiply(q_lvlh,q_lvlh,&q_lat);
+	EVDS_Quaternion_Multiply(q_lvlh,q_lvlh,&q_lon);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// @brief Convert quaternion from objects LVLH frame
+///
+/// Returns quaternion in objects coordinate frame.
+////////////////////////////////////////////////////////////////////////////////
+void EVDS_Quaternion_FromLVLHCoordinates(EVDS_OBJECT* object, EVDS_QUATERNION* q_lvlh, EVDS_QUATERNION* q,
+										 EVDS_REAL latitude, EVDS_REAL longitude) {
+	EVDS_QUATERNION q_lon,q_lat; //Rotations to go from North pole to given latitude/longitude
+	EVDS_Quaternion_FromEuler(&q_lon,object,0,0,EVDS_DEG(longitude));
+	EVDS_Quaternion_FromEuler(&q_lat,object,0,EVDS_DEG(90-latitude),0);
+
+	//Rotate quaternion Q from LVLH to inertial coordinates
+	EVDS_Quaternion_Convert(q_lvlh,q,object);
+	EVDS_Quaternion_MultiplyConjugated(q_lvlh,q_lvlh,&q_lon);
+	EVDS_Quaternion_MultiplyConjugated(q_lvlh,q_lvlh,&q_lat);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
 /// @brief Copies data from source vector to target vector
 ////////////////////////////////////////////////////////////////////////////////
 void EVDS_Vector_Copy(EVDS_VECTOR* target, EVDS_VECTOR* v)
