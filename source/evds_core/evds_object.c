@@ -2014,6 +2014,30 @@ int EVDS_Object_GetParentObjectByType(EVDS_OBJECT* object, const char* type, EVD
 
 
 ////////////////////////////////////////////////////////////////////////////////
+/// @brief Fixes values of "parent_level" in all objects after parent has changed
+////////////////////////////////////////////////////////////////////////////////
+int EVDS_InternalObject_FixParentLevels(EVDS_OBJECT* object) {
+	SIMC_LIST_ENTRY* entry;
+
+	//Fix parent level
+	if (object->parent) {
+		object->parent_level = object->parent->parent_level+1;
+	} else {
+		object->parent_level = 0;
+	}
+
+	//Do same recursively to all children
+	entry = SIMC_List_GetFirst(object->raw_children);
+	while (entry) {	
+		EVDS_OBJECT* child = (EVDS_OBJECT*)SIMC_List_GetData(object->raw_children,entry);
+		EVDS_InternalObject_FixParentLevels(child);
+		entry = SIMC_List_GetNext(object->raw_children,entry);
+	}
+	return EVDS_OK;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
 /// @brief Change the objects parent.
 ///
 /// @todo Add documentation.
@@ -2031,8 +2055,12 @@ int EVDS_Object_GetParentObjectByType(EVDS_OBJECT* object, const char* type, EVD
 /// @retval EVDS_ERROR_BAD_PARAMETER "new_parent" is null
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_Object_SetParent(EVDS_OBJECT* object, EVDS_OBJECT* new_parent) {
+	EVDS_STATE_VECTOR vector;
 	if (!object) return EVDS_ERROR_BAD_PARAMETER;
 	if (!new_parent) return EVDS_ERROR_BAD_PARAMETER;
+
+	//FIXME: after child has been removed from lists, any vector/quaternion conversion
+	//calls may fail because tree is inconsistent: they must be blocked!
 
 	//Remove object from the previous parents list
 	if (object->parent && object->parent_entry) {
@@ -2048,14 +2076,20 @@ int EVDS_Object_SetParent(EVDS_OBJECT* object, EVDS_OBJECT* new_parent) {
 	SIMC_SRW_EnterRead(object->state_lock); //Prevent state vector from being read in indeterminate state
 		object->parent = new_parent; //Make object belong to this parent even before it is in lists
 									 // to avoid iterators getting objects with parent field not properly set
-		object->parent_level = new_parent->parent_level+1; //Update parent level
+		EVDS_InternalObject_FixParentLevels(object);
+		//object->parent_level = new_parent->parent_level+1; //Update parent level
 		
-		EVDS_Vector_Convert(&object->state.position,				&object->state.position,new_parent);
-		EVDS_Vector_Convert(&object->state.velocity,				&object->state.velocity,new_parent);
-		EVDS_Vector_Convert(&object->state.acceleration,			&object->state.acceleration,new_parent);
-		EVDS_Quaternion_Convert(&object->state.orientation,			&object->state.orientation,new_parent);
-		EVDS_Vector_Convert(&object->state.angular_velocity,		&object->state.angular_velocity,new_parent);
-		EVDS_Vector_Convert(&object->state.angular_acceleration,	&object->state.angular_acceleration,new_parent);
+		//Get consistent state vector (including vector position/velocity information) and convert
+		EVDS_Object_GetStateVector(object,&vector);
+		EVDS_Vector_Convert(&object->state.position,				&vector.position,new_parent);
+		EVDS_Vector_Convert(&object->state.velocity,				&vector.velocity,new_parent);
+		EVDS_Vector_Convert(&object->state.acceleration,			&vector.acceleration,new_parent);
+		EVDS_Quaternion_Convert(&object->state.orientation,			&vector.orientation,new_parent);
+		EVDS_Vector_Convert(&object->state.angular_velocity,		&vector.angular_velocity,new_parent);
+		EVDS_Vector_Convert(&object->state.angular_acceleration,	&vector.angular_acceleration,new_parent);
+
+		//FIXME: fix "parent_level" recursively in all objects
+
 	SIMC_SRW_LeaveRead(object->state_lock);
 
 	//Add object to new parents list
@@ -2185,6 +2219,14 @@ int EVDS_Object_SetStateVector(EVDS_OBJECT* object, EVDS_STATE_VECTOR* vector) {
 	if (object->destroyed) return EVDS_ERROR_INVALID_OBJECT;
 #endif
 
+	//Assert validity of the state vector
+	EVDS_ASSERT(vector->position.coordinate_system == object->parent);
+	EVDS_ASSERT(vector->velocity.coordinate_system == object->parent);
+	EVDS_ASSERT(vector->acceleration.coordinate_system == object->parent);
+	EVDS_ASSERT(vector->orientation.coordinate_system == object->parent);
+	EVDS_ASSERT(vector->angular_velocity.coordinate_system == object->parent);
+	EVDS_ASSERT(vector->angular_acceleration.coordinate_system == object->parent);
+
 	//Set previous state vector
 	SIMC_SRW_EnterWrite(object->state_lock);
 	SIMC_SRW_EnterRead(object->previous_state_lock);
@@ -2206,10 +2248,10 @@ int EVDS_Object_SetStateVector(EVDS_OBJECT* object, EVDS_STATE_VECTOR* vector) {
 		object->state.acceleration.pcoordinate_system = 0;
 		object->state.acceleration.vcoordinate_system = 0;
 
-		object->state.angular_acceleration.pcoordinate_system = 0;
-		object->state.angular_acceleration.vcoordinate_system = 0;
 		object->state.angular_velocity.pcoordinate_system = 0;
 		object->state.angular_velocity.vcoordinate_system = 0;
+		object->state.angular_acceleration.pcoordinate_system = 0;
+		object->state.angular_acceleration.vcoordinate_system = 0;
 	SIMC_SRW_LeaveWrite(object->state_lock);
 #ifndef EVDS_SINGLETHREADED
 	memcpy(&object->private_state,vector,sizeof(EVDS_STATE_VECTOR)); //FIXME: this must be locked!!
