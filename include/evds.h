@@ -1101,7 +1101,7 @@ EVDS_API int EVDS_Object_SetVelocity(EVDS_OBJECT* object, EVDS_OBJECT* target_co
 // Shortcut to set orientation (in euler angles)
 EVDS_API int EVDS_Object_SetOrientation(EVDS_OBJECT* object, EVDS_OBJECT* target_coordinates, EVDS_REAL roll, EVDS_REAL pitch, EVDS_REAL yaw);
 // Shortcut to set orientation (as a quaternion)
-EVDS_API int EVDS_Object_SetOrientationQuaterion(EVDS_OBJECT* object, EVDS_QUATERNION* q);
+EVDS_API int EVDS_Object_SetOrientationQuaternion(EVDS_OBJECT* object, EVDS_QUATERNION* q);
 // Shortcut to set angular velocity (roll-pitch-yaw order)
 EVDS_API int EVDS_Object_SetAngularVelocity(EVDS_OBJECT* object, EVDS_OBJECT* target_coordinates, EVDS_REAL r, EVDS_REAL p, EVDS_REAL q);
 // Set time for which object position is valid
