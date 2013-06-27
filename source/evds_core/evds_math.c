@@ -417,6 +417,9 @@ void EVDS_Quaternion_ShortConvert(EVDS_QUATERNION* target, EVDS_QUATERNION* q, E
 ////////////////////////////////////////////////////////////////////////////////
 /// @brief Convert quaternion to target coordinates.
 ///
+/// See EVDS_Vector_Convert() for the traversal algorithm used to determine conversion
+/// path between two coordinate systems.
+///
 /// @param[out] target Quaternion, where result will be written
 /// @param[in] q Quaternion, that must be converted
 /// @param[in] target_coordinates Target coordinates, to which the vector must be converted
@@ -572,7 +575,7 @@ void EVDS_Vector_SetPosition(EVDS_VECTOR* target, EVDS_OBJECT* target_coordinate
 ////////////////////////////////////////////////////////////////////////////////
 /// @brief Gets position of the vector as a vector.
 ///
-/// @param[in] v Vector, position of whic must be determined
+/// @param[in] v Vector, position of which must be determined
 /// @param[out] position Vector of EVDS_VECTOR_POSITION type, in which vector "v" is located
 ////////////////////////////////////////////////////////////////////////////////
 void EVDS_Vector_GetPositionVector(EVDS_VECTOR* v, EVDS_VECTOR* position) {
@@ -587,7 +590,10 @@ void EVDS_Vector_GetPositionVector(EVDS_VECTOR* v, EVDS_VECTOR* position) {
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// @brief Sets vector position by a position vector
+/// @brief Sets vector position by a position vector.
+///
+/// @param[in] v Vector, position of which must be set
+/// @param[in] position Vector of EVDS_VECTOR_POSITION type, in which vector "v" is located
 ////////////////////////////////////////////////////////////////////////////////
 void EVDS_Vector_SetPositionVector(EVDS_VECTOR* v, EVDS_VECTOR* position) {
 	EVDS_ASSERT(position->derivative_level == EVDS_VECTOR_POSITION);
@@ -636,7 +642,11 @@ void EVDS_Vector_SetVelocityVector(EVDS_VECTOR* v, EVDS_VECTOR* velocity) {
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// @brief Convert position vector into geographic coordinates of the object
+/// @brief Convert position vector into geographic coordinates of the object.
+///
+/// This function converts a position vector to geographic coordinates relative to the object.
+///
+/// @todo Add documentation
 ////////////////////////////////////////////////////////////////////////////////
 void EVDS_Vector_ToGeographicCoordinates(EVDS_OBJECT* object, EVDS_VECTOR* v,
 										 EVDS_REAL* latitude, EVDS_REAL* longitude, EVDS_REAL* altitude) {
@@ -672,7 +682,11 @@ void EVDS_Vector_ToGeographicCoordinates(EVDS_OBJECT* object, EVDS_VECTOR* v,
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// @brief Convert geographic coordinates of the object to a position vector
+/// @brief Convert geographic coordinates of the object to a position vector.
+///
+/// This function converts geographic coordinates relative to the object to a position vector.
+///
+/// @todo Add documentation
 ////////////////////////////////////////////////////////////////////////////////
 void EVDS_Vector_FromGeographicCoordinates(EVDS_OBJECT* object, EVDS_VECTOR* target,
 										   EVDS_REAL latitude, EVDS_REAL longitude, EVDS_REAL altitude) {
@@ -709,10 +723,12 @@ void EVDS_Vector_FromGeographicCoordinates(EVDS_OBJECT* object, EVDS_VECTOR* tar
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// @brief Convert quaternion to objects LVLH frame
+/// @brief Convert quaternion to objects LVLH frame.
 ///
 /// Returns quaternion in objects coordinate frame (although the quaternion represents
 /// attitude in LVLH coordinate system).
+///
+/// @todo Add documentation
 ////////////////////////////////////////////////////////////////////////////////
 void EVDS_Quaternion_ToLVLHCoordinates(EVDS_OBJECT* object, EVDS_QUATERNION* q_lvlh, EVDS_QUATERNION* q,
 									   EVDS_REAL latitude, EVDS_REAL longitude) {
@@ -728,9 +744,11 @@ void EVDS_Quaternion_ToLVLHCoordinates(EVDS_OBJECT* object, EVDS_QUATERNION* q_l
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// @brief Convert quaternion from objects LVLH frame
+/// @brief Convert quaternion from objects LVLH frame.
 ///
 /// Returns quaternion in objects coordinate frame.
+///
+/// @todo Add documentation
 ////////////////////////////////////////////////////////////////////////////////
 void EVDS_Quaternion_FromLVLHCoordinates(EVDS_OBJECT* object, EVDS_QUATERNION* q_lvlh, EVDS_QUATERNION* q,
 										 EVDS_REAL latitude, EVDS_REAL longitude) {
@@ -746,7 +764,11 @@ void EVDS_Quaternion_FromLVLHCoordinates(EVDS_OBJECT* object, EVDS_QUATERNION* q
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// @brief Copies data from source vector to target vector
+/// @brief Copies data from source vector to target vector.
+///
+/// @param[out] target Target vector
+/// @param[in] v Vector that will be copied to target
+/// @returns Copy of the source vector
 ////////////////////////////////////////////////////////////////////////////////
 void EVDS_Vector_Copy(EVDS_VECTOR* target, EVDS_VECTOR* v)
 {
@@ -756,16 +778,24 @@ void EVDS_Vector_Copy(EVDS_VECTOR* target, EVDS_VECTOR* v)
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// @brief Copies data from source quaternion to target quaternion
+/// @brief Copies data from source quaternion to target quaternion.
+///
+/// @param[out] target Target quaternion
+/// @param[in] q Quaternion that will be copied to target
+/// @returns Copy of the source quaternion
 ////////////////////////////////////////////////////////////////////////////////
-void EVDS_Quaternion_Copy(EVDS_QUATERNION* target, EVDS_QUATERNION* v) {
-	if (v == target) return;
-	memcpy(target,v,sizeof(EVDS_QUATERNION));
+void EVDS_Quaternion_Copy(EVDS_QUATERNION* target, EVDS_QUATERNION* q) {
+	if (q == target) return;
+	memcpy(target,q,sizeof(EVDS_QUATERNION));
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// @brief Copies data from source state vector to target state vector
+/// @brief Copies data from source state vector to target state vector.
+///
+/// @param[out] target Target state vector
+/// @param[in] v State vector that will be copied to target
+/// @returns Copy of the source state vector
 ////////////////////////////////////////////////////////////////////////////////
 void EVDS_StateVector_Copy(EVDS_STATE_VECTOR* target, EVDS_STATE_VECTOR* v) {
 	if (v == target) return;
@@ -774,7 +804,11 @@ void EVDS_StateVector_Copy(EVDS_STATE_VECTOR* target, EVDS_STATE_VECTOR* v) {
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// @brief Copies data from source state vector derivative to target state vector derivative
+/// @brief Copies data from source state vector derivative to target state vector derivative.
+///
+/// @param[out] target Target state vector derivative
+/// @param[in] v State vector derivative that will be copied to target
+/// @returns Copy of the source state vector derivative
 ////////////////////////////////////////////////////////////////////////////////
 void EVDS_StateVector_Derivative_Copy(EVDS_STATE_VECTOR_DERIVATIVE* target, EVDS_STATE_VECTOR_DERIVATIVE* v) {
 	if (v == target) return;
@@ -1006,61 +1040,13 @@ void EVDS_Vector_MultiplyByTimeAndAdd(EVDS_VECTOR* target, EVDS_VECTOR* source, 
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// @brief Multiply state vector v by a scalar and add it to source state vector
-///
-/// \f{eqnarray*}{
-///		\left[ \begin{array}{c} 
-///			\bar r \\
-///			\bar v \\
-///			\bar a \\
-///			\bar \omega \\
-///			\bar \alpha \\
-///			q_0 \\
-///			q_1 \\
-///			q_2 \\
-///			q_3
-///		\end{array} \right]_{target} =
-///
-///		\left[ \begin{array}{c} 
-///			\bar r \\
-///			\bar v \\
-///			\bar a \\
-///			\bar \omega \\
-///			\bar \alpha \\
-///			q_0 \\
-///			q_1 \\
-///			q_2 \\
-///			q_3
-///		\end{array} \right]_{source} + scalar \cdot
-///		\left[ \begin{array}{c} 
-///			\bar r \\
-///			\bar v \\
-///			\bar a \\
-///			\bar \omega \\
-///			\bar \alpha \\
-///			q_0 \\
-///			q_1 \\
-///			q_2 \\
-///			q_3
-///		\end{array} \right]_{v}
-/// \f}
-///
-/// @param[out] target Result of the operation will be written here
-/// @param[in] source State vector derivative
-/// @param[in] v State vector derivative that will be multiplied and added to source
-/// @param[in] scalar Scalar value
-///
-/// @returns New state vector derivative
+/// @brief Interpolate vector linearly between two vectors.
 ////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-void EVDS_StateVector_MultiplyAndAdd(EVDS_STATE_VECTOR* target, EVDS_STATE_VECTOR* source, 
-									 EVDS_STATE_VECTOR* v, EVDS_REAL scalar) {
-	EVDS_Vector_MultiplyAndAdd(&target->velocity,&source->velocity,&v->velocity,scalar);
-	EVDS_Vector_MultiplyAndAdd(&target->position,&source->position,&v->position,scalar);
-	EVDS_Vector_MultiplyAndAdd(&target->acceleration,&source->acceleration,&v->acceleration,scalar);
-	EVDS_Vector_MultiplyAndAdd(&target->angular_velocity,&source->angular_velocity,&v->angular_velocity,scalar);
-	EVDS_Vector_MultiplyAndAdd(&target->angular_acceleration,&source->angular_acceleration,&v->angular_acceleration,scalar);
-	EVDS_Quaternion_MultiplyAndAdd(&target->orientation,&source->orientation,&v->orientation,scalar);
+void EVDS_Vector_Interpolate(EVDS_VECTOR* target, EVDS_VECTOR* v1, EVDS_VECTOR* v2, EVDS_REAL t) {
+	EVDS_VECTOR temporary;
+	EVDS_Vector_Multiply(&temporary,v1,1-t);
+	EVDS_Vector_MultiplyAndAdd(&temporary,&temporary,v2,t);
+	EVDS_Vector_Copy(target,&temporary);
 }
 
 
@@ -1193,19 +1179,13 @@ void EVDS_StateVector_Interpolate(EVDS_STATE_VECTOR* target, EVDS_STATE_VECTOR* 
 	if (t < 0.0) t = 0.0;
 	if (t > 1.0) t = 1.0;
 
-	EVDS_Vector_Multiply(&target->velocity,&v1->velocity,1-t);
-	EVDS_Vector_Multiply(&target->position,&v1->position,1-t);
-	EVDS_Vector_Multiply(&target->acceleration,&v1->acceleration,1-t);
-	EVDS_Vector_Multiply(&target->angular_velocity,&v1->angular_velocity,1-t);
-	EVDS_Vector_Multiply(&target->angular_acceleration,&v1->angular_acceleration,1-t);
-	EVDS_Quaternion_MultiplyScalar(&target->orientation,&v1->orientation,1-t);
-
-	EVDS_Vector_MultiplyAndAdd(&target->velocity,&target->velocity,&v2->velocity,t);
-	EVDS_Vector_MultiplyAndAdd(&target->position,&target->position,&v2->position,t);
-	EVDS_Vector_MultiplyAndAdd(&target->acceleration,&target->acceleration,&v2->acceleration,t);
-	EVDS_Vector_MultiplyAndAdd(&target->angular_velocity,&target->angular_velocity,&v2->angular_velocity,t);
-	EVDS_Vector_MultiplyAndAdd(&target->angular_acceleration,&target->angular_acceleration,&v2->angular_acceleration,t);
-	EVDS_Quaternion_MultiplyAndAdd(&target->orientation,&target->orientation,&v2->orientation,t);
+	EVDS_Vector_Interpolate(&target->velocity,&v1->velocity,&v2->velocity,t);
+	EVDS_Vector_Interpolate(&target->position,&v1->position,&v2->position,t);
+	EVDS_Vector_Interpolate(&target->acceleration,&v1->acceleration,&v2->acceleration,t);
+	EVDS_Vector_Interpolate(&target->angular_velocity,&v1->angular_velocity,&v2->angular_velocity,t);
+	EVDS_Vector_Interpolate(&target->angular_acceleration,&v1->angular_acceleration,&v2->angular_acceleration,t);
+	EVDS_Quaternion_Interpolate(&target->orientation,&v1->orientation,&v2->orientation,t);
+	//FIXME: use slerp
 
 	EVDS_Quaternion_Normalize(&target->orientation,&target->orientation);
 }
@@ -1453,7 +1433,21 @@ void EVDS_Quaternion_MultiplyConjugatedR(EVDS_QUATERNION* target, EVDS_QUATERNIO
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// @brief Multiply quaternion by a scalar
+/// @brief Multiply quaternion by a scalar.
+///
+/// @note This operation will most likely change quaternions length. Be careful with operations
+///       which require a normalized quaternion.
+///
+/// It is defined as:
+/// \f{eqnarray*}{
+///		q \cdot scalar &=&
+///		\left[ \begin{array}{c} 
+///			q_0 \cdot scalar \\
+///			q_1 \cdot scalar \\
+///			q_2 \cdot scalar \\
+///			q_3 \cdot scalar \\
+///		\end{array} \right]
+/// \f}
 ////////////////////////////////////////////////////////////////////////////////
 void EVDS_Quaternion_MultiplyScalar(EVDS_QUATERNION* target, EVDS_QUATERNION* source, EVDS_REAL scalar) {
 	target->q[0] = source->q[0]*scalar;
@@ -1465,25 +1459,10 @@ void EVDS_Quaternion_MultiplyScalar(EVDS_QUATERNION* target, EVDS_QUATERNION* so
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// @brief Multiply quaternion by a scalar and add to the source quaternion
+/// @brief Spherical quaternion interpolation.
 ////////////////////////////////////////////////////////////////////////////////
-void EVDS_Quaternion_MultiplyAndAdd(EVDS_QUATERNION* target, EVDS_QUATERNION* source, EVDS_QUATERNION* q, EVDS_REAL scalar) {
-	EVDS_QUATERNION temporary;
-
-	temporary.q[0] = q->q[0] * scalar;
-	temporary.q[1] = q->q[1] * scalar;
-	temporary.q[2] = q->q[2] * scalar;
-	temporary.q[3] = q->q[3] * scalar;
-	temporary.coordinate_system = q->coordinate_system;
-
-	EVDS_Quaternion_Convert(&temporary,&temporary,source->coordinate_system);
-	EVDS_ASSERT(source->coordinate_system == temporary.coordinate_system);
-
-	target->q[0] = source->q[0] + temporary.q[0];
-	target->q[1] = source->q[1] + temporary.q[1];
-	target->q[2] = source->q[2] + temporary.q[2];
-	target->q[3] = source->q[3] + temporary.q[3];
-	target->coordinate_system = source->coordinate_system;
+void EVDS_Quaternion_Interpolate(EVDS_QUATERNION* target, EVDS_QUATERNION* q1, EVDS_QUATERNION* q2, EVDS_REAL t) {
+	//FIXME
 }
 
 

@@ -208,10 +208,6 @@ typedef struct EVDS_QUATERNION_TAG {
 ///		\end{array} \right|
 /// \f]
 ///
-/// @note If used when rendering object state using OpenGL, there is no need to transpose
-///       the matrix (OpenGL uses left-handed coordinate system, and column-major matrices.
-///       Two transposes cancel eachother out).
-///
 /// Matrices do not have a coordinate system assigned to them, but they can be assumed to
 /// have the same coordinate system as the quaternion, from which the matrix was generated.
 ////////////////////////////////////////////////////////////////////////////////
@@ -1260,7 +1256,7 @@ EVDS_API void EVDS_Quaternion_FromLVLHCoordinates(EVDS_OBJECT* object, EVDS_QUAT
 // Copy one vector into another
 EVDS_API void EVDS_Vector_Copy(EVDS_VECTOR* target, EVDS_VECTOR* v);
 // Copy one quaternion into another
-EVDS_API void EVDS_Quaternion_Copy(EVDS_QUATERNION* target, EVDS_QUATERNION* v);
+EVDS_API void EVDS_Quaternion_Copy(EVDS_QUATERNION* target, EVDS_QUATERNION* q);
 // Copy one state vector into another
 EVDS_API void EVDS_StateVector_Copy(EVDS_STATE_VECTOR* target, EVDS_STATE_VECTOR* v);
 // Copy one state vector into another
@@ -1283,9 +1279,8 @@ EVDS_API void EVDS_Vector_Multiply(EVDS_VECTOR* target, EVDS_VECTOR* v, EVDS_REA
 EVDS_API void EVDS_Vector_MultiplyAndAdd(EVDS_VECTOR* target, EVDS_VECTOR* source, EVDS_VECTOR* v, EVDS_REAL scalar);
 // Multiply by time and add
 EVDS_API void EVDS_Vector_MultiplyByTimeAndAdd(EVDS_VECTOR* target, EVDS_VECTOR* source, EVDS_VECTOR* v, EVDS_REAL delta_time);
-// Multiply and add
-EVDS_API void EVDS_StateVector_MultiplyAndAdd(EVDS_STATE_VECTOR* target, EVDS_STATE_VECTOR* source, 
-											  EVDS_STATE_VECTOR* v, EVDS_REAL scalar);
+// Interpolate vector linearly between two vectors.
+EVDS_API void EVDS_Vector_Interpolate(EVDS_VECTOR* target, EVDS_VECTOR* v1, EVDS_VECTOR* v2, EVDS_REAL t);
 // Multiply and add
 EVDS_API void EVDS_StateVector_Derivative_MultiplyAndAdd(EVDS_STATE_VECTOR_DERIVATIVE* target, EVDS_STATE_VECTOR_DERIVATIVE* source, 
 														 EVDS_STATE_VECTOR_DERIVATIVE* v, EVDS_REAL scalar);
@@ -1309,8 +1304,8 @@ EVDS_API void EVDS_Quaternion_MultiplyConjugatedQ(EVDS_QUATERNION* target, EVDS_
 EVDS_API void EVDS_Quaternion_MultiplyConjugatedR(EVDS_QUATERNION* target, EVDS_QUATERNION* q, EVDS_QUATERNION* r);
 // Multiply by a scalar
 EVDS_API void EVDS_Quaternion_MultiplyScalar(EVDS_QUATERNION* target, EVDS_QUATERNION* source, EVDS_REAL scalar);
-// Multiply and add
-EVDS_API void EVDS_Quaternion_MultiplyAndAdd(EVDS_QUATERNION* target, EVDS_QUATERNION* source, EVDS_QUATERNION* q, EVDS_REAL scalar);
+// Spherical quaternion interpolation.
+EVDS_API void EVDS_Quaternion_Interpolate(EVDS_QUATERNION* target, EVDS_QUATERNION* q1, EVDS_QUATERNION* q2, EVDS_REAL t);
 // Normalize quaternion to 1.0
 EVDS_API void EVDS_Quaternion_Normalize(EVDS_QUATERNION* target, EVDS_QUATERNION* q);
 // Rotate vector by quaternion. Vector will be converted to a coordinate system that is a child of quaternions coordinates
