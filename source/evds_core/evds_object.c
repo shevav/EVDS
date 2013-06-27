@@ -2464,6 +2464,7 @@ int EVDS_Object_SetVelocity(EVDS_OBJECT* object, EVDS_OBJECT* target_coordinates
 /// @retval EVDS_ERROR_INVALID_OBJECT Object was destroyed
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_Object_SetOrientation(EVDS_OBJECT* object, EVDS_OBJECT* target_coordinates, EVDS_REAL roll, EVDS_REAL pitch, EVDS_REAL yaw) {
+	EVDS_QUATERNION quaternion;
 	if (!object) return EVDS_ERROR_BAD_PARAMETER;
 	if (!target_coordinates) target_coordinates = object->parent;
 	if (!target_coordinates) return EVDS_ERROR_BAD_PARAMETER;
@@ -2472,7 +2473,8 @@ int EVDS_Object_SetOrientation(EVDS_OBJECT* object, EVDS_OBJECT* target_coordina
 #endif
 
 	SIMC_SRW_EnterWrite(object->state_lock);
-	EVDS_Quaternion_FromEuler(&object->state.orientation,target_coordinates,roll,pitch,yaw);
+	EVDS_Quaternion_FromEuler(&quaternion,target_coordinates,roll,pitch,yaw);
+	EVDS_Quaternion_Convert(&object->state.orientation,&quaternion,object->parent);
 	SIMC_SRW_LeaveWrite(object->state_lock);
 	return EVDS_OK;
 }

@@ -198,7 +198,7 @@ int EVDS_Environment_GetGravitationalField(EVDS_SYSTEM* system, EVDS_VECTOR* pos
 		r = sqrtf(r2);
 
 		//Check if inside the planet itself
-		if (radius_var && (r < radius)) {
+		if (radius_var && (r < radius*0.9)) {
 			entry = SIMC_List_GetNext(planets,entry);
 			continue; //Too close to the planet
 		}

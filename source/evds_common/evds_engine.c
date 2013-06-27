@@ -479,7 +479,7 @@ int EVDS_InternalRocketEngine_Integrate(EVDS_SYSTEM* system, EVDS_SOLVER* solver
 
 	EVDS_Variable_GetReal(userdata->force,&force);
 	//EVDS_Variable_GetString(userdata->key,&key,1,0);
-	EVDS_Vector_Set(&derivative->force,EVDS_VECTOR_FORCE,object,-force,0.0,0.0);
+	EVDS_Vector_Set(&derivative->force,EVDS_VECTOR_FORCE,object,-10*force,0.0,0.0);
 	EVDS_Vector_SetPosition(&derivative->force,object,0.0,0.0,0.0);
 
 	//Calculate force
