@@ -1045,12 +1045,12 @@ int EVDS_Object_CopySingle(EVDS_OBJECT* source, EVDS_OBJECT* parent, EVDS_OBJECT
 	object->userdata = source->userdata;
 
 	//Update state coordinate system
-	object->state.position.coordinate_system = parent;
-	object->state.velocity.coordinate_system = parent;
-	object->state.acceleration.coordinate_system = parent;
-	object->state.orientation.coordinate_system = parent;
-	object->state.angular_velocity.coordinate_system = parent;
-	object->state.angular_acceleration.coordinate_system = parent;
+	object->state.position.coordinate_system = object->parent;
+	object->state.velocity.coordinate_system = object->parent;
+	object->state.acceleration.coordinate_system = object->parent;
+	object->state.orientation.coordinate_system = object->parent;
+	object->state.angular_velocity.coordinate_system = object->parent;
+	object->state.angular_acceleration.coordinate_system = object->parent;
 	//if (object->state.velocity.pcoordinate_system) object->state.velocity.pcoordinate_system = parent;
 
 	//Copy variables
