@@ -391,6 +391,8 @@ typedef int EVDS_Callback_SyntaxError(EVDS_OBJECT_LOADEX* info, const char* erro
 #define EVDS_OBJECT_LOADEX_NO_DATABASES			16
 /// Do not load solver states
 //#define EVDS_OBJECT_LOADEX_NO_SOLVER_STATE	32
+/// Load metadata objects (FIXME: add support for this)
+#define EVDS_OBJECT_LOADEX_LOAD_METADATA		64
 
 /// Save only children of the object passed into EVDS_Object_SaveEx()
 #define EVDS_OBJECT_SAVEEX_ONLY_CHILDREN		1
