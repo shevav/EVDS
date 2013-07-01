@@ -118,6 +118,12 @@
 			<parameter name="melting_point">-58.0 C</parameter>
 		</entry>
 
+		<entry name="NH4ClO4" print="APCP" class="fuel">
+			<parameter name="density">1770 kg/m3</parameter>
+		</entry>
+		<entry name="LiClO4" print="LPCP" class="fuel">
+			<parameter name="density">2420 kg/m3</parameter>
+		</entry>
 
 		<entry name="aluminium" print="Aluminium" class="structural">
 			<parameter name="density">175 lb/ft3</parameter>
