@@ -87,8 +87,6 @@ extern "C" {
 ////////////////////////////////////////////////////////////////////////////////
 // Rigid body (moving object with mass), vessel (same as rigid body), vessel part (static object)
 EVDS_API int EVDS_RigidBody_Register(EVDS_SYSTEM* system);
-// Get center of mass of a rigid body
-EVDS_API int EVDS_RigidBody_GetCenterOfMass(EVDS_OBJECT* object, EVDS_VECTOR* cm);
 // Update all vessels and detach them if required. Must be called by user to support "detach" variable for vessels.
 EVDS_API int EVDS_RigidBody_UpdateDetaching(EVDS_SYSTEM* system);
 

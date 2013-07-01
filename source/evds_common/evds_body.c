@@ -582,17 +582,31 @@ int EVDS_InternalRigidBody_Integrate(EVDS_SYSTEM* system, EVDS_SOLVER* solver, E
 	//------------------------------------------------------------------
 	// Add fictious accelerations due to rotation around CM rather than body origin
 	//------------------------------------------------------------------
-	//Calculate acceleration due to rotation around center of mass
-	//Ainertial = (0,0,0)
-	//Acm -> convert
+	//{
+		//EVDS_REAL x,y,z;
+		//EVDS_Vector_Get(&cm,&x,&y,&z,parent_coordinates);
+		//printf("POSITION OF CM %.3f %.3f %.3f m\n",x,y,z);
+	//}
+
+	//Acceleration of bodies center of mass is zero in inertial coordinates (excluding additional forces)
+	EVDS_Vector_Set(&cm_a,EVDS_VECTOR_ACCELERATION,parent_coordinates,0,0,0);
+	EVDS_Vector_SetPositionVector(&cm_a,&cm);
+
+	//Convert to local acceleration (acceleration corresponding to zero inertial in CM, in local frame)
+	EVDS_Vector_Convert(&cm_a,&cm_a,object);
+	EVDS_Vector_SetPositionVector(&cm_a,&state->position);
+
+	//Add this acceleration to force center of mass acceleration to be zero
+	EVDS_Vector_Convert(&cm_a,&cm_a,parent_coordinates);
+	EVDS_Vector_Add(&derivative->acceleration,&derivative->acceleration,&cm_a);
 
 
 	//------------------------------------------------------------------
 	// Add additional forces (envrionmental forces)
 	//------------------------------------------------------------------
 	//Calculate acceleration due to gravity
-	//EVDS_Environment_GetGravitationalField(system,&state->position,0,&Ga);
-	//EVDS_Vector_Add(&derivative->acceleration,&derivative->acceleration,&Ga);
+	EVDS_Environment_GetGravitationalField(system,&state->position,0,&Ga);
+	EVDS_Vector_Add(&derivative->acceleration,&derivative->acceleration,&Ga);
 
 
 	//Do not move static bodies (FIXME: make static bodies more special)
@@ -675,33 +689,6 @@ int EVDS_InternalRigidBody_Deinitialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver
 	EVDS_SOLVER_RIGID_USERDATA* userdata;
 	EVDS_ERRCHECK(EVDS_Object_GetSolverdata(object,(void**)&userdata));
 	free(userdata);
-	return EVDS_OK;
-}
-
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-/// @brief Returns center of mass of a rigid body.
-///
-/// @param[in] object Rigid body or a vessel
-/// @param[out] cm Center of mass vector will be written here
-///
-/// @returns Error code, a copy of center of mass vector
-/// @retval EVDS_OK Successfully completed
-/// @retval EVDS_ERROR_BAD_STATE "object" is not a vessel
-/// @retval EVDS_ERROR_INVALID_OBJECT Object was destroyed
-////////////////////////////////////////////////////////////////////////////////
-int EVDS_RigidBody_GetCenterOfMass(EVDS_OBJECT* object, EVDS_VECTOR* cm) {
-	EVDS_SOLVER_RIGID_USERDATA* userdata;
-	if (EVDS_Object_CheckType(object,"rigid_body") != EVDS_OK) {
-		if (EVDS_Object_CheckType(object,"vessel") != EVDS_OK) {
-			EVDS_ERRCHECK(EVDS_Object_CheckType(object,"static_body"));
-		}
-	}
-
-	EVDS_ERRCHECK(EVDS_Object_GetSolverdata(object,(void**)&userdata));
-	EVDS_Variable_GetVector(userdata->CM,cm);
 	return EVDS_OK;
 }
 

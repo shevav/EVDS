@@ -2379,9 +2379,148 @@ int EVDS_Object_GetSolverdata(EVDS_OBJECT* object, void** solverdata) {
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// @brief Set objects position in the target coordinates.
+/// @brief Get objects center of mass.
 ///
-/// If target coordinates are null, objects parent will be used. If object is the root object, this call will fail.
+/// This call will return the point in space which must be considered to be
+/// center of mass. If object is a rigid body (static body, vessel), the function
+/// returns total center of mass.
+///
+/// @param[in] object Pointer to object
+/// @param[out] cm Center of mass vector will be copied here
+///
+/// @returns Error code, pointer to userdata
+/// @retval EVDS_OK Successfully completed 
+/// @retval EVDS_ERROR_BAD_PARAMETER "object" is null
+/// @retval EVDS_ERROR_BAD_PARAMETER "cm" is null
+/// @retval EVDS_ERROR_INVALID_OBJECT Object was destroyed
+////////////////////////////////////////////////////////////////////////////////
+int EVDS_Object_GetCoMPosition(EVDS_OBJECT* object, EVDS_VECTOR* cm) { //FIXME: optimize this function
+	EVDS_VARIABLE* variable;
+	if (!object) return EVDS_ERROR_BAD_PARAMETER;
+	if (!cm) return EVDS_ERROR_BAD_PARAMETER;
+#ifndef EVDS_SINGLETHREADED
+	if (object->destroyed) return EVDS_ERROR_INVALID_OBJECT;
+#endif
+
+	if (EVDS_Object_GetVariable(object,"total_cm",&variable) == EVDS_OK) {
+		EVDS_Variable_GetVector(variable,cm);
+	} else if (EVDS_Object_GetVariable(object,"cm",&variable) == EVDS_OK) {
+		EVDS_Variable_GetVector(variable,cm);
+	} else {
+		EVDS_STATE_VECTOR vector;
+		EVDS_Object_GetStateVector(object,&vector);
+		EVDS_Vector_Copy(cm,&vector.position);
+	}
+	return EVDS_OK;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// @brief Set objects position in the target coordinates.
+////////////////////////////////////////////////////////////////////////////////
+int EVDS_InternalObject_SetPosition(EVDS_OBJECT* object, int use_cm, EVDS_OBJECT* target_coordinates, EVDS_REAL x, EVDS_REAL y, EVDS_REAL z) {
+	EVDS_VECTOR temporary;
+	
+	//Set position
+	EVDS_Vector_Set(&temporary,EVDS_VECTOR_POSITION,target_coordinates,x,y,z);
+
+	//Add offset of center of mass position
+	if (use_cm) {
+		EVDS_VECTOR cm;
+		EVDS_Object_GetCoMPosition(object,&cm);
+		EVDS_Vector_Add(&temporary,&temporary,&cm);
+	}
+
+	//Convert into right coordinates
+	SIMC_SRW_EnterWrite(object->state_lock);
+		EVDS_Vector_Convert(&object->state.position,&temporary,object->parent);
+		object->state.position.pcoordinate_system = 0;
+		object->state.position.vcoordinate_system = 0;
+	SIMC_SRW_LeaveWrite(object->state_lock);
+	return EVDS_OK;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// @brief Set objects velocity in the target coordinates.
+////////////////////////////////////////////////////////////////////////////////
+int EVDS_InternalObject_SetVelocity(EVDS_OBJECT* object, int use_cm, EVDS_OBJECT* target_coordinates, EVDS_REAL vx, EVDS_REAL vy, EVDS_REAL vz) {
+	EVDS_VECTOR temporary;
+
+	//Set velocity
+	EVDS_Vector_Set(&temporary,EVDS_VECTOR_VELOCITY,target_coordinates,vx,vy,vz);
+	EVDS_Vector_Convert(&temporary,&temporary,object->parent); //Convert to parent coordinates
+
+	//Add velocity that corresponds to zero velocity of center of mass
+	if (use_cm) {
+		EVDS_VECTOR cm,v;
+		EVDS_Object_GetCoMPosition(object,&cm);
+
+		EVDS_Vector_Set(&v,EVDS_VECTOR_VELOCITY,object,0,0,0); //Local velocity of (0,0,0)
+		EVDS_Vector_SetPositionVector(&v,&cm); //Vector in CoM
+		EVDS_Vector_Convert(&v,&v,object->parent); //Convert to parent coordinates
+
+		EVDS_Vector_Subtract(&temporary,&temporary,&v); //Add extra components required to maintain zero velocity
+	}
+
+	//Convert into right coordinates
+	SIMC_SRW_EnterWrite(object->state_lock);
+		EVDS_Vector_Copy(&object->state.velocity,&temporary);
+		object->state.velocity.pcoordinate_system = 0;
+		object->state.velocity.vcoordinate_system = 0;
+	SIMC_SRW_LeaveWrite(object->state_lock);
+	return EVDS_OK;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// @brief Set objects angular velocity in the target coordinates.
+////////////////////////////////////////////////////////////////////////////////
+int EVDS_InternalObject_SetAngularVelocity(EVDS_OBJECT* object, EVDS_OBJECT* target_coordinates, EVDS_REAL r, EVDS_REAL p, EVDS_REAL q) {
+	EVDS_VECTOR temporary;
+
+	//Set angular velocity
+	EVDS_Vector_Set(&temporary,EVDS_VECTOR_ANGULAR_VELOCITY,target_coordinates,r,p,q);
+
+	//Convert into right coordinates
+	SIMC_SRW_EnterWrite(object->state_lock);
+		EVDS_Vector_Convert(&object->state.angular_velocity,&temporary,object->parent);
+		object->state.angular_velocity.pcoordinate_system = 0;
+		object->state.angular_velocity.vcoordinate_system = 0;
+	SIMC_SRW_LeaveWrite(object->state_lock);
+	return EVDS_OK;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// @brief Set objects orientation as a quaternion.
+////////////////////////////////////////////////////////////////////////////////
+int EVDS_InternalObject_SetOrientationQuaternion(EVDS_OBJECT* object, int use_cm, EVDS_QUATERNION* q) {
+	SIMC_SRW_EnterWrite(object->state_lock);
+		EVDS_Quaternion_Convert(&object->state.orientation,q,object->parent);
+	SIMC_SRW_LeaveWrite(object->state_lock);
+	return EVDS_OK;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// @brief Set objects orientation in the target coordinates.
+////////////////////////////////////////////////////////////////////////////////
+int EVDS_InternalObject_SetOrientation(EVDS_OBJECT* object, int use_cm, EVDS_OBJECT* target_coordinates, EVDS_REAL roll, EVDS_REAL pitch, EVDS_REAL yaw) {
+	EVDS_QUATERNION quaternion;
+	EVDS_Quaternion_FromEuler(&quaternion,target_coordinates,roll,pitch,yaw);
+	return EVDS_InternalObject_SetOrientationQuaternion(object,use_cm,&quaternion);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// @brief Set objects reference point position in the target coordinates.
+///
+/// @note This function sets coordinates of the objects reference point.
+///       See EVDS_Object_SetCoMPosition() for more information.
+///
+/// If target coordinates are null, objects parent will be used. If object is
+/// the root object, this call will fail.
 ///
 /// @param[in] object Pointer to object
 /// @param[in] target_coordinates Target coordinates in which x, y, z components are specified
@@ -2402,18 +2541,49 @@ int EVDS_Object_SetPosition(EVDS_OBJECT* object, EVDS_OBJECT* target_coordinates
 #ifndef EVDS_SINGLETHREADED
 	if (object->destroyed) return EVDS_ERROR_INVALID_OBJECT;
 #endif
-
-	SIMC_SRW_EnterWrite(object->state_lock);
-	EVDS_Vector_Set(&object->state.position,EVDS_VECTOR_POSITION,target_coordinates,x,y,z);
-	SIMC_SRW_LeaveWrite(object->state_lock);
-	return EVDS_OK;
+	return EVDS_InternalObject_SetPosition(object,0,target_coordinates,x,y,z);
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// @brief Set objects velocity in the target coordinates.
+/// @brief Set objects center of mass position in the target coordinates.
 ///
-/// If target coordinates are null, objects parent will be used. If object is the root object, this call will fail.
+/// @note This function sets coordinates of the objects center of mass.
+///
+/// If target coordinates are null, objects parent will be used. If object is
+/// the root object, this call will fail.
+///
+/// @param[in] object Pointer to object
+/// @param[in] target_coordinates Target coordinates in which x, y, z components are specified
+/// @param[in] x X component of position
+/// @param[in] y Y component of position
+/// @param[in] z Z component of position
+///
+/// @returns Error code, pointer to userdata
+/// @retval EVDS_OK Successfully completed (object matches type)
+/// @retval EVDS_ERROR_BAD_PARAMETER "object" is null
+/// @retval EVDS_ERROR_BAD_PARAMETER "target_coordinates" is null and object is the root object
+/// @retval EVDS_ERROR_INVALID_OBJECT Object was destroyed
+////////////////////////////////////////////////////////////////////////////////
+int EVDS_Object_SetCoMPosition(EVDS_OBJECT* object, EVDS_OBJECT* target_coordinates, EVDS_REAL x, EVDS_REAL y, EVDS_REAL z) {
+	if (!object) return EVDS_ERROR_BAD_PARAMETER;
+	if (!target_coordinates) target_coordinates = object->parent;
+	if (!target_coordinates) return EVDS_ERROR_BAD_PARAMETER;
+#ifndef EVDS_SINGLETHREADED
+	if (object->destroyed) return EVDS_ERROR_INVALID_OBJECT;
+#endif
+	return EVDS_InternalObject_SetPosition(object,1,target_coordinates,x,y,z);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// @brief Set objects reference point velocity in the target coordinates.
+///
+/// @note This function sets velocity of the objects reference point.
+///       See EVDS_Object_SetCoMVelocity() for more information.
+///
+/// If target coordinates are null, objects parent will be used. If object is
+/// the root object, this call will fail.
 ///
 /// @param[in] object Pointer to object
 /// @param[in] target_coordinates Target coordinates in which vx, vy, vz components are specified
@@ -2434,28 +2604,23 @@ int EVDS_Object_SetVelocity(EVDS_OBJECT* object, EVDS_OBJECT* target_coordinates
 #ifndef EVDS_SINGLETHREADED
 	if (object->destroyed) return EVDS_ERROR_INVALID_OBJECT;
 #endif
-
-	SIMC_SRW_EnterWrite(object->state_lock);
-	EVDS_Vector_Set(&object->state.velocity,EVDS_VECTOR_VELOCITY,target_coordinates,vx,vy,vz);
-	SIMC_SRW_LeaveWrite(object->state_lock);
-	return EVDS_OK;
+	return EVDS_InternalObject_SetVelocity(object,0,target_coordinates,vx,vy,vz);
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// @brief Set objects orientation in the target coordinates.
+/// @brief Set objects center of mass velocity in the target coordinates.
 ///
-/// If target coordinates are null, objects parent will be used. If object is the root object, this call will fail.
-/// Use EVDS_RAD() macro to convert degrees to radians:
-/// ~~~{.c}
-///		EVDS_Object_SetOrientation(object,0,EVDS_RAD(45.0),EVDS_RAD(90.0),EVDS_RAD(0.0));
-/// ~~~
+/// @note This function sets velocity of the objects center of mass.
+///
+/// If target coordinates are null, objects parent will be used. If object is
+/// the root object, this call will fail.
 ///
 /// @param[in] object Pointer to object
 /// @param[in] target_coordinates Target coordinates in which vx, vy, vz components are specified
-/// @param[in] roll X component of orientation (roll) in radians
-/// @param[in] pitch Y component of orientation (pitch) in radians
-/// @param[in] yaw Z component of orientation (yaw) in radians
+/// @param[in] vx X component of velocity
+/// @param[in] vy Y component of velocity
+/// @param[in] vz Z component of velocity
 ///
 /// @returns Error code, pointer to userdata
 /// @retval EVDS_OK Successfully completed (object matches type)
@@ -2463,57 +2628,25 @@ int EVDS_Object_SetVelocity(EVDS_OBJECT* object, EVDS_OBJECT* target_coordinates
 /// @retval EVDS_ERROR_BAD_PARAMETER "target_coordinates" is null and object is the root object
 /// @retval EVDS_ERROR_INVALID_OBJECT Object was destroyed
 ////////////////////////////////////////////////////////////////////////////////
-int EVDS_Object_SetOrientation(EVDS_OBJECT* object, EVDS_OBJECT* target_coordinates, EVDS_REAL roll, EVDS_REAL pitch, EVDS_REAL yaw) {
-	EVDS_QUATERNION quaternion;
+int EVDS_Object_SetCoMVelocity(EVDS_OBJECT* object, EVDS_OBJECT* target_coordinates, EVDS_REAL vx, EVDS_REAL vy, EVDS_REAL vz) {
 	if (!object) return EVDS_ERROR_BAD_PARAMETER;
 	if (!target_coordinates) target_coordinates = object->parent;
 	if (!target_coordinates) return EVDS_ERROR_BAD_PARAMETER;
 #ifndef EVDS_SINGLETHREADED
 	if (object->destroyed) return EVDS_ERROR_INVALID_OBJECT;
 #endif
-
-	SIMC_SRW_EnterWrite(object->state_lock);
-	EVDS_Quaternion_FromEuler(&quaternion,target_coordinates,roll,pitch,yaw);
-	EVDS_Quaternion_Convert(&object->state.orientation,&quaternion,object->parent);
-	SIMC_SRW_LeaveWrite(object->state_lock);
-	return EVDS_OK;
+	return EVDS_InternalObject_SetVelocity(object,1,target_coordinates,vx,vy,vz);
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// @brief Set objects orientation as a quaternion.
+/// @brief Set objects angular velocity around reference point in the target coordinates.
 ///
-/// The quaternion will be converted to parent coordinate system. If object is the root object, this call will fail.
+/// @note This function sets angular velocity of the objects reference point.
+///       See EVDS_Object_SetCoMAngularVelocity() for more information.
 ///
-/// @param[in] object Pointer to object
-/// @param[in] q Quaternion representing target objects orientation
-///
-/// @returns Error code, pointer to userdata
-/// @retval EVDS_OK Successfully completed (object matches type)
-/// @retval EVDS_ERROR_BAD_PARAMETER "object" is null
-/// @retval EVDS_ERROR_BAD_PARAMETER "q" is null
-/// @retval EVDS_ERROR_BAD_PARAMETER Object is a root object
-/// @retval EVDS_ERROR_INVALID_OBJECT Object was destroyed
-////////////////////////////////////////////////////////////////////////////////
-int EVDS_Object_SetOrientationQuaternion(EVDS_OBJECT* object, EVDS_QUATERNION* q) {
-	if (!object) return EVDS_ERROR_BAD_PARAMETER;
-	if (!q) return EVDS_ERROR_BAD_PARAMETER;
-	if (!object->parent) return EVDS_ERROR_BAD_PARAMETER;
-#ifndef EVDS_SINGLETHREADED
-	if (object->destroyed) return EVDS_ERROR_INVALID_OBJECT;
-#endif
-
-	SIMC_SRW_EnterWrite(object->state_lock);
-	EVDS_Quaternion_Convert(&object->state.orientation,q,object->parent);
-	SIMC_SRW_LeaveWrite(object->state_lock);
-	return EVDS_OK;
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-/// @brief Set objects angular velocity in the target coordinates.
-///
-/// If target coordinates are null, objects parent will be used. If object is the root object, this call will fail.
+/// If target coordinates are null, objects parent will be used. If object is
+/// the root object, this call will fail.
 ///
 /// @param[in] object Pointer to object
 /// @param[in] target_coordinates Target coordinates in which vx, vy, vz components are specified
@@ -2534,11 +2667,135 @@ int EVDS_Object_SetAngularVelocity(EVDS_OBJECT* object, EVDS_OBJECT* target_coor
 #ifndef EVDS_SINGLETHREADED
 	if (object->destroyed) return EVDS_ERROR_INVALID_OBJECT;
 #endif
+	return EVDS_InternalObject_SetAngularVelocity(object,target_coordinates,r,p,q);
+}
 
-	SIMC_SRW_EnterWrite(object->state_lock);
-	EVDS_Vector_Set(&object->state.angular_velocity,EVDS_VECTOR_ANGULAR_VELOCITY,target_coordinates,r,p,q);
-	SIMC_SRW_LeaveWrite(object->state_lock);
-	return EVDS_OK;
+
+////////////////////////////////////////////////////////////////////////////////
+/// @brief Set objects orientation around reference point in the target coordinates.
+///
+/// @note This function sets orientation around the objects reference point.
+///       See EVDS_Object_SetCoMOrientation() for more information.
+///
+/// If target coordinates are null, objects parent will be used. If object is
+/// the root object, this call will fail. Use EVDS_RAD() macro to convert degrees to radians:
+/// ~~~{.c}
+///		EVDS_Object_SetOrientation(object,0,EVDS_RAD(45.0),EVDS_RAD(90.0),EVDS_RAD(0.0));
+/// ~~~
+///
+/// @param[in] object Pointer to object
+/// @param[in] target_coordinates Target coordinates in which vx, vy, vz components are specified
+/// @param[in] roll X component of orientation (roll) in radians
+/// @param[in] pitch Y component of orientation (pitch) in radians
+/// @param[in] yaw Z component of orientation (yaw) in radians
+///
+/// @returns Error code, pointer to userdata
+/// @retval EVDS_OK Successfully completed (object matches type)
+/// @retval EVDS_ERROR_BAD_PARAMETER "object" is null
+/// @retval EVDS_ERROR_BAD_PARAMETER "target_coordinates" is null and object is the root object
+/// @retval EVDS_ERROR_INVALID_OBJECT Object was destroyed
+////////////////////////////////////////////////////////////////////////////////
+int EVDS_Object_SetOrientation(EVDS_OBJECT* object, EVDS_OBJECT* target_coordinates, EVDS_REAL roll, EVDS_REAL pitch, EVDS_REAL yaw) {
+	if (!object) return EVDS_ERROR_BAD_PARAMETER;
+	if (!target_coordinates) target_coordinates = object->parent;
+	if (!target_coordinates) return EVDS_ERROR_BAD_PARAMETER;
+#ifndef EVDS_SINGLETHREADED
+	if (object->destroyed) return EVDS_ERROR_INVALID_OBJECT;
+#endif
+	return EVDS_InternalObject_SetOrientation(object,0,target_coordinates,roll,pitch,yaw);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// @brief Set objects orientation around center of mass in the target coordinates.
+///
+/// @note This function sets orientation around the objects center of mass.
+///
+/// If target coordinates are null, objects parent will be used. If object is
+/// the root object, this call will fail. Use EVDS_RAD() macro to convert degrees to radians:
+/// ~~~{.c}
+///		EVDS_Object_SetCoMOrientation(object,0,EVDS_RAD(45.0),EVDS_RAD(90.0),EVDS_RAD(0.0));
+/// ~~~
+///
+/// @param[in] object Pointer to object
+/// @param[in] target_coordinates Target coordinates in which vx, vy, vz components are specified
+/// @param[in] roll X component of orientation (roll) in radians
+/// @param[in] pitch Y component of orientation (pitch) in radians
+/// @param[in] yaw Z component of orientation (yaw) in radians
+///
+/// @returns Error code, pointer to userdata
+/// @retval EVDS_OK Successfully completed (object matches type)
+/// @retval EVDS_ERROR_BAD_PARAMETER "object" is null
+/// @retval EVDS_ERROR_BAD_PARAMETER "target_coordinates" is null and object is the root object
+/// @retval EVDS_ERROR_INVALID_OBJECT Object was destroyed
+////////////////////////////////////////////////////////////////////////////////
+int EVDS_Object_SetCoMOrientation(EVDS_OBJECT* object, EVDS_OBJECT* target_coordinates, EVDS_REAL roll, EVDS_REAL pitch, EVDS_REAL yaw) {
+	if (!object) return EVDS_ERROR_BAD_PARAMETER;
+	if (!target_coordinates) target_coordinates = object->parent;
+	if (!target_coordinates) return EVDS_ERROR_BAD_PARAMETER;
+#ifndef EVDS_SINGLETHREADED
+	if (object->destroyed) return EVDS_ERROR_INVALID_OBJECT;
+#endif
+	return EVDS_InternalObject_SetOrientation(object,1,target_coordinates,roll,pitch,yaw);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// @brief Set objects orientation around reference point as a quaternion.
+///
+/// @note This function sets orientation around the objects reference point.
+///       See EVDS_Object_SetCoMOrientationQuaternion() for more information.
+///
+/// If target coordinates are null, objects parent will be used. If object is
+/// the root object, this call will fail. 
+///
+/// @param[in] object Pointer to object
+/// @param[in] q Quaternion representing target objects orientation
+///
+/// @returns Error code, pointer to userdata
+/// @retval EVDS_OK Successfully completed (object matches type)
+/// @retval EVDS_ERROR_BAD_PARAMETER "object" is null
+/// @retval EVDS_ERROR_BAD_PARAMETER "q" is null
+/// @retval EVDS_ERROR_BAD_PARAMETER Object is a root object
+/// @retval EVDS_ERROR_INVALID_OBJECT Object was destroyed
+////////////////////////////////////////////////////////////////////////////////
+int EVDS_Object_SetOrientationQuaternion(EVDS_OBJECT* object, EVDS_QUATERNION* q) {
+	if (!object) return EVDS_ERROR_BAD_PARAMETER;
+	if (!q) return EVDS_ERROR_BAD_PARAMETER;
+	if (!object->parent) return EVDS_ERROR_BAD_PARAMETER;
+#ifndef EVDS_SINGLETHREADED
+	if (object->destroyed) return EVDS_ERROR_INVALID_OBJECT;
+#endif
+	return EVDS_InternalObject_SetOrientationQuaternion(object,0,q);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// @brief Set objects orientation around center of mass as a quaternion.
+///
+/// @note This function sets orientation around the objects center of mass.
+///
+/// If target coordinates are null, objects parent will be used. If object is
+/// the root object, this call will fail. 
+///
+/// @param[in] object Pointer to object
+/// @param[in] q Quaternion representing target objects orientation
+///
+/// @returns Error code, pointer to userdata
+/// @retval EVDS_OK Successfully completed (object matches type)
+/// @retval EVDS_ERROR_BAD_PARAMETER "object" is null
+/// @retval EVDS_ERROR_BAD_PARAMETER "q" is null
+/// @retval EVDS_ERROR_BAD_PARAMETER Object is a root object
+/// @retval EVDS_ERROR_INVALID_OBJECT Object was destroyed
+////////////////////////////////////////////////////////////////////////////////
+int EVDS_Object_SetCoMOrientationQuaternion(EVDS_OBJECT* object, EVDS_QUATERNION* q) {
+	if (!object) return EVDS_ERROR_BAD_PARAMETER;
+	if (!q) return EVDS_ERROR_BAD_PARAMETER;
+	if (!object->parent) return EVDS_ERROR_BAD_PARAMETER;
+#ifndef EVDS_SINGLETHREADED
+	if (object->destroyed) return EVDS_ERROR_INVALID_OBJECT;
+#endif
+	return EVDS_InternalObject_SetOrientationQuaternion(object,1,q);
 }
 
 
