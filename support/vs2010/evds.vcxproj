@@ -67,7 +67,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{B5DD5EE2-582A-E747-9992-2D2E84877D64}</ProjectGuid>
+    <ProjectGuid>{EE4E6F16-F056-1746-B855-ADA3599F7386}</ProjectGuid>
     <RootNamespace>evds</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
@@ -760,9 +760,15 @@
     </ClCompile>
     <ClCompile Include="..\..\source\evds_common\evds_fueltank.c">
     </ClCompile>
+    <ClCompile Include="..\..\source\evds_common\evds_gimbal.c">
+    </ClCompile>
+    <ClCompile Include="..\..\source\evds_common\evds_planet.c">
+    </ClCompile>
     <ClCompile Include="..\..\source\evds_common\evds_prop_heun.c">
     </ClCompile>
     <ClCompile Include="..\..\source\evds_common\evds_prop_rk4.c">
+    </ClCompile>
+    <ClCompile Include="..\..\source\evds_common\evds_wiring.c">
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -770,7 +776,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="simc.vcxproj">
-      <Project>{7D688FDD-4D41-9A41-9E7E-1D6E59A10C9C}</Project>
+      <Project>{00058543-E5EA-1540-B535-BCE859AA319E}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

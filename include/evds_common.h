@@ -91,6 +91,8 @@ EVDS_API int EVDS_RigidBody_Register(EVDS_SYSTEM* system);
 EVDS_API int EVDS_RigidBody_GetCenterOfMass(EVDS_OBJECT* object, EVDS_VECTOR* cm);
 // Get the stability frame for this vessel
 //EVDS_API int EVDS_RigidBody_GetStabilityReferenceFrame(EVDS_OBJECT* object, EVDS_OBJECT* frame);
+// Update all vessels and detach them if required. Must be called by user to support "detach" variable for vessels.
+EVDS_API int EVDS_RigidBody_UpdateDetaching(EVDS_SYSTEM* system);
 
 // Rocket engine (creates force along it's forward axis)
 EVDS_API int EVDS_RocketEngine_Register(EVDS_SYSTEM* system);

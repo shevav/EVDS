@@ -2,13 +2,13 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="evds_core">
-      <UniqueIdentifier>{CFD93594-C468-4349-913B-9B63842E357B}</UniqueIdentifier>
+      <UniqueIdentifier>{3D6B9D61-D0B1-1641-A6E3-C85D09853066}</UniqueIdentifier>
     </Filter>
     <Filter Include="evds_common">
-      <UniqueIdentifier>{F8EF7B4A-65EC-D044-BF4D-DBC460B566E5}</UniqueIdentifier>
+      <UniqueIdentifier>{6D1A71C1-B157-9248-B638-1FCDF461CD7A}</UniqueIdentifier>
     </Filter>
     <Filter Include="include">
-      <UniqueIdentifier>{C6F46AE0-8CD3-E74A-A0BF-5A706FEA3A11}</UniqueIdentifier>
+      <UniqueIdentifier>{E18090A6-FBE2-A04B-BADB-65221FBC915D}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -70,10 +70,19 @@
     <ClCompile Include="..\..\source\evds_common\evds_fueltank.c">
       <Filter>evds_common</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\source\evds_common\evds_gimbal.c">
+      <Filter>evds_common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\evds_common\evds_planet.c">
+      <Filter>evds_common</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\source\evds_common\evds_prop_heun.c">
       <Filter>evds_common</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\evds_common\evds_prop_rk4.c">
+      <Filter>evds_common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\evds_common\evds_wiring.c">
       <Filter>evds_common</Filter>
     </ClCompile>
   </ItemGroup>

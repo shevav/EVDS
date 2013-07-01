@@ -2,7 +2,7 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="evds_tutorials">
-      <UniqueIdentifier>{7DFF8735-0F51-CF42-95B0-7B107ADD58BE}</UniqueIdentifier>
+      <UniqueIdentifier>{490A1D08-787A-C34D-BB0F-9650E224A14F}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

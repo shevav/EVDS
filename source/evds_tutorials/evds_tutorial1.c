@@ -21,9 +21,9 @@ void main() {
 	EVDS_Object_Create(system,inertial_system,&earth);
 	EVDS_Object_SetType(earth,"planet");
 	EVDS_Object_SetName(earth,"Earth");
-	EVDS_Object_AddFloatVariable(earth,"mu",3.9860044e14,0);    //m3 sec-2
-	EVDS_Object_AddFloatVariable(earth,"radius",6378.145e3,0);  //m
-	EVDS_Object_AddFloatVariable(earth,"period",86164.10,0);    //sec
+	EVDS_Object_AddRealVariable(earth,"mu",3.9860044e14,0);    //m3 sec-2
+	EVDS_Object_AddRealVariable(earth,"radius",6378.145e3,0);  //m
+	EVDS_Object_AddRealVariable(earth,"period",86164.10,0);    //sec
 	EVDS_Object_SetPosition(earth,inertial_system,0,0,0);
 	EVDS_Object_Initialize(earth,1);
 

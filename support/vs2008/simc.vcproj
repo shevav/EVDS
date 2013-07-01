@@ -6,7 +6,6 @@
 	ProjectGUID="{00058543-E5EA-1540-B535-BCE859AA319E}"
 	RootNamespace="simc"
 	Keyword="Win32Proj"
-	TargetFrameworkVersion="0"
 	>
 	<Platforms>
 		<Platform
@@ -51,8 +50,8 @@
 				RuntimeLibrary="3"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
-				ProgramDataBaseFileName="$(OutDir)\simcd32.pdb"
 				WarningLevel="3"
+				ProgramDataBaseFileName="$(OutDir)\simcd32.pdb"
 				DebugInformationFormat="4"
 			/>
 			<Tool
@@ -68,11 +67,14 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				AdditionalOptions="/MACHINE:X86"
 				OutputFile="$(OutDir)\simcd32.lib"
+				AdditionalOptions="/MACHINE:X86"
 			/>
 			<Tool
 				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -82,6 +84,12 @@
 			/>
 			<Tool
 				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -120,8 +128,8 @@
 				RuntimeLibrary="3"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
-				ProgramDataBaseFileName="$(OutDir)\simcd.pdb"
 				WarningLevel="3"
+				ProgramDataBaseFileName="$(OutDir)\simcd.pdb"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -137,11 +145,14 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				AdditionalOptions="/MACHINE:X64"
 				OutputFile="$(OutDir)\simcd.lib"
+				AdditionalOptions="/MACHINE:X64"
 			/>
 			<Tool
 				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -151,6 +162,12 @@
 			/>
 			<Tool
 				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -187,8 +204,8 @@
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
-				ProgramDataBaseFileName="$(OutDir)\simc32.pdb"
 				WarningLevel="3"
+				ProgramDataBaseFileName="$(OutDir)\simc32.pdb"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -204,11 +221,14 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				AdditionalOptions="/MACHINE:X86"
 				OutputFile="$(OutDir)\simc32.lib"
+				AdditionalOptions="/MACHINE:X86"
 			/>
 			<Tool
 				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -218,6 +238,12 @@
 			/>
 			<Tool
 				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -255,8 +281,8 @@
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
-				ProgramDataBaseFileName="$(OutDir)\simc.pdb"
 				WarningLevel="3"
+				ProgramDataBaseFileName="$(OutDir)\simc.pdb"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -272,11 +298,14 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				AdditionalOptions="/MACHINE:X64"
 				OutputFile="$(OutDir)\simc.lib"
+				AdditionalOptions="/MACHINE:X64"
 			/>
 			<Tool
 				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -286,6 +315,12 @@
 			/>
 			<Tool
 				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -323,8 +358,8 @@
 				RuntimeLibrary="3"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
-				ProgramDataBaseFileName="$(OutDir)\simcd32.pdb"
 				WarningLevel="3"
+				ProgramDataBaseFileName="$(OutDir)\simcd32.pdb"
 				DebugInformationFormat="4"
 			/>
 			<Tool
@@ -340,11 +375,14 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				AdditionalOptions="/MACHINE:X86"
 				OutputFile="$(OutDir)\simcd32.lib"
+				AdditionalOptions="/MACHINE:X86"
 			/>
 			<Tool
 				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -354,6 +392,12 @@
 			/>
 			<Tool
 				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -392,8 +436,8 @@
 				RuntimeLibrary="3"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
-				ProgramDataBaseFileName="$(OutDir)\simcd.pdb"
 				WarningLevel="3"
+				ProgramDataBaseFileName="$(OutDir)\simcd.pdb"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -409,11 +453,14 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				AdditionalOptions="/MACHINE:X64"
 				OutputFile="$(OutDir)\simcd.lib"
+				AdditionalOptions="/MACHINE:X64"
 			/>
 			<Tool
 				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -423,6 +470,12 @@
 			/>
 			<Tool
 				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -459,8 +512,8 @@
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
-				ProgramDataBaseFileName="$(OutDir)\simc32.pdb"
 				WarningLevel="3"
+				ProgramDataBaseFileName="$(OutDir)\simc32.pdb"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -476,11 +529,14 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				AdditionalOptions="/MACHINE:X86"
 				OutputFile="$(OutDir)\simc32.lib"
+				AdditionalOptions="/MACHINE:X86"
 			/>
 			<Tool
 				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -490,6 +546,12 @@
 			/>
 			<Tool
 				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -527,8 +589,8 @@
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
-				ProgramDataBaseFileName="$(OutDir)\simc.pdb"
 				WarningLevel="3"
+				ProgramDataBaseFileName="$(OutDir)\simc.pdb"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -544,11 +606,14 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				AdditionalOptions="/MACHINE:X64"
 				OutputFile="$(OutDir)\simc.lib"
+				AdditionalOptions="/MACHINE:X64"
 			/>
 			<Tool
 				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -558,6 +623,12 @@
 			/>
 			<Tool
 				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -595,8 +666,8 @@
 				RuntimeLibrary="3"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
-				ProgramDataBaseFileName="$(OutDir)\simc_std32.pdb"
 				WarningLevel="3"
+				ProgramDataBaseFileName="$(OutDir)\simc_std32.pdb"
 				DebugInformationFormat="4"
 			/>
 			<Tool
@@ -612,11 +683,14 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				AdditionalOptions="/MACHINE:X86"
 				OutputFile="$(OutDir)\simc_std32.lib"
+				AdditionalOptions="/MACHINE:X86"
 			/>
 			<Tool
 				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -626,6 +700,12 @@
 			/>
 			<Tool
 				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -664,8 +744,8 @@
 				RuntimeLibrary="3"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
-				ProgramDataBaseFileName="$(OutDir)\simc_std.pdb"
 				WarningLevel="3"
+				ProgramDataBaseFileName="$(OutDir)\simc_std.pdb"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -681,11 +761,14 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				AdditionalOptions="/MACHINE:X64"
 				OutputFile="$(OutDir)\simc_std.lib"
+				AdditionalOptions="/MACHINE:X64"
 			/>
 			<Tool
 				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -695,6 +778,12 @@
 			/>
 			<Tool
 				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -731,8 +820,8 @@
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
-				ProgramDataBaseFileName="$(OutDir)\simc_st32.pdb"
 				WarningLevel="3"
+				ProgramDataBaseFileName="$(OutDir)\simc_st32.pdb"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -748,11 +837,14 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				AdditionalOptions="/MACHINE:X86"
 				OutputFile="$(OutDir)\simc_st32.lib"
+				AdditionalOptions="/MACHINE:X86"
 			/>
 			<Tool
 				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -762,6 +854,12 @@
 			/>
 			<Tool
 				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -799,8 +897,8 @@
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
-				ProgramDataBaseFileName="$(OutDir)\simc_st.pdb"
 				WarningLevel="3"
+				ProgramDataBaseFileName="$(OutDir)\simc_st.pdb"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -816,11 +914,14 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				AdditionalOptions="/MACHINE:X64"
 				OutputFile="$(OutDir)\simc_st.lib"
+				AdditionalOptions="/MACHINE:X64"
 			/>
 			<Tool
 				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -830,6 +931,12 @@
 			/>
 			<Tool
 				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -867,8 +974,8 @@
 				RuntimeLibrary="3"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
-				ProgramDataBaseFileName="$(OutDir)\simc_std32.pdb"
 				WarningLevel="3"
+				ProgramDataBaseFileName="$(OutDir)\simc_std32.pdb"
 				DebugInformationFormat="4"
 			/>
 			<Tool
@@ -884,11 +991,14 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				AdditionalOptions="/MACHINE:X86"
 				OutputFile="$(OutDir)\simc_std32.lib"
+				AdditionalOptions="/MACHINE:X86"
 			/>
 			<Tool
 				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -898,6 +1008,12 @@
 			/>
 			<Tool
 				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -936,8 +1052,8 @@
 				RuntimeLibrary="3"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
-				ProgramDataBaseFileName="$(OutDir)\simc_std.pdb"
 				WarningLevel="3"
+				ProgramDataBaseFileName="$(OutDir)\simc_std.pdb"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -953,11 +1069,14 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				AdditionalOptions="/MACHINE:X64"
 				OutputFile="$(OutDir)\simc_std.lib"
+				AdditionalOptions="/MACHINE:X64"
 			/>
 			<Tool
 				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -967,6 +1086,12 @@
 			/>
 			<Tool
 				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -1003,8 +1128,8 @@
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
-				ProgramDataBaseFileName="$(OutDir)\simc_st32.pdb"
 				WarningLevel="3"
+				ProgramDataBaseFileName="$(OutDir)\simc_st32.pdb"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -1020,11 +1145,14 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				AdditionalOptions="/MACHINE:X86"
 				OutputFile="$(OutDir)\simc_st32.lib"
+				AdditionalOptions="/MACHINE:X86"
 			/>
 			<Tool
 				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -1034,6 +1162,12 @@
 			/>
 			<Tool
 				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -1071,8 +1205,8 @@
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
-				ProgramDataBaseFileName="$(OutDir)\simc_st.pdb"
 				WarningLevel="3"
+				ProgramDataBaseFileName="$(OutDir)\simc_st.pdb"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -1088,11 +1222,14 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				AdditionalOptions="/MACHINE:X64"
 				OutputFile="$(OutDir)\simc_st.lib"
+				AdditionalOptions="/MACHINE:X64"
 			/>
 			<Tool
 				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -1104,6 +1241,12 @@
 				Name="VCFxCopTool"
 			/>
 			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
+			/>
+			<Tool
 				Name="VCPostBuildEventTool"
 			/>
 		</Configuration>
@@ -1113,9 +1256,11 @@
 	<Files>
 		<Filter
 			Name="external"
+			Filter=""
 			>
 			<Filter
 				Name="tinyxml"
+				Filter=""
 				>
 				<File
 					RelativePath="..\..\external\simc\external\tinyxml\tinystr.cpp"
@@ -1137,6 +1282,7 @@
 		</Filter>
 		<Filter
 			Name="include"
+			Filter=""
 			>
 			<File
 				RelativePath="..\..\external\simc\include\sim_core.h"
@@ -1153,6 +1299,7 @@
 		</Filter>
 		<Filter
 			Name="source"
+			Filter=""
 			>
 			<File
 				RelativePath="..\..\external\simc\source\sim_curtime.c"
@@ -1553,6 +1700,134 @@
 			<File
 				RelativePath="..\..\external\simc\source\sim_sarray.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugDynamic|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugDynamic|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDynamic|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDynamic|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugSingleThread|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugSingleThread|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseSingleThread|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseSingleThread|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugSingleThreadDynamic|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugSingleThreadDynamic|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseSingleThreadDynamic|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseSingleThreadDynamic|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="1"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\external\simc\source\sim_threading.c"
