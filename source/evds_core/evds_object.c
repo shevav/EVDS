@@ -1845,6 +1845,64 @@ int EVDS_Object_GetRealVariable(EVDS_OBJECT* object, const char* name, EVDS_REAL
 
 
 ////////////////////////////////////////////////////////////////////////////////
+/// @brief See EVDS_Object_GetReference()
+////////////////////////////////////////////////////////////////////////////////
+void EVDS_InternalObject_RecursiveBuildReference(EVDS_OBJECT* object, EVDS_OBJECT* root, char* reference, size_t max_length) {
+	char name[257];
+
+	//Recursively scan to start building reference "backwards
+	if (object->parent && (object->parent != root)) {
+		EVDS_InternalObject_RecursiveBuildReference(object->parent,root,reference,max_length);
+	}
+
+	//Get null-terminated name
+	EVDS_Object_GetName(object,name,256); name[256] = 0;
+
+	//Build reference
+	strncat(reference,"/",max_length);
+	strncat(reference,name,max_length);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// @brief Get objects reference in the system. @evds_limited_init
+///
+/// This function returns full name/reference to this object for use with
+/// the EVDS_System_QueryObject() API call.
+///
+/// @note Some objects can have empty names defined, so multiple following `/` symbols
+///       are expected from the output.
+///
+/// @param[in] object Pointer to object
+/// @param[in] object Pointer to the root object (which must be considered root)
+/// @param[out] reference Reference name will be written here
+/// @param[in] max_length Maximum length that will be written by pointer
+///
+/// @returns Error code, full reference name
+/// @retval EVDS_OK Successfully completed
+/// @retval EVDS_ERROR_BAD_PARAMETER "object" is null
+/// @retval EVDS_ERROR_BAD_PARAMETER "reference" is null
+/// @retval EVDS_ERROR_INVALID_OBJECT Object was destroyed
+/// @retval EVDS_ERROR_INTERTHREAD_CALL The function can only be called from thread that is initializing the object 
+///  (or thread that has created the object before initializer was called)
+////////////////////////////////////////////////////////////////////////////////
+int EVDS_Object_GetReference(EVDS_OBJECT* object, EVDS_OBJECT* root, char* reference, size_t max_length) {
+	if (!object) return EVDS_ERROR_BAD_PARAMETER;
+	if (!reference) return EVDS_ERROR_BAD_PARAMETER;
+#ifndef EVDS_SINGLETHREADED
+	if (object->destroyed) return EVDS_ERROR_INVALID_OBJECT;
+	if (!object->initialized &&
+		(object->create_thread != SIMC_Thread_GetUniqueID()) &&
+		(object->initialize_thread != SIMC_Thread_GetUniqueID())) return EVDS_ERROR_INTERTHREAD_CALL;
+#endif
+
+	strncpy(reference,"",max_length);
+	EVDS_InternalObject_RecursiveBuildReference(object,root,reference,max_length);
+	return EVDS_OK;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
 /// @brief Get list of all variables. @evds_limited_init
 ///
 /// See SIMC_LIST documentation for an example on iterating through list. The
