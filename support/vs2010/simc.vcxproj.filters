@@ -2,17 +2,28 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="source">
-      <UniqueIdentifier>{62415CCF-E5DA-C047-8FB2-957C23279C95}</UniqueIdentifier>
+      <UniqueIdentifier>{CE6175B6-67E9-2440-9A4A-03B6557633ED}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include">
+      <UniqueIdentifier>{8B8D171B-CE9E-8741-A1BB-9B4E0240B308}</UniqueIdentifier>
     </Filter>
     <Filter Include="external">
-      <UniqueIdentifier>{322368E8-246F-C74B-9D4B-DA7AACA58F73}</UniqueIdentifier>
+      <UniqueIdentifier>{0A843CCC-C21F-C346-995E-9D082A5030E3}</UniqueIdentifier>
     </Filter>
     <Filter Include="external\tinyxml">
-      <UniqueIdentifier>{30B0CDE2-BE64-124A-B3FD-CC394DBB7C53}</UniqueIdentifier>
+      <UniqueIdentifier>{7DBAB03E-9777-C849-8C92-3EA005A72A88}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\external\simc\include" />
+    <ClInclude Include="..\..\external\simc\include\sim_core.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\external\simc\include\sim_internal.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\external\simc\include\sim_xml.h">
+      <Filter>include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\external\simc\source\sim_curtime.c">
@@ -22,6 +33,9 @@
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\external\simc\source\sim_queue.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external\simc\source\sim_sarray.c">
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\external\simc\source\sim_threading.c">

@@ -1092,16 +1092,29 @@ EVDS_API int EVDS_Object_GetInterpolatedStateVector(EVDS_OBJECT* object, EVDS_ST
 // End drawing object
 //EVDS_API int EVDS_Object_EndRendering(EVDS_OBJECT* object);
 
+// Shortcut to get center of mass position
+EVDS_API int EVDS_Object_GetCoMPosition(EVDS_OBJECT* object, EVDS_VECTOR* p_vector);
+
 // Shortcut to set position
 EVDS_API int EVDS_Object_SetPosition(EVDS_OBJECT* object, EVDS_OBJECT* target_coordinates, EVDS_REAL x, EVDS_REAL y, EVDS_REAL z);
 // Shortcut to set velocity
 EVDS_API int EVDS_Object_SetVelocity(EVDS_OBJECT* object, EVDS_OBJECT* target_coordinates, EVDS_REAL vx, EVDS_REAL vy, EVDS_REAL vz);
+// Shortcut to set angular velocity (roll-pitch-yaw order)
+EVDS_API int EVDS_Object_SetAngularVelocity(EVDS_OBJECT* object, EVDS_OBJECT* target_coordinates, EVDS_REAL r, EVDS_REAL p, EVDS_REAL q);
 // Shortcut to set orientation (in euler angles)
 EVDS_API int EVDS_Object_SetOrientation(EVDS_OBJECT* object, EVDS_OBJECT* target_coordinates, EVDS_REAL roll, EVDS_REAL pitch, EVDS_REAL yaw);
 // Shortcut to set orientation (as a quaternion)
 EVDS_API int EVDS_Object_SetOrientationQuaternion(EVDS_OBJECT* object, EVDS_QUATERNION* q);
-// Shortcut to set angular velocity (roll-pitch-yaw order)
-EVDS_API int EVDS_Object_SetAngularVelocity(EVDS_OBJECT* object, EVDS_OBJECT* target_coordinates, EVDS_REAL r, EVDS_REAL p, EVDS_REAL q);
+
+// Shortcut to set position of center of mass
+EVDS_API int EVDS_Object_SetCoMPosition(EVDS_OBJECT* object, EVDS_OBJECT* target_coordinates, EVDS_REAL x, EVDS_REAL y, EVDS_REAL z);
+// Shortcut to set velocity of center of mass
+EVDS_API int EVDS_Object_SetCoMVelocity(EVDS_OBJECT* object, EVDS_OBJECT* target_coordinates, EVDS_REAL vx, EVDS_REAL vy, EVDS_REAL vz);
+// Shortcut to set orientation around center of mass (in euler angles)
+EVDS_API int EVDS_Object_SetCoMOrientation(EVDS_OBJECT* object, EVDS_OBJECT* target_coordinates, EVDS_REAL roll, EVDS_REAL pitch, EVDS_REAL yaw);
+// Shortcut to set orientation around center of mass (as a quaternion)
+EVDS_API int EVDS_Object_SetCoMOrientationQuaternion(EVDS_OBJECT* object, EVDS_QUATERNION* q);
+
 // Set time for which object position is valid
 EVDS_API int EVDS_Object_SetStateTime(EVDS_OBJECT* object, EVDS_REAL t);
 

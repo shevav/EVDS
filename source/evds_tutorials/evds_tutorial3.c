@@ -3,7 +3,7 @@
 #include <math.h>
 #include "evds.h"
 
-#include "../foxworks/fw_matrix.c"
+#include "fw_matrix.c"
 
 int screen_width,screen_height;
 void GLFWCALL glfw_resize(int width, int height) {

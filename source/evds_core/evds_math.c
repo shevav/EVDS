@@ -1581,12 +1581,9 @@ void EVDS_Vector_RotateConjugated(EVDS_VECTOR* target, EVDS_VECTOR* v, EVDS_QUAT
 /// @returns Vector multiplied by the matrix
 ////////////////////////////////////////////////////////////////////////////////
 void EVDS_Tensor_MultiplyByVector(EVDS_VECTOR* target, EVDS_VECTOR* mx, EVDS_VECTOR* my, EVDS_VECTOR* mz, EVDS_VECTOR* v) {
-	EVDS_ASSERT((mx->coordinate_system == v->coordinate_system) ||
-		(mx->coordinate_system->parent == v->coordinate_system));
-	EVDS_ASSERT((my->coordinate_system == v->coordinate_system) ||
-		(my->coordinate_system->parent == v->coordinate_system));
-	EVDS_ASSERT((mz->coordinate_system == v->coordinate_system) ||
-		(mz->coordinate_system->parent == v->coordinate_system));
+	EVDS_ASSERT(mx->coordinate_system == v->coordinate_system);
+	EVDS_ASSERT(my->coordinate_system == v->coordinate_system);
+	EVDS_ASSERT(mz->coordinate_system == v->coordinate_system);
 
 	target->x = mx->x * v->x + mx->y * v->y + mx->z * v->z;
 	target->y = my->x * v->x + my->y * v->y + my->z * v->z;

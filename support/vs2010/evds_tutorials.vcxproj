@@ -67,7 +67,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{0C3B560E-DFCB-024B-BF72-10F091F2E7FC}</ProjectGuid>
+    <ProjectGuid>{740FC406-98AF-B54D-B226-CAF40650FF1E}</ProjectGuid>
     <RootNamespace>evds_tutorials</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
@@ -725,7 +725,10 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="evds.vcxproj">
-      <Project>{B5DD5EE2-582A-E747-9992-2D2E84877D64}</Project>
+      <Project>{EE4E6F16-F056-1746-B855-ADA3599F7386}</Project>
+    </ProjectReference>
+    <ProjectReference Include="simc.vcxproj">
+      <Project>{00058543-E5EA-1540-B535-BCE859AA319E}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

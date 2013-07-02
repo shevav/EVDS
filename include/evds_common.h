@@ -87,10 +87,8 @@ extern "C" {
 ////////////////////////////////////////////////////////////////////////////////
 // Rigid body (moving object with mass), vessel (same as rigid body), vessel part (static object)
 EVDS_API int EVDS_RigidBody_Register(EVDS_SYSTEM* system);
-// Get center of mass of a rigid body
-EVDS_API int EVDS_RigidBody_GetCenterOfMass(EVDS_OBJECT* object, EVDS_VECTOR* cm);
-// Get the stability frame for this vessel
-//EVDS_API int EVDS_RigidBody_GetStabilityReferenceFrame(EVDS_OBJECT* object, EVDS_OBJECT* frame);
+// Update all vessels and detach them if required. Must be called by user to support "detach" variable for vessels.
+EVDS_API int EVDS_RigidBody_UpdateDetaching(EVDS_SYSTEM* system);
 
 // Rocket engine (creates force along it's forward axis)
 EVDS_API int EVDS_RocketEngine_Register(EVDS_SYSTEM* system);
@@ -112,6 +110,8 @@ EVDS_API int EVDS_Planet_GetNearest(EVDS_OBJECT* object, EVDS_OBJECT** p_planet)
 EVDS_API int EVDS_Wiring_Register(EVDS_SYSTEM* system);
 
 
+// Forward euler propagator
+EVDS_API int EVDS_Propagator_ForwardEuler_Register(EVDS_SYSTEM* system);
 // Heun propagator-corrector solver
 EVDS_API int EVDS_Propagator_Heun_Register(EVDS_SYSTEM* system);
 // Runge-Kutta 4th order propagator
@@ -135,6 +135,7 @@ EVDS_FuelTank_Register(system); \
 EVDS_Gimbal_Register(system); \
 EVDS_Planet_Register(system); \
 EVDS_Wiring_Register(system); \
+EVDS_Propagator_ForwardEuler_Register(system); \
 EVDS_Propagator_Heun_Register(system); \
 EVDS_Propagator_RK4_Register(system);
 ////////////////////////////////////////////////////////////////////////////////

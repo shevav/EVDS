@@ -67,7 +67,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{7D688FDD-4D41-9A41-9E7E-1D6E59A10C9C}</ProjectGuid>
+    <ProjectGuid>{00058543-E5EA-1540-B535-BCE859AA319E}</ProjectGuid>
     <RootNamespace>simc</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
@@ -704,11 +704,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\external\simc\include\sim_core.h" />
+    <ClInclude Include="..\..\external\simc\include\sim_internal.h" />
+    <ClInclude Include="..\..\external\simc\include\sim_xml.h" />
+  </ItemGroup>
+  <ItemGroup>
     <ClCompile Include="..\..\external\simc\source\sim_curtime.c">
     </ClCompile>
     <ClCompile Include="..\..\external\simc\source\sim_linkedlist.c">
     </ClCompile>
     <ClCompile Include="..\..\external\simc\source\sim_queue.c">
+    </ClCompile>
+    <ClCompile Include="..\..\external\simc\source\sim_sarray.c">
     </ClCompile>
     <ClCompile Include="..\..\external\simc\source\sim_threading.c">
     </ClCompile>
@@ -722,9 +729,6 @@
     </ClCompile>
     <ClCompile Include="..\..\external\simc\external\tinyxml\tinyxmlparser.cpp">
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\external\simc\include" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
