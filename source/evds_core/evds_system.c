@@ -850,7 +850,7 @@ int EVDS_System_QueryObject(EVDS_OBJECT* root, const char* query, EVDS_VARIABLE*
 	size_t token_length;
 	if (!root) return EVDS_ERROR_BAD_PARAMETER;
 	if (!query) return EVDS_ERROR_BAD_PARAMETER;
-	if (!p_variable) return EVDS_ERROR_BAD_PARAMETER;
+	//if (!p_variable) return EVDS_ERROR_BAD_PARAMETER;
 #ifndef EVDS_SINGLETHREADED
 	if (root->destroyed) return EVDS_ERROR_INVALID_OBJECT;
 #endif
@@ -916,6 +916,12 @@ int EVDS_System_QueryObject(EVDS_OBJECT* root, const char* query, EVDS_VARIABLE*
 			} else {
 				//FIXME
 			}
+		}
+
+		//Quit early FIXME: hack
+		if (!token_start[token_length]) {
+			if (p_object) *p_object = object;
+			return EVDS_OK;
 		}
 
 		//Move to next token
