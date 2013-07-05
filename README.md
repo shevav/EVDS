@@ -14,8 +14,8 @@ Links:
  - [Black Phoenix's Website (http://brain.wireos.com)](http://brain.wireos.com/).
 
 Community:
- - None yet.
  - IRC: #x-plane @ irc.x-plane.org
+ - IRC: #foxworks @ irc.freenode.org
  - IRC: ##aerospace @ irc.freenode.org
 
 
@@ -83,7 +83,7 @@ folder:
  - `vs2008` - Visual Studio 2008
  - `vs2010` - Visual Studio 2010
  - `gmake` - Makefiles
- 
+
 If build files must be generated from scratch or a local copy of documentation
 is needed, [Premake4](http://industriousone.com/premake) must be used:
 ```
@@ -102,7 +102,7 @@ Use makefiles under Linux or other platforms:
 cd support/gmake
 make
 ```
- 
+
 Documentation and Example
 --------------------------------------------------------------------------------
 [Documentation for the EVDS library is available here](http://evds.wireos.com/).
