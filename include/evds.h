@@ -64,7 +64,7 @@ extern "C" {
 /// @{
 ////////////////////////////////////////////////////////////////////////////////
 
-/// Library-wide real number. Can be changed to vary precision at compile-time.
+/// Real number used for all mathematical operations in EVDS
 typedef double EVDS_REAL;
 /// EVDS variable type
 typedef unsigned int EVDS_VARIABLE_TYPE;
@@ -83,7 +83,7 @@ typedef unsigned int EVDS_VARIABLE_TYPE;
 /// Macro to convert angle from radians to degrees
 #define EVDS_DEG(x) (180.0*(x)/EVDS_PI)
 
-/// Special MJD date that makes EVDS system run realtime
+/// Special MJD date that means EVDS system must run realtime
 #define EVDS_REALTIME -1.0
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1326,9 +1326,8 @@ EVDS_API void EVDS_Quaternion_Interpolate(EVDS_QUATERNION* target, EVDS_QUATERNI
 // Normalize quaternion to 1.0
 EVDS_API void EVDS_Quaternion_Normalize(EVDS_QUATERNION* target, EVDS_QUATERNION* q);
 // Rotate vector by quaternion. Vector will be converted to a coordinate system that is a child of quaternions coordinates
-// Result in coordinate system of quaternion. Right-hand rotation.
 EVDS_API void EVDS_Vector_Rotate(EVDS_VECTOR* target, EVDS_VECTOR* v, EVDS_QUATERNION* q);
-// Same as EVDS_Vector_RotateConjugated, but in opposite direction (or left-hand rotation)
+// Rotate vector by conjugate of quaternion (in opposite direction to what quaternion says)
 EVDS_API void EVDS_Vector_RotateConjugated(EVDS_VECTOR* target, EVDS_VECTOR* v, EVDS_QUATERNION* q);
 
 // Multiply 3x3 tensor (out of vectors) by a vector
