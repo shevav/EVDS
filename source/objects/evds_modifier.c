@@ -20,7 +20,7 @@
 /// Further information about the GNU Lesser General Public License can also be found on
 /// the world wide web at http://www.gnu.org.
 ////////////////////////////////////////////////////////////////////////////////
-/// @page EVDS_Solver_Modifier Modifierling Platform
+/// @page EVDS_Solver_Modifier Modifier
 ///
 ////////////////////////////////////////////////////////////////////////////////
 #include <stdlib.h>

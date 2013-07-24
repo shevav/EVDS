@@ -2,6 +2,73 @@
 #include <math.h>
 #include "evds.h"
 
+int RK2_Solve(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVDS_OBJECT* coordinate_system, EVDS_REAL h) {
+	SIMC_LIST* children;
+	SIMC_LIST_ENTRY* entry;
+
+	//Process all children
+	EVDS_Object_GetChildren(coordinate_system,&children);
+	entry = SIMC_List_GetFirst(children);
+	while (entry) {
+		//Initial state, final derivative:
+		EVDS_STATE_VECTOR state;							//Initial state (t = 0)
+		//Variables for RK2:
+		EVDS_STATE_VECTOR state_temporary;					//Used in calculations
+		EVDS_STATE_VECTOR_DERIVATIVE state_derivative_1;	//Two derivatives for RK2
+		EVDS_STATE_VECTOR_DERIVATIVE state_derivative_2;
+		EVDS_OBJECT* object = (EVDS_OBJECT*)SIMC_List_GetData(children,entry);
+
+		// Solve everything inside the child
+		if (EVDS_Object_Solve(object,h) != EVDS_OK) {
+			// In case there is an error move to the next object in list.
+			entry = SIMC_List_GetNext(children,entry);
+			continue;
+		}
+
+		// Get initial state vector
+		EVDS_Object_GetStateVector(object,&state);
+		
+		// f1 = f(0,y)
+		EVDS_Object_Integrate(object,0.0,&state,&state_derivative_1);
+
+		// f2 = f(t+0.5*h,y+0.5*h*f1)
+		EVDS_StateVector_MultiplyByTimeAndAdd(&state_temporary,&state,&state_derivative_1,0.5*h);
+		EVDS_Object_Integrate(object,0.5*h,&state_temporary,&state_derivative_2);
+
+		// state = state + h*f2
+		EVDS_StateVector_MultiplyByTimeAndAdd(&state,&state,&state_derivative_2,h);
+
+		// Update object state vector
+		EVDS_Object_SetStateVector(object,&state);
+
+		//Move to next object in list
+		entry = SIMC_List_GetNext(children,entry);
+	}
+
+	return EVDS_OK;
+}
+
+int RK2_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVDS_OBJECT* object) {
+	if (EVDS_Object_CheckType(object,"propagator_rk2") != EVDS_OK) return EVDS_IGNORE_OBJECT; 
+	return EVDS_CLAIM_OBJECT;
+}
+
+EVDS_SOLVER Propagator_RK2 = {
+	RK2_Initialize, //OnInitialize
+	0, //OnDeinitialize
+	RK2_Solve, //OnSolve
+	0, //OnIntegrate
+	0, //OnStateSave
+	0, //OnStateLoad
+	0, //OnStartup
+	0, //OnShutdown
+};
+
+int RK2_Register(EVDS_SYSTEM* system) {
+	return EVDS_Solver_Register(system,&Propagator_RK2);
+}
+
+
 void main() {
 	EVDS_SYSTEM* system;
 	EVDS_OBJECT* inertial_system;
@@ -11,6 +78,7 @@ void main() {
 	printf("Tutorial 2: Custom RK2 Propagator\n");
 	EVDS_System_Create(&system);
 	EVDS_Common_Register(system);
+	RK2_Register(system);
 
 	//Create inertial sysetm
 	EVDS_Object_Create(system,0,&inertial_system);

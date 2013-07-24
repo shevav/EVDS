@@ -1412,41 +1412,38 @@ EVDS_API int EVDS_Mesh_Destroy(EVDS_MESH* mesh);
 /// @page EVDS_Object_Types Object Types
 ///
 /// The following object types are available in EVDS:
-/// - @subpage EVDS_Solver_RigidBody "'vessel'", "'rigid_body'", "'static_body'":
-///		Default rigid body object, accumulates forces and torques from children
-///		objects, affected by gravity and other effects (drag, reentry heating, etc).
-/// - @subpage EVDS_Solver_RocketEngine "'rocket_engine'":
-///		Default rocket engine object, supports a variety of rocket engine
-///		parameters. Calculates physics from shape or shape from physics parameters.
-/// - @subpage EVDS_Solver_Gimbal "'gimbal'"
-///		Gimballing platform that allows controlled movement/rotation of children
-///		objects.
-/// - @subpage EVDS_Solver_FuelTank "'fuel_tank'":
-///		Default fuel tank object, provides basic model of a fuel tank with
-///		a variable center of mass and sloshing support.
-/// - @subpage EVDS_Solver_Planet "'planet'"
+/// - @subpage EVDS_Solver_RigidBody "Rigid body/vessel"
+///		Default model for a rigid body object, which accumulates forces and torques from children,
+///		is affected by gravity and other effects (basic aerodynamic drag, etc).
+/// - @subpage EVDS_Solver_RocketEngine "Rocket engine"
+///		Rocket engine model which supports a variety of different parameters as input (physics
+///		shape or properties).
+/// - @subpage EVDS_Solver_Gimbal "Gimbal platform"
+///		Allows controlled movement/rotation of children objects around origin of the platform.
+/// - @subpage EVDS_Solver_FuelTank "Fuel tank"
+///		Model of a fuel tank that stores liquid or solid fuel/oxidizer.
+/// - @subpage EVDS_Solver_Wiring "Wiring/piping"
+///		Wires or pipes, connecting nodes and connectors.
+/// - @subpage EVDS_Solver_Planet "Planet/celestial body"
 ///		Planet or moon with built-in coordinate systems. Planetary position can be
 ///		updated from an ephemeris, orbital information, or be physically simulated.
-/// - @subpage EVDS_Solver_Wiring "'wire'", "'wire.node'", "'wire.connector'"
-///		Wiring or piping connecting nodes and connectors.
+/// - @subpage EVDS_Solver_Modifier "Modifier"
+///		Creates copies of its children according to a predefined pattern.
 ///
 ///
 /// The following propagators are available:
-/// - @subpage EVDS_Propagator_Euler "'propagator_euler'":
-///		Eulers forward integration (for debugging purposes only)
-/// - @subpage EVDS_Propagator_RK4 "'propagator_rk4'":
-///		Runge-Kutta 4th order numerical integration
-/// - @subpage EVDS_Propagator_Heun "'propagator_heun'":
-///		Heun's predictor-corrector numerical integration method
+/// - @subpage EVDS_Propagator_ForwardEuler "Eulers forward integration" (for debugging purposes only)
+/// - @subpage EVDS_Propagator_RK4 "Runge-Kutta 4th order integration"
+/// - @subpage EVDS_Propagator_Heun "Heun's predictor-corrector integration"
 ////////////////////////////////////////////////////////////////////////////////
 /// @page EVDS_Addon_List List of Addons
 ///
 /// The following official addons are available for EVDS:
-/// - @subpage EVDS_Solver_Antenna "'antenna'"
+/// - @subpage EVDS_Solver_Antenna "Radio antenna"
 ///		Radio antenna with various shapes and geometric parameters available. If
 ///		Realtime Digital Radio Simulator support is enabled, it can be used for
 ///		simulating the digital radio link within the current EVDS_SYSTEM.
-/// - @subpage EVDS_Solver_Train_WheelsGeometry "'train_wheels'"
+/// - @subpage EVDS_Solver_Train_WheelsGeometry "Train wheels (geometry only)"
 ///		Temporary placeholder that only represents geometry of train wheels.
 /// - @subpage EVDS_Callback_NRLMSISE_00
 ///		NRLMSISE-00 Earth atmospheric model callback for the EVDS_ENVIRONMENT API.
