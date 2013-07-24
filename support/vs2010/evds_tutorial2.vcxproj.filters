@@ -2,7 +2,7 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="tutorials">
-      <UniqueIdentifier>{A16F3D6F-3B61-5C43-A747-041C8869F276}</UniqueIdentifier>
+      <UniqueIdentifier>{BF28543C-9E9F-3841-92D1-4141CF0BA28D}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

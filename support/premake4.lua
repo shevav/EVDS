@@ -93,7 +93,7 @@ project "evds"
 if EVDS_STANDALONE ~= false then
    function tutorial(index)
       project("evds_tutorial"..index)
-         uuid "740FC406-98AF-B54D-B226-CAF40650FF1E"
+         uuid("740FC406-98AF-B54D-B226-CAF40650FF"..index.."E")
          kind "ConsoleApp"
          language "C"
          includedirs { "../include",

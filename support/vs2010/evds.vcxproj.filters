@@ -2,19 +2,19 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="core">
-      <UniqueIdentifier>{FEE583B1-1482-194E-82BF-4F070DDF5BD8}</UniqueIdentifier>
+      <UniqueIdentifier>{DF79E9E5-7E0F-5C4E-AE3F-3FE532DCE82B}</UniqueIdentifier>
     </Filter>
     <Filter Include="common">
-      <UniqueIdentifier>{EAA30A63-7454-0246-AD87-AD49A7201876}</UniqueIdentifier>
+      <UniqueIdentifier>{983AE3B1-4FEF-0646-BEB2-B3B01F8FAD36}</UniqueIdentifier>
     </Filter>
     <Filter Include="material">
-      <UniqueIdentifier>{AE183BC1-4AAD-D14F-939C-F7F391F6D33C}</UniqueIdentifier>
+      <UniqueIdentifier>{ED033196-473C-CF4E-8119-76525493C576}</UniqueIdentifier>
     </Filter>
     <Filter Include="propagators">
-      <UniqueIdentifier>{57DCD0D0-6637-B844-9A1E-8C8B43E59F70}</UniqueIdentifier>
+      <UniqueIdentifier>{D723B2BB-C383-0948-A683-5CDF787A2A05}</UniqueIdentifier>
     </Filter>
     <Filter Include="include">
-      <UniqueIdentifier>{448BE2F1-EF93-DD42-AA78-886583AEB403}</UniqueIdentifier>
+      <UniqueIdentifier>{9CCC58BB-1978-FD45-8ACD-5F109B713BCA}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

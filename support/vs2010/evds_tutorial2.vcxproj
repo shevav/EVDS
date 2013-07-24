@@ -67,7 +67,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{740FC406-98AF-B54D-B226-CAF40650FF1E}</ProjectGuid>
+    <ProjectGuid>{740FC406-98AF-B54D-B226-CAF40650FF2E}</ProjectGuid>
     <RootNamespace>evds_tutorial2</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
