@@ -27,8 +27,8 @@ if _ACTION == "evdsdoc" then return end
 --------------------------------------------------------------------------------
 -- Generate EVDS default materials include
 --------------------------------------------------------------------------------
-local evds_defmat = "../include/evds_material_database.h"
-local evds_matxml = "../source/material/evds_material_database.xml"
+local evds_defmat = "../source/core/evds_database.inc"
+local evds_matxml = "../source/core/evds_database.xml"
 if true then -- (not os.isfile(evds_defmat))
   -- Pad XML with C strings
   local xml_contents = ""
@@ -38,7 +38,7 @@ if true then -- (not os.isfile(evds_defmat))
   end
   
   -- Generate source code
-  local source = "char* EVDS_InternalMaterial_Database = \n"..xml_contents..";\n"
+  local source = "char* EVDS_Internal_Database = \n"..xml_contents..";\n"
 
   -- Save source code
   local file = io.open(evds_defmat,"w+")
@@ -48,7 +48,7 @@ end
 
 newaction {
    trigger     = "evdsdb",
-   description = "Generate materials database lookup",
+   description = "Generate database lookup",
    execute     = function () end
 }
 if _ACTION == "evdsdb" then return end
@@ -64,8 +64,7 @@ project "evds"
    includedirs { "../include",
                  "../external/simc/include" }
    files { "../source/core/**",
-           "../source/common/**",
-           "../source/material/**",
+           "../source/objects/**",
            "../source/propagators/**",
            "../include/**" }
    defines { "EVDS_LIBRARY", "SIMC_LIBRARY" }

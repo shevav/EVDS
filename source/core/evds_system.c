@@ -26,6 +26,10 @@
 #include "evds.h"
 
 
+//This file can be generated from "evds_database.xml" via the Premake4 script
+#include "evds_database.inc"
+
+
 
 ////////////////////////////////////////////////////////////////////////////////
 /// @brief Return version information.
@@ -190,6 +194,9 @@ int EVDS_System_Create(EVDS_SYSTEM** p_system)
 	EVDS_Object_Create(system,0,&inertial_space);
 	EVDS_Object_Initialize(inertial_space,1);
 	system->inertial_space = inertial_space;
+
+	//Load built-in databases
+	EVDS_System_DatabaseFromString(system,EVDS_Internal_Database);
 	return EVDS_OK;
 }
 

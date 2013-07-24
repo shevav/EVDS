@@ -25,9 +25,6 @@
 #include <math.h>
 #include "evds.h"
 
-//This file can be generated from "evds_material_database.xml" via the Premake4 script
-#include "evds_material_database.h"
-
 
 
 
@@ -92,18 +89,4 @@ int EVDS_Material_IsFuel(EVDS_SYSTEM* system, const char* name) {
 		}
 	}
 	return EVDS_ERROR_BAD_STATE;
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-/// @brief Load the built-in database of common materials.
-///
-/// @param[in] system Pointer to EVDS_SYSTEM
-///
-/// @returns Error code
-/// @retval EVDS_OK Successfully completed
-/// @retval EVDS_ERROR_MEMORY Could not allocate required memory
-////////////////////////////////////////////////////////////////////////////////
-int EVDS_Material_LoadDatabase(EVDS_SYSTEM* system) {
-	return EVDS_System_DatabaseFromString(system,EVDS_InternalMaterial_Database);
 }

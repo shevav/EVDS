@@ -680,8 +680,10 @@ WARN_LOGFILE           =
 
 INPUT                  = ./../doc \
 						 ./../include \
-                         ./../source/evds_core \
-                         ./../source/evds_common \
+                         ./../source/core \
+						 ./../source/objects \
+                         ./../source/propagators \
+						 ./../source/models \
                          ./../addons
 
 # This tag can be used to specify the character encoding of the source files 
