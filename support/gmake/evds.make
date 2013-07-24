@@ -396,7 +396,7 @@ OBJECTS := \
 	$(OBJDIR)/evds_modifier.o \
 	$(OBJDIR)/evds_planet.o \
 	$(OBJDIR)/evds_wiring.o \
-	$(OBJDIR)/evds_database.o \
+	$(OBJDIR)/evds_material.o \
 	$(OBJDIR)/evds_prop_euler.o \
 	$(OBJDIR)/evds_prop_heun.o \
 	$(OBJDIR)/evds_prop_rk4.o \
@@ -512,7 +512,7 @@ $(OBJDIR)/evds_planet.o: ../../source/common/evds_planet.c
 $(OBJDIR)/evds_wiring.o: ../../source/common/evds_wiring.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(CFLAGS) -o "$@" -MF $(@:%.o=%.d) -c "$<"
-$(OBJDIR)/evds_database.o: ../../source/material/evds_database.c
+$(OBJDIR)/evds_material.o: ../../source/material/evds_material.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(CFLAGS) -o "$@" -MF $(@:%.o=%.d) -c "$<"
 $(OBJDIR)/evds_prop_euler.o: ../../source/propagators/evds_prop_euler.c
