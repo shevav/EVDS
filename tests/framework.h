@@ -25,6 +25,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 #include <evds.h>
 
 //#include <setjmp.h>
@@ -78,6 +79,12 @@ int Test_InList(void* ptr, SIMC_LIST* list);
 	SILENT_EQUAL_TO(error_code,EVDS_OK); }
 
 #define START_TEST(name) { \
+	EVDS_VECTOR vector = { 0 }; \
+	EVDS_VECTOR vector1 = { 0 }; \
+	EVDS_VECTOR vector2 = { 0 }; \
+	EVDS_QUATERNION quaternion = { 0 }; \
+	EVDS_QUATERNION quaternion1 = { 0 }; \
+	EVDS_QUATERNION quaternion2 = { 0 }; \
 	EVDS_SYSTEM* system; \
 	EVDS_OBJECT* object; \
 	EVDS_VARIABLE* variable; \
@@ -95,5 +102,6 @@ int Test_InList(void* ptr, SIMC_LIST* list);
 
 //Various test files list
 void Test_EVDS_SYSTEM();
+void Test_EVDS_VECTOR();
 
 #endif

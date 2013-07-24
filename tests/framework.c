@@ -44,5 +44,6 @@ int Test_InList(void* ptr, SIMC_LIST* list) {
 
 void main() {
 	Test_EVDS_SYSTEM();
+	Test_EVDS_VECTOR();
 	getchar();
 }
