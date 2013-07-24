@@ -67,88 +67,88 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{EE4E6F16-F056-1746-B855-ADA3599F7386}</ProjectGuid>
-    <RootNamespace>evds</RootNamespace>
+    <ProjectGuid>{740FC406-98AF-B54D-B226-CAF40650FF1E}</ProjectGuid>
+    <RootNamespace>evds_tutorial2</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugDynamic|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugDynamic|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDynamic|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDynamic|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugSingleThread|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugSingleThread|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseSingleThread|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseSingleThread|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugSingleThreadDynamic|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugSingleThreadDynamic|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseSingleThreadDynamic|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseSingleThreadDynamic|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -207,75 +207,75 @@
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\..\bin\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">obj\x32\Debug\evds\</IntDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">evdsd32</TargetName>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">obj\x32\Debug\evds_tutorial2\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">evds_tutorial2d32</TargetName>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\..\bin\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">obj\x64\Debug\evds\</IntDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">evdsd</TargetName>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">obj\x64\Debug\evds_tutorial2\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">evds_tutorial2d</TargetName>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</LinkIncremental>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\..\bin\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">obj\x32\Release\evds\</IntDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">evds32</TargetName>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">obj\x32\Release\evds_tutorial2\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">evds_tutorial232</TargetName>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">..\..\bin\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">obj\x64\Release\evds\</IntDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">evds</TargetName>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">obj\x64\Release\evds_tutorial2\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">evds_tutorial2</TargetName>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='DebugDynamic|Win32'">..\..\bin\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='DebugDynamic|Win32'">obj\x32\DebugDynamic\evds\</IntDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='DebugDynamic|Win32'">evdsd32</TargetName>
-    <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='DebugDynamic|Win32'">false</IgnoreImportLibrary>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='DebugDynamic|Win32'">obj\x32\DebugDynamic\evds_tutorial2\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='DebugDynamic|Win32'">evds_tutorial2d32</TargetName>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='DebugDynamic|Win32'">true</LinkIncremental>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='DebugDynamic|x64'">..\..\bin\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='DebugDynamic|x64'">obj\x64\DebugDynamic\evds\</IntDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='DebugDynamic|x64'">evdsd</TargetName>
-    <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='DebugDynamic|x64'">false</IgnoreImportLibrary>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='DebugDynamic|x64'">obj\x64\DebugDynamic\evds_tutorial2\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='DebugDynamic|x64'">evds_tutorial2d</TargetName>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='DebugDynamic|x64'">true</LinkIncremental>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='ReleaseDynamic|Win32'">..\..\bin\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='ReleaseDynamic|Win32'">obj\x32\ReleaseDynamic\evds\</IntDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='ReleaseDynamic|Win32'">evds32</TargetName>
-    <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='ReleaseDynamic|Win32'">false</IgnoreImportLibrary>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='ReleaseDynamic|Win32'">obj\x32\ReleaseDynamic\evds_tutorial2\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='ReleaseDynamic|Win32'">evds_tutorial232</TargetName>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='ReleaseDynamic|Win32'">false</LinkIncremental>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='ReleaseDynamic|x64'">..\..\bin\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='ReleaseDynamic|x64'">obj\x64\ReleaseDynamic\evds\</IntDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='ReleaseDynamic|x64'">evds</TargetName>
-    <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='ReleaseDynamic|x64'">false</IgnoreImportLibrary>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='ReleaseDynamic|x64'">obj\x64\ReleaseDynamic\evds_tutorial2\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='ReleaseDynamic|x64'">evds_tutorial2</TargetName>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='ReleaseDynamic|x64'">false</LinkIncremental>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='DebugSingleThread|Win32'">..\..\bin\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='DebugSingleThread|Win32'">obj\x32\DebugSingleThread\evds\</IntDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='DebugSingleThread|Win32'">evds_std32</TargetName>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='DebugSingleThread|Win32'">obj\x32\DebugSingleThread\evds_tutorial2\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='DebugSingleThread|Win32'">evds_tutorial2_std32</TargetName>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='DebugSingleThread|Win32'">true</LinkIncremental>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='DebugSingleThread|x64'">..\..\bin\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='DebugSingleThread|x64'">obj\x64\DebugSingleThread\evds\</IntDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='DebugSingleThread|x64'">evds_std</TargetName>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='DebugSingleThread|x64'">obj\x64\DebugSingleThread\evds_tutorial2\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='DebugSingleThread|x64'">evds_tutorial2_std</TargetName>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='DebugSingleThread|x64'">true</LinkIncremental>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='ReleaseSingleThread|Win32'">..\..\bin\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='ReleaseSingleThread|Win32'">obj\x32\ReleaseSingleThread\evds\</IntDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='ReleaseSingleThread|Win32'">evds_st32</TargetName>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='ReleaseSingleThread|Win32'">obj\x32\ReleaseSingleThread\evds_tutorial2\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='ReleaseSingleThread|Win32'">evds_tutorial2_st32</TargetName>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='ReleaseSingleThread|Win32'">false</LinkIncremental>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='ReleaseSingleThread|x64'">..\..\bin\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='ReleaseSingleThread|x64'">obj\x64\ReleaseSingleThread\evds\</IntDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='ReleaseSingleThread|x64'">evds_st</TargetName>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='ReleaseSingleThread|x64'">obj\x64\ReleaseSingleThread\evds_tutorial2\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='ReleaseSingleThread|x64'">evds_tutorial2_st</TargetName>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='ReleaseSingleThread|x64'">false</LinkIncremental>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='DebugSingleThreadDynamic|Win32'">..\..\bin\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='DebugSingleThreadDynamic|Win32'">obj\x32\DebugSingleThreadDynamic\evds\</IntDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='DebugSingleThreadDynamic|Win32'">evds_std32</TargetName>
-    <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='DebugSingleThreadDynamic|Win32'">false</IgnoreImportLibrary>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='DebugSingleThreadDynamic|Win32'">obj\x32\DebugSingleThreadDynamic\evds_tutorial2\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='DebugSingleThreadDynamic|Win32'">evds_tutorial2_std32</TargetName>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='DebugSingleThreadDynamic|Win32'">true</LinkIncremental>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='DebugSingleThreadDynamic|x64'">..\..\bin\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='DebugSingleThreadDynamic|x64'">obj\x64\DebugSingleThreadDynamic\evds\</IntDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='DebugSingleThreadDynamic|x64'">evds_std</TargetName>
-    <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='DebugSingleThreadDynamic|x64'">false</IgnoreImportLibrary>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='DebugSingleThreadDynamic|x64'">obj\x64\DebugSingleThreadDynamic\evds_tutorial2\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='DebugSingleThreadDynamic|x64'">evds_tutorial2_std</TargetName>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='DebugSingleThreadDynamic|x64'">true</LinkIncremental>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='ReleaseSingleThreadDynamic|Win32'">..\..\bin\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='ReleaseSingleThreadDynamic|Win32'">obj\x32\ReleaseSingleThreadDynamic\evds\</IntDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='ReleaseSingleThreadDynamic|Win32'">evds_st32</TargetName>
-    <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='ReleaseSingleThreadDynamic|Win32'">false</IgnoreImportLibrary>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='ReleaseSingleThreadDynamic|Win32'">obj\x32\ReleaseSingleThreadDynamic\evds_tutorial2\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='ReleaseSingleThreadDynamic|Win32'">evds_tutorial2_st32</TargetName>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='ReleaseSingleThreadDynamic|Win32'">false</LinkIncremental>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='ReleaseSingleThreadDynamic|x64'">..\..\bin\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='ReleaseSingleThreadDynamic|x64'">obj\x64\ReleaseSingleThreadDynamic\evds\</IntDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='ReleaseSingleThreadDynamic|x64'">evds_st</TargetName>
-    <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='ReleaseSingleThreadDynamic|x64'">false</IgnoreImportLibrary>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='ReleaseSingleThreadDynamic|x64'">obj\x64\ReleaseSingleThreadDynamic\evds_tutorial2\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='ReleaseSingleThreadDynamic|x64'">evds_tutorial2_st</TargetName>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='ReleaseSingleThreadDynamic|x64'">false</LinkIncremental>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>DEBUG;_CRT_SECURE_NO_WARNINGS;WIN32;EVDS_LIBRARY;SIMC_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;..\..\tutorials;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>DEBUG;_CRT_SECURE_NO_WARNINGS;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -283,27 +283,26 @@
       <PrecompiledHeader></PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <ProgramDataBaseFileName>$(OutDir)evdsd32.pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>$(OutDir)evds_tutorial2d32.pdb</ProgramDataBaseFileName>
       <CompileAs>CompileAsC</CompileAs>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>DEBUG;_CRT_SECURE_NO_WARNINGS;WIN32;EVDS_LIBRARY;SIMC_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>DEBUG;_CRT_SECURE_NO_WARNINGS;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;..\..\tutorials;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
-  <Lib>
-    <OutputFile>$(OutDir)evdsd32.lib</OutputFile>
-    <TargetMachine>MachineX86</TargetMachine>
-  </Lib>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <OutputFile>$(OutDir)evds_tutorial2d32.exe</OutputFile>
+      <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
+      <TargetMachine>MachineX86</TargetMachine>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>DEBUG;_CRT_SECURE_NO_WARNINGS;WIN32;WIN64;EVDS_LIBRARY;SIMC_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;..\..\tutorials;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>DEBUG;_CRT_SECURE_NO_WARNINGS;WIN32;WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -311,27 +310,26 @@
       <PrecompiledHeader></PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <ProgramDataBaseFileName>$(OutDir)evdsd.pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>$(OutDir)evds_tutorial2d.pdb</ProgramDataBaseFileName>
       <CompileAs>CompileAsC</CompileAs>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>DEBUG;_CRT_SECURE_NO_WARNINGS;WIN32;WIN64;EVDS_LIBRARY;SIMC_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>DEBUG;_CRT_SECURE_NO_WARNINGS;WIN32;WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;..\..\tutorials;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
-  <Lib>
-    <OutputFile>$(OutDir)evdsd.lib</OutputFile>
-    <TargetMachine>MachineX64</TargetMachine>
-  </Lib>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <OutputFile>$(OutDir)evds_tutorial2d.exe</OutputFile>
+      <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
+      <TargetMachine>MachineX64</TargetMachine>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <Optimization>Full</Optimization>
-      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;EVDS_LIBRARY;SIMC_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;..\..\tutorials;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -339,29 +337,28 @@
       <PrecompiledHeader></PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <ProgramDataBaseFileName>$(OutDir)evds32.pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>$(OutDir)evds_tutorial232.pdb</ProgramDataBaseFileName>
       <CompileAs>CompileAsC</CompileAs>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;EVDS_LIBRARY;SIMC_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;..\..\tutorials;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
-  <Lib>
-    <OutputFile>$(OutDir)evds32.lib</OutputFile>
-    <TargetMachine>MachineX86</TargetMachine>
-  </Lib>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <OutputFile>$(OutDir)evds_tutorial232.exe</OutputFile>
+      <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
+      <TargetMachine>MachineX86</TargetMachine>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <Optimization>Full</Optimization>
-      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;WIN64;EVDS_LIBRARY;SIMC_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;..\..\tutorials;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -369,29 +366,28 @@
       <PrecompiledHeader></PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <ProgramDataBaseFileName>$(OutDir)evds.pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>$(OutDir)evds_tutorial2.pdb</ProgramDataBaseFileName>
       <CompileAs>CompileAsC</CompileAs>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;WIN64;EVDS_LIBRARY;SIMC_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;..\..\tutorials;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
-  <Lib>
-    <OutputFile>$(OutDir)evds.lib</OutputFile>
-    <TargetMachine>MachineX64</TargetMachine>
-  </Lib>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <OutputFile>$(OutDir)evds_tutorial2.exe</OutputFile>
+      <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
+      <TargetMachine>MachineX64</TargetMachine>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugDynamic|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>DEBUG;EVDS_DYNAMIC;IVSS_DYNAMIC;RDRS_DYNAMIC;SIMC_DYNAMIC;_CRT_SECURE_NO_WARNINGS;WIN32;EVDS_LIBRARY;SIMC_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;..\..\tutorials;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>DEBUG;EVDS_DYNAMIC;IVSS_DYNAMIC;RDRS_DYNAMIC;SIMC_DYNAMIC;_CRT_SECURE_NO_WARNINGS;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -399,26 +395,26 @@
       <PrecompiledHeader></PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <ProgramDataBaseFileName>$(OutDir)evdsd32.pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>$(OutDir)evds_tutorial2d32.pdb</ProgramDataBaseFileName>
       <CompileAs>CompileAsC</CompileAs>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>DEBUG;EVDS_DYNAMIC;IVSS_DYNAMIC;RDRS_DYNAMIC;SIMC_DYNAMIC;_CRT_SECURE_NO_WARNINGS;WIN32;EVDS_LIBRARY;SIMC_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>DEBUG;EVDS_DYNAMIC;IVSS_DYNAMIC;RDRS_DYNAMIC;SIMC_DYNAMIC;_CRT_SECURE_NO_WARNINGS;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;..\..\tutorials;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <OutputFile>$(OutDir)evdsd32.dll</OutputFile>
-      <ImportLibrary>..\..\bin\evdsd32.lib</ImportLibrary>
+      <OutputFile>$(OutDir)evds_tutorial2d32.exe</OutputFile>
+      <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugDynamic|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>DEBUG;EVDS_DYNAMIC;IVSS_DYNAMIC;RDRS_DYNAMIC;SIMC_DYNAMIC;_CRT_SECURE_NO_WARNINGS;WIN32;WIN64;EVDS_LIBRARY;SIMC_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;..\..\tutorials;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>DEBUG;EVDS_DYNAMIC;IVSS_DYNAMIC;RDRS_DYNAMIC;SIMC_DYNAMIC;_CRT_SECURE_NO_WARNINGS;WIN32;WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -426,26 +422,26 @@
       <PrecompiledHeader></PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <ProgramDataBaseFileName>$(OutDir)evdsd.pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>$(OutDir)evds_tutorial2d.pdb</ProgramDataBaseFileName>
       <CompileAs>CompileAsC</CompileAs>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>DEBUG;EVDS_DYNAMIC;IVSS_DYNAMIC;RDRS_DYNAMIC;SIMC_DYNAMIC;_CRT_SECURE_NO_WARNINGS;WIN32;WIN64;EVDS_LIBRARY;SIMC_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>DEBUG;EVDS_DYNAMIC;IVSS_DYNAMIC;RDRS_DYNAMIC;SIMC_DYNAMIC;_CRT_SECURE_NO_WARNINGS;WIN32;WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;..\..\tutorials;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <OutputFile>$(OutDir)evdsd.dll</OutputFile>
-      <ImportLibrary>..\..\bin\evdsd.lib</ImportLibrary>
+      <OutputFile>$(OutDir)evds_tutorial2d.exe</OutputFile>
+      <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
       <TargetMachine>MachineX64</TargetMachine>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDynamic|Win32'">
     <ClCompile>
       <Optimization>Full</Optimization>
-      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>EVDS_DYNAMIC;IVSS_DYNAMIC;RDRS_DYNAMIC;SIMC_DYNAMIC;_CRT_SECURE_NO_WARNINGS;WIN32;EVDS_LIBRARY;SIMC_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;..\..\tutorials;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>EVDS_DYNAMIC;IVSS_DYNAMIC;RDRS_DYNAMIC;SIMC_DYNAMIC;_CRT_SECURE_NO_WARNINGS;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -453,28 +449,28 @@
       <PrecompiledHeader></PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <ProgramDataBaseFileName>$(OutDir)evds32.pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>$(OutDir)evds_tutorial232.pdb</ProgramDataBaseFileName>
       <CompileAs>CompileAsC</CompileAs>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>EVDS_DYNAMIC;IVSS_DYNAMIC;RDRS_DYNAMIC;SIMC_DYNAMIC;_CRT_SECURE_NO_WARNINGS;WIN32;EVDS_LIBRARY;SIMC_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>EVDS_DYNAMIC;IVSS_DYNAMIC;RDRS_DYNAMIC;SIMC_DYNAMIC;_CRT_SECURE_NO_WARNINGS;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;..\..\tutorials;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <OutputFile>$(OutDir)evds32.dll</OutputFile>
-      <ImportLibrary>..\..\bin\evds32.lib</ImportLibrary>
+      <OutputFile>$(OutDir)evds_tutorial232.exe</OutputFile>
+      <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDynamic|x64'">
     <ClCompile>
       <Optimization>Full</Optimization>
-      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>EVDS_DYNAMIC;IVSS_DYNAMIC;RDRS_DYNAMIC;SIMC_DYNAMIC;_CRT_SECURE_NO_WARNINGS;WIN32;WIN64;EVDS_LIBRARY;SIMC_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;..\..\tutorials;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>EVDS_DYNAMIC;IVSS_DYNAMIC;RDRS_DYNAMIC;SIMC_DYNAMIC;_CRT_SECURE_NO_WARNINGS;WIN32;WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -482,28 +478,28 @@
       <PrecompiledHeader></PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <ProgramDataBaseFileName>$(OutDir)evds.pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>$(OutDir)evds_tutorial2.pdb</ProgramDataBaseFileName>
       <CompileAs>CompileAsC</CompileAs>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>EVDS_DYNAMIC;IVSS_DYNAMIC;RDRS_DYNAMIC;SIMC_DYNAMIC;_CRT_SECURE_NO_WARNINGS;WIN32;WIN64;EVDS_LIBRARY;SIMC_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>EVDS_DYNAMIC;IVSS_DYNAMIC;RDRS_DYNAMIC;SIMC_DYNAMIC;_CRT_SECURE_NO_WARNINGS;WIN32;WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;..\..\tutorials;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <OutputFile>$(OutDir)evds.dll</OutputFile>
-      <ImportLibrary>..\..\bin\evds.lib</ImportLibrary>
+      <OutputFile>$(OutDir)evds_tutorial2.exe</OutputFile>
+      <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
       <TargetMachine>MachineX64</TargetMachine>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugSingleThread|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>DEBUG;EVDS_SINGLETHREADED;IVSS_SINGLETHREADED;RDRS_SINGLETHREADED;SIMC_SINGLETHREADED;_CRT_SECURE_NO_WARNINGS;WIN32;EVDS_LIBRARY;SIMC_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;..\..\tutorials;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>DEBUG;EVDS_SINGLETHREADED;IVSS_SINGLETHREADED;RDRS_SINGLETHREADED;SIMC_SINGLETHREADED;_CRT_SECURE_NO_WARNINGS;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -511,27 +507,26 @@
       <PrecompiledHeader></PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <ProgramDataBaseFileName>$(OutDir)evds_std32.pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>$(OutDir)evds_tutorial2_std32.pdb</ProgramDataBaseFileName>
       <CompileAs>CompileAsC</CompileAs>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>DEBUG;EVDS_SINGLETHREADED;IVSS_SINGLETHREADED;RDRS_SINGLETHREADED;SIMC_SINGLETHREADED;_CRT_SECURE_NO_WARNINGS;WIN32;EVDS_LIBRARY;SIMC_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>DEBUG;EVDS_SINGLETHREADED;IVSS_SINGLETHREADED;RDRS_SINGLETHREADED;SIMC_SINGLETHREADED;_CRT_SECURE_NO_WARNINGS;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;..\..\tutorials;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
-  <Lib>
-    <OutputFile>$(OutDir)evds_std32.lib</OutputFile>
-    <TargetMachine>MachineX86</TargetMachine>
-  </Lib>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <OutputFile>$(OutDir)evds_tutorial2_std32.exe</OutputFile>
+      <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
+      <TargetMachine>MachineX86</TargetMachine>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugSingleThread|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>DEBUG;EVDS_SINGLETHREADED;IVSS_SINGLETHREADED;RDRS_SINGLETHREADED;SIMC_SINGLETHREADED;_CRT_SECURE_NO_WARNINGS;WIN32;WIN64;EVDS_LIBRARY;SIMC_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;..\..\tutorials;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>DEBUG;EVDS_SINGLETHREADED;IVSS_SINGLETHREADED;RDRS_SINGLETHREADED;SIMC_SINGLETHREADED;_CRT_SECURE_NO_WARNINGS;WIN32;WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -539,27 +534,26 @@
       <PrecompiledHeader></PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <ProgramDataBaseFileName>$(OutDir)evds_std.pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>$(OutDir)evds_tutorial2_std.pdb</ProgramDataBaseFileName>
       <CompileAs>CompileAsC</CompileAs>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>DEBUG;EVDS_SINGLETHREADED;IVSS_SINGLETHREADED;RDRS_SINGLETHREADED;SIMC_SINGLETHREADED;_CRT_SECURE_NO_WARNINGS;WIN32;WIN64;EVDS_LIBRARY;SIMC_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>DEBUG;EVDS_SINGLETHREADED;IVSS_SINGLETHREADED;RDRS_SINGLETHREADED;SIMC_SINGLETHREADED;_CRT_SECURE_NO_WARNINGS;WIN32;WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;..\..\tutorials;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
-  <Lib>
-    <OutputFile>$(OutDir)evds_std.lib</OutputFile>
-    <TargetMachine>MachineX64</TargetMachine>
-  </Lib>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <OutputFile>$(OutDir)evds_tutorial2_std.exe</OutputFile>
+      <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
+      <TargetMachine>MachineX64</TargetMachine>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseSingleThread|Win32'">
     <ClCompile>
       <Optimization>Full</Optimization>
-      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>EVDS_SINGLETHREADED;IVSS_SINGLETHREADED;RDRS_SINGLETHREADED;SIMC_SINGLETHREADED;_CRT_SECURE_NO_WARNINGS;WIN32;EVDS_LIBRARY;SIMC_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;..\..\tutorials;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>EVDS_SINGLETHREADED;IVSS_SINGLETHREADED;RDRS_SINGLETHREADED;SIMC_SINGLETHREADED;_CRT_SECURE_NO_WARNINGS;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -567,29 +561,28 @@
       <PrecompiledHeader></PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <ProgramDataBaseFileName>$(OutDir)evds_st32.pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>$(OutDir)evds_tutorial2_st32.pdb</ProgramDataBaseFileName>
       <CompileAs>CompileAsC</CompileAs>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>EVDS_SINGLETHREADED;IVSS_SINGLETHREADED;RDRS_SINGLETHREADED;SIMC_SINGLETHREADED;_CRT_SECURE_NO_WARNINGS;WIN32;EVDS_LIBRARY;SIMC_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>EVDS_SINGLETHREADED;IVSS_SINGLETHREADED;RDRS_SINGLETHREADED;SIMC_SINGLETHREADED;_CRT_SECURE_NO_WARNINGS;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;..\..\tutorials;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
-  <Lib>
-    <OutputFile>$(OutDir)evds_st32.lib</OutputFile>
-    <TargetMachine>MachineX86</TargetMachine>
-  </Lib>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <OutputFile>$(OutDir)evds_tutorial2_st32.exe</OutputFile>
+      <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
+      <TargetMachine>MachineX86</TargetMachine>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseSingleThread|x64'">
     <ClCompile>
       <Optimization>Full</Optimization>
-      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>EVDS_SINGLETHREADED;IVSS_SINGLETHREADED;RDRS_SINGLETHREADED;SIMC_SINGLETHREADED;_CRT_SECURE_NO_WARNINGS;WIN32;WIN64;EVDS_LIBRARY;SIMC_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;..\..\tutorials;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>EVDS_SINGLETHREADED;IVSS_SINGLETHREADED;RDRS_SINGLETHREADED;SIMC_SINGLETHREADED;_CRT_SECURE_NO_WARNINGS;WIN32;WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -597,29 +590,28 @@
       <PrecompiledHeader></PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <ProgramDataBaseFileName>$(OutDir)evds_st.pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>$(OutDir)evds_tutorial2_st.pdb</ProgramDataBaseFileName>
       <CompileAs>CompileAsC</CompileAs>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>EVDS_SINGLETHREADED;IVSS_SINGLETHREADED;RDRS_SINGLETHREADED;SIMC_SINGLETHREADED;_CRT_SECURE_NO_WARNINGS;WIN32;WIN64;EVDS_LIBRARY;SIMC_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>EVDS_SINGLETHREADED;IVSS_SINGLETHREADED;RDRS_SINGLETHREADED;SIMC_SINGLETHREADED;_CRT_SECURE_NO_WARNINGS;WIN32;WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;..\..\tutorials;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
-  <Lib>
-    <OutputFile>$(OutDir)evds_st.lib</OutputFile>
-    <TargetMachine>MachineX64</TargetMachine>
-  </Lib>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <OutputFile>$(OutDir)evds_tutorial2_st.exe</OutputFile>
+      <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
+      <TargetMachine>MachineX64</TargetMachine>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugSingleThreadDynamic|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>DEBUG;EVDS_DYNAMIC;IVSS_DYNAMIC;RDRS_DYNAMIC;SIMC_DYNAMIC;EVDS_SINGLETHREADED;IVSS_SINGLETHREADED;RDRS_SINGLETHREADED;SIMC_SINGLETHREADED;_CRT_SECURE_NO_WARNINGS;WIN32;EVDS_LIBRARY;SIMC_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;..\..\tutorials;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>DEBUG;EVDS_DYNAMIC;IVSS_DYNAMIC;RDRS_DYNAMIC;SIMC_DYNAMIC;EVDS_SINGLETHREADED;IVSS_SINGLETHREADED;RDRS_SINGLETHREADED;SIMC_SINGLETHREADED;_CRT_SECURE_NO_WARNINGS;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -627,26 +619,26 @@
       <PrecompiledHeader></PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <ProgramDataBaseFileName>$(OutDir)evds_std32.pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>$(OutDir)evds_tutorial2_std32.pdb</ProgramDataBaseFileName>
       <CompileAs>CompileAsC</CompileAs>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>DEBUG;EVDS_DYNAMIC;IVSS_DYNAMIC;RDRS_DYNAMIC;SIMC_DYNAMIC;EVDS_SINGLETHREADED;IVSS_SINGLETHREADED;RDRS_SINGLETHREADED;SIMC_SINGLETHREADED;_CRT_SECURE_NO_WARNINGS;WIN32;EVDS_LIBRARY;SIMC_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>DEBUG;EVDS_DYNAMIC;IVSS_DYNAMIC;RDRS_DYNAMIC;SIMC_DYNAMIC;EVDS_SINGLETHREADED;IVSS_SINGLETHREADED;RDRS_SINGLETHREADED;SIMC_SINGLETHREADED;_CRT_SECURE_NO_WARNINGS;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;..\..\tutorials;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <OutputFile>$(OutDir)evds_std32.dll</OutputFile>
-      <ImportLibrary>..\..\bin\evds_std32.lib</ImportLibrary>
+      <OutputFile>$(OutDir)evds_tutorial2_std32.exe</OutputFile>
+      <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugSingleThreadDynamic|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>DEBUG;EVDS_DYNAMIC;IVSS_DYNAMIC;RDRS_DYNAMIC;SIMC_DYNAMIC;EVDS_SINGLETHREADED;IVSS_SINGLETHREADED;RDRS_SINGLETHREADED;SIMC_SINGLETHREADED;_CRT_SECURE_NO_WARNINGS;WIN32;WIN64;EVDS_LIBRARY;SIMC_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;..\..\tutorials;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>DEBUG;EVDS_DYNAMIC;IVSS_DYNAMIC;RDRS_DYNAMIC;SIMC_DYNAMIC;EVDS_SINGLETHREADED;IVSS_SINGLETHREADED;RDRS_SINGLETHREADED;SIMC_SINGLETHREADED;_CRT_SECURE_NO_WARNINGS;WIN32;WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -654,26 +646,26 @@
       <PrecompiledHeader></PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <ProgramDataBaseFileName>$(OutDir)evds_std.pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>$(OutDir)evds_tutorial2_std.pdb</ProgramDataBaseFileName>
       <CompileAs>CompileAsC</CompileAs>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>DEBUG;EVDS_DYNAMIC;IVSS_DYNAMIC;RDRS_DYNAMIC;SIMC_DYNAMIC;EVDS_SINGLETHREADED;IVSS_SINGLETHREADED;RDRS_SINGLETHREADED;SIMC_SINGLETHREADED;_CRT_SECURE_NO_WARNINGS;WIN32;WIN64;EVDS_LIBRARY;SIMC_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>DEBUG;EVDS_DYNAMIC;IVSS_DYNAMIC;RDRS_DYNAMIC;SIMC_DYNAMIC;EVDS_SINGLETHREADED;IVSS_SINGLETHREADED;RDRS_SINGLETHREADED;SIMC_SINGLETHREADED;_CRT_SECURE_NO_WARNINGS;WIN32;WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;..\..\tutorials;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <OutputFile>$(OutDir)evds_std.dll</OutputFile>
-      <ImportLibrary>..\..\bin\evds_std.lib</ImportLibrary>
+      <OutputFile>$(OutDir)evds_tutorial2_std.exe</OutputFile>
+      <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
       <TargetMachine>MachineX64</TargetMachine>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseSingleThreadDynamic|Win32'">
     <ClCompile>
       <Optimization>Full</Optimization>
-      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>EVDS_DYNAMIC;IVSS_DYNAMIC;RDRS_DYNAMIC;SIMC_DYNAMIC;EVDS_SINGLETHREADED;IVSS_SINGLETHREADED;RDRS_SINGLETHREADED;SIMC_SINGLETHREADED;_CRT_SECURE_NO_WARNINGS;WIN32;EVDS_LIBRARY;SIMC_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;..\..\tutorials;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>EVDS_DYNAMIC;IVSS_DYNAMIC;RDRS_DYNAMIC;SIMC_DYNAMIC;EVDS_SINGLETHREADED;IVSS_SINGLETHREADED;RDRS_SINGLETHREADED;SIMC_SINGLETHREADED;_CRT_SECURE_NO_WARNINGS;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -681,28 +673,28 @@
       <PrecompiledHeader></PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <ProgramDataBaseFileName>$(OutDir)evds_st32.pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>$(OutDir)evds_tutorial2_st32.pdb</ProgramDataBaseFileName>
       <CompileAs>CompileAsC</CompileAs>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>EVDS_DYNAMIC;IVSS_DYNAMIC;RDRS_DYNAMIC;SIMC_DYNAMIC;EVDS_SINGLETHREADED;IVSS_SINGLETHREADED;RDRS_SINGLETHREADED;SIMC_SINGLETHREADED;_CRT_SECURE_NO_WARNINGS;WIN32;EVDS_LIBRARY;SIMC_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>EVDS_DYNAMIC;IVSS_DYNAMIC;RDRS_DYNAMIC;SIMC_DYNAMIC;EVDS_SINGLETHREADED;IVSS_SINGLETHREADED;RDRS_SINGLETHREADED;SIMC_SINGLETHREADED;_CRT_SECURE_NO_WARNINGS;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;..\..\tutorials;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <OutputFile>$(OutDir)evds_st32.dll</OutputFile>
-      <ImportLibrary>..\..\bin\evds_st32.lib</ImportLibrary>
+      <OutputFile>$(OutDir)evds_tutorial2_st32.exe</OutputFile>
+      <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseSingleThreadDynamic|x64'">
     <ClCompile>
       <Optimization>Full</Optimization>
-      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>EVDS_DYNAMIC;IVSS_DYNAMIC;RDRS_DYNAMIC;SIMC_DYNAMIC;EVDS_SINGLETHREADED;IVSS_SINGLETHREADED;RDRS_SINGLETHREADED;SIMC_SINGLETHREADED;_CRT_SECURE_NO_WARNINGS;WIN32;WIN64;EVDS_LIBRARY;SIMC_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;..\..\tutorials;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>EVDS_DYNAMIC;IVSS_DYNAMIC;RDRS_DYNAMIC;SIMC_DYNAMIC;EVDS_SINGLETHREADED;IVSS_SINGLETHREADED;RDRS_SINGLETHREADED;SIMC_SINGLETHREADED;_CRT_SECURE_NO_WARNINGS;WIN32;WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -710,75 +702,31 @@
       <PrecompiledHeader></PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <ProgramDataBaseFileName>$(OutDir)evds_st.pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>$(OutDir)evds_tutorial2_st.pdb</ProgramDataBaseFileName>
       <CompileAs>CompileAsC</CompileAs>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>EVDS_DYNAMIC;IVSS_DYNAMIC;RDRS_DYNAMIC;SIMC_DYNAMIC;EVDS_SINGLETHREADED;IVSS_SINGLETHREADED;RDRS_SINGLETHREADED;SIMC_SINGLETHREADED;_CRT_SECURE_NO_WARNINGS;WIN32;WIN64;EVDS_LIBRARY;SIMC_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>EVDS_DYNAMIC;IVSS_DYNAMIC;RDRS_DYNAMIC;SIMC_DYNAMIC;EVDS_SINGLETHREADED;IVSS_SINGLETHREADED;RDRS_SINGLETHREADED;SIMC_SINGLETHREADED;_CRT_SECURE_NO_WARNINGS;WIN32;WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\include;..\..\external\simc\include;..\..\tutorials;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <OutputFile>$(OutDir)evds_st.dll</OutputFile>
-      <ImportLibrary>..\..\bin\evds_st.lib</ImportLibrary>
+      <OutputFile>$(OutDir)evds_tutorial2_st.exe</OutputFile>
+      <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
       <TargetMachine>MachineX64</TargetMachine>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\include\evds.h" />
-    <ClInclude Include="..\..\include\evds_common.h" />
-    <ClInclude Include="..\..\include\evds_internal.h" />
-    <ClInclude Include="..\..\include\evds_material_database.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\source\core\evds_env.c">
-    </ClCompile>
-    <ClCompile Include="..\..\source\core\evds_function.c">
-    </ClCompile>
-    <ClCompile Include="..\..\source\core\evds_load.c">
-    </ClCompile>
-    <ClCompile Include="..\..\source\core\evds_math.c">
-    </ClCompile>
-    <ClCompile Include="..\..\source\core\evds_mesh.c">
-    </ClCompile>
-    <ClCompile Include="..\..\source\core\evds_object.c">
-    </ClCompile>
-    <ClCompile Include="..\..\source\core\evds_save.c">
-    </ClCompile>
-    <ClCompile Include="..\..\source\core\evds_system.c">
-    </ClCompile>
-    <ClCompile Include="..\..\source\core\evds_variable.c">
-    </ClCompile>
-    <ClCompile Include="..\..\source\common\evds_body.c">
-    </ClCompile>
-    <ClCompile Include="..\..\source\common\evds_engine.c">
-    </ClCompile>
-    <ClCompile Include="..\..\source\common\evds_fueltank.c">
-    </ClCompile>
-    <ClCompile Include="..\..\source\common\evds_gimbal.c">
-    </ClCompile>
-    <ClCompile Include="..\..\source\common\evds_modifier.c">
-    </ClCompile>
-    <ClCompile Include="..\..\source\common\evds_planet.c">
-    </ClCompile>
-    <ClCompile Include="..\..\source\common\evds_wiring.c">
-    </ClCompile>
-    <ClCompile Include="..\..\source\material\evds_material.c">
-    </ClCompile>
-    <ClCompile Include="..\..\source\propagators\evds_prop_euler.c">
-    </ClCompile>
-    <ClCompile Include="..\..\source\propagators\evds_prop_heun.c">
-    </ClCompile>
-    <ClCompile Include="..\..\source\propagators\evds_prop_rk4.c">
+    <ClCompile Include="..\..\tutorials\evds_tutorial2.c">
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\source\material\evds_material_database.xml" />
-  </ItemGroup>
-  <ItemGroup>
+    <ProjectReference Include="evds.vcxproj">
+      <Project>{EE4E6F16-F056-1746-B855-ADA3599F7386}</Project>
+    </ProjectReference>
     <ProjectReference Include="simc.vcxproj">
       <Project>{00058543-E5EA-1540-B535-BCE859AA319E}</Project>
     </ProjectReference>

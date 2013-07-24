@@ -1,4 +1,4 @@
-char* EVDS_InternalCommon_Database = 
+char* EVDS_InternalMaterial_Database = 
 	"<EVDS>\n"
 	"	<database name='material'>\n"
 	"		<entry name='O2' print='Oxygen' class='oxidizer'>\n"

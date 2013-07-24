@@ -27,8 +27,8 @@ if _ACTION == "evdsdoc" then return end
 --------------------------------------------------------------------------------
 -- Generate EVDS default materials include
 --------------------------------------------------------------------------------
-local evds_defmat = "../include/evds_database.h"
-local evds_matxml = "../source/evds_common/evds_database.xml"
+local evds_defmat = "../include/evds_material_database.h"
+local evds_matxml = "../source/material/evds_material_database.xml"
 if true then -- (not os.isfile(evds_defmat))
   -- Pad XML with C strings
   local xml_contents = ""
@@ -38,7 +38,7 @@ if true then -- (not os.isfile(evds_defmat))
   end
   
   -- Generate source code
-  local source = "char* EVDS_InternalCommon_Database = \n"..xml_contents..";\n"
+  local source = "char* EVDS_InternalMaterial_Database = \n"..xml_contents..";\n"
 
   -- Save source code
   local file = io.open(evds_defmat,"w+")
@@ -63,8 +63,10 @@ project "evds"
    language "C"
    includedirs { "../include",
                  "../external/simc/include" }
-   files { "../source/evds_core/**",
-           "../source/evds_common/**",
+   files { "../source/core/**",
+           "../source/common/**",
+           "../source/material/**",
+           "../source/propagators/**",
            "../include/**" }
    defines { "EVDS_LIBRARY", "SIMC_LIBRARY" }
    configuration { "*Dynamic*" }
@@ -89,16 +91,21 @@ project "evds"
 -- Tutorials
 --------------------------------------------------------------------------------
 if EVDS_STANDALONE ~= false then
-   project "evds_tutorials"
-      uuid "740FC406-98AF-B54D-B226-CAF40650FF1E"
-      kind "ConsoleApp"
-      language "C"
-      includedirs { "../include",
-                    "../external/simc/include",
-                    "../source/evds_tutorials" }
-      files { "../source/evds_tutorials/evds_tutorials.c" }
-      links { "evds", "simc" } --, "glfw" }
-      
-   --   configuration { "windows" }
-   --     links { "opengl32" }
+   function tutorial(index)
+      project("evds_tutorial"..index)
+         uuid "740FC406-98AF-B54D-B226-CAF40650FF1E"
+         kind "ConsoleApp"
+         language "C"
+         includedirs { "../include",
+                       "../external/simc/include",
+                       "../tutorials" }
+         files { "../tutorials/evds_tutorial"..index..".c" }
+         links { "evds", "simc" } --, "glfw" }
+         
+--         configuration { "windows" }
+--           links { "opengl32" }
+   end
+   
+   tutorial(1)
+   tutorial(2)
 end
