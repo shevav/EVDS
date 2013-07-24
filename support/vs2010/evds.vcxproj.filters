@@ -2,37 +2,31 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="core">
-      <UniqueIdentifier>{ED5EB8C1-1DE5-5944-B965-62E8BB9231FB}</UniqueIdentifier>
+      <UniqueIdentifier>{EAFAC751-D03A-E84E-842D-28C3935134FC}</UniqueIdentifier>
     </Filter>
-    <Filter Include="common">
-      <UniqueIdentifier>{0D259A51-4365-5F40-B0E6-67E954102DEB}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="material">
-      <UniqueIdentifier>{8C68AD59-435B-6F4A-A05D-9EAA6F27FBCE}</UniqueIdentifier>
+    <Filter Include="objects">
+      <UniqueIdentifier>{7B75DD5C-B1DB-924C-9BAF-D1010079AD75}</UniqueIdentifier>
     </Filter>
     <Filter Include="propagators">
-      <UniqueIdentifier>{9AF4ECB1-891A-A746-A28C-7413E8E85D0B}</UniqueIdentifier>
+      <UniqueIdentifier>{D1839C73-38E4-6F43-AFF7-9431E3BEC077}</UniqueIdentifier>
     </Filter>
     <Filter Include="include">
-      <UniqueIdentifier>{1F19B7A1-C334-B84F-8FD5-4BFCED087ED0}</UniqueIdentifier>
+      <UniqueIdentifier>{FAFEF65E-8878-B449-B96A-3A87D90004D7}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\source\material\evds_material_database.xml">
-      <Filter>material</Filter>
+    <None Include="..\..\source\core\evds_database.inc">
+      <Filter>core</Filter>
+    </None>
+    <None Include="..\..\source\core\evds_database.xml">
+      <Filter>core</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\evds.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\evds_common.h">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\evds_internal.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\evds_material_database.h">
       <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>
@@ -44,6 +38,9 @@
       <Filter>core</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\core\evds_load.c">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\core\evds_material.c">
       <Filter>core</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\core\evds_math.c">
@@ -64,29 +61,26 @@
     <ClCompile Include="..\..\source\core\evds_variable.c">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\common\evds_body.c">
-      <Filter>common</Filter>
+    <ClCompile Include="..\..\source\objects\evds_body.c">
+      <Filter>objects</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\common\evds_engine.c">
-      <Filter>common</Filter>
+    <ClCompile Include="..\..\source\objects\evds_engine.c">
+      <Filter>objects</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\common\evds_fueltank.c">
-      <Filter>common</Filter>
+    <ClCompile Include="..\..\source\objects\evds_fueltank.c">
+      <Filter>objects</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\common\evds_gimbal.c">
-      <Filter>common</Filter>
+    <ClCompile Include="..\..\source\objects\evds_gimbal.c">
+      <Filter>objects</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\common\evds_modifier.c">
-      <Filter>common</Filter>
+    <ClCompile Include="..\..\source\objects\evds_modifier.c">
+      <Filter>objects</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\common\evds_planet.c">
-      <Filter>common</Filter>
+    <ClCompile Include="..\..\source\objects\evds_planet.c">
+      <Filter>objects</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\common\evds_wiring.c">
-      <Filter>common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\source\material\evds_material.c">
-      <Filter>material</Filter>
+    <ClCompile Include="..\..\source\objects\evds_wiring.c">
+      <Filter>objects</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\propagators\evds_prop_euler.c">
       <Filter>propagators</Filter>

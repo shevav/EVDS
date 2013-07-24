@@ -99,12 +99,27 @@ if EVDS_STANDALONE ~= false then
                        "../external/simc/include",
                        "../tutorials" }
          files { "../tutorials/evds_tutorial"..index..".c" }
-         links { "evds", "simc" } --, "glfw" }
+         links { "evds", "simc" }
          
---         configuration { "windows" }
---           links { "opengl32" }
+         if index == 3 then
+            links { "glfw "}
+            configuration { "windows" }
+               links { "opengl32" }
+         end
    end
    
+   -- Add tutorials
    tutorial(1)
    tutorial(2)
+   
+   -- Add unit tests
+   project "evds_tests"
+      uuid "28E158E3-1600-4B73-A662-8E9228D33E12"
+      kind "ConsoleApp"
+      language "C"
+      includedirs { "../include",
+                    "../external/simc/include",
+                    "../tests" }
+      files { "../tests/**" }
+      links { "evds", "simc" }
 end

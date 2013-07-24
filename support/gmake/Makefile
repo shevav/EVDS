@@ -6,7 +6,7 @@ ifndef config
 endif
 export config
 
-PROJECTS := simc evds evds_tutorial1 evds_tutorial2
+PROJECTS := simc evds evds_tutorial1 evds_tutorial2 evds_tests
 
 .PHONY: all clean help $(PROJECTS)
 
@@ -28,11 +28,16 @@ evds_tutorial2: evds simc
 	@echo "==== Building evds_tutorial2 ($(config)) ===="
 	@${MAKE} --no-print-directory -C . -f evds_tutorial2.make
 
+evds_tests: evds simc
+	@echo "==== Building evds_tests ($(config)) ===="
+	@${MAKE} --no-print-directory -C . -f evds_tests.make
+
 clean:
 	@${MAKE} --no-print-directory -C . -f simc.make clean
 	@${MAKE} --no-print-directory -C . -f evds.make clean
 	@${MAKE} --no-print-directory -C . -f evds_tutorial1.make clean
 	@${MAKE} --no-print-directory -C . -f evds_tutorial2.make clean
+	@${MAKE} --no-print-directory -C . -f evds_tests.make clean
 
 help:
 	@echo "Usage: make [config=name] [target]"
@@ -62,5 +67,6 @@ help:
 	@echo "   evds"
 	@echo "   evds_tutorial1"
 	@echo "   evds_tutorial2"
+	@echo "   evds_tests"
 	@echo ""
 	@echo "For more information, see http://industriousone.com/premake/quick-start"

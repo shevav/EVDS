@@ -383,6 +383,7 @@ OBJECTS := \
 	$(OBJDIR)/evds_env.o \
 	$(OBJDIR)/evds_function.o \
 	$(OBJDIR)/evds_load.o \
+	$(OBJDIR)/evds_material.o \
 	$(OBJDIR)/evds_math.o \
 	$(OBJDIR)/evds_mesh.o \
 	$(OBJDIR)/evds_object.o \
@@ -396,7 +397,6 @@ OBJECTS := \
 	$(OBJDIR)/evds_modifier.o \
 	$(OBJDIR)/evds_planet.o \
 	$(OBJDIR)/evds_wiring.o \
-	$(OBJDIR)/evds_material.o \
 	$(OBJDIR)/evds_prop_euler.o \
 	$(OBJDIR)/evds_prop_heun.o \
 	$(OBJDIR)/evds_prop_rk4.o \
@@ -473,6 +473,9 @@ $(OBJDIR)/evds_function.o: ../../source/core/evds_function.c
 $(OBJDIR)/evds_load.o: ../../source/core/evds_load.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(CFLAGS) -o "$@" -MF $(@:%.o=%.d) -c "$<"
+$(OBJDIR)/evds_material.o: ../../source/core/evds_material.c
+	@echo $(notdir $<)
+	$(SILENT) $(CC) $(CFLAGS) -o "$@" -MF $(@:%.o=%.d) -c "$<"
 $(OBJDIR)/evds_math.o: ../../source/core/evds_math.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(CFLAGS) -o "$@" -MF $(@:%.o=%.d) -c "$<"
@@ -491,28 +494,25 @@ $(OBJDIR)/evds_system.o: ../../source/core/evds_system.c
 $(OBJDIR)/evds_variable.o: ../../source/core/evds_variable.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(CFLAGS) -o "$@" -MF $(@:%.o=%.d) -c "$<"
-$(OBJDIR)/evds_body.o: ../../source/common/evds_body.c
+$(OBJDIR)/evds_body.o: ../../source/objects/evds_body.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(CFLAGS) -o "$@" -MF $(@:%.o=%.d) -c "$<"
-$(OBJDIR)/evds_engine.o: ../../source/common/evds_engine.c
+$(OBJDIR)/evds_engine.o: ../../source/objects/evds_engine.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(CFLAGS) -o "$@" -MF $(@:%.o=%.d) -c "$<"
-$(OBJDIR)/evds_fueltank.o: ../../source/common/evds_fueltank.c
+$(OBJDIR)/evds_fueltank.o: ../../source/objects/evds_fueltank.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(CFLAGS) -o "$@" -MF $(@:%.o=%.d) -c "$<"
-$(OBJDIR)/evds_gimbal.o: ../../source/common/evds_gimbal.c
+$(OBJDIR)/evds_gimbal.o: ../../source/objects/evds_gimbal.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(CFLAGS) -o "$@" -MF $(@:%.o=%.d) -c "$<"
-$(OBJDIR)/evds_modifier.o: ../../source/common/evds_modifier.c
+$(OBJDIR)/evds_modifier.o: ../../source/objects/evds_modifier.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(CFLAGS) -o "$@" -MF $(@:%.o=%.d) -c "$<"
-$(OBJDIR)/evds_planet.o: ../../source/common/evds_planet.c
+$(OBJDIR)/evds_planet.o: ../../source/objects/evds_planet.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(CFLAGS) -o "$@" -MF $(@:%.o=%.d) -c "$<"
-$(OBJDIR)/evds_wiring.o: ../../source/common/evds_wiring.c
-	@echo $(notdir $<)
-	$(SILENT) $(CC) $(CFLAGS) -o "$@" -MF $(@:%.o=%.d) -c "$<"
-$(OBJDIR)/evds_material.o: ../../source/material/evds_material.c
+$(OBJDIR)/evds_wiring.o: ../../source/objects/evds_wiring.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(CFLAGS) -o "$@" -MF $(@:%.o=%.d) -c "$<"
 $(OBJDIR)/evds_prop_euler.o: ../../source/propagators/evds_prop_euler.c

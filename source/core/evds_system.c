@@ -101,12 +101,16 @@ int EVDS_Version(int* version, char* version_string) {
 ///
 /// @param[in] system Pointer to system
 ///
-/// @returns Always returns EVDS_OK.
+/// @returns Error code
+/// @retval EVDS_OK No errors
+/// @retval EVDS_ERROR_BAD_PARAMETER "system" is null
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_System_CleanupObjects(EVDS_SYSTEM* system) {
 #ifndef EVDS_SINGLETHREADED
 	int restart;
-
+#endif
+	if (!system) return EVDS_ERROR_BAD_PARAMETER;
+#ifndef EVDS_SINGLETHREADED
 	//Lock to prevent EVDS_System_Destroy() from deleting objects in another thread
 	SIMC_Lock_Enter(system->cleanup_working); 
 
@@ -750,6 +754,9 @@ int EVDS_System_DatabaseFromFile(EVDS_SYSTEM* system, const char* filename) {
 	EVDS_OBJECT_LOADEX info = { 0 };
 	info.flags = EVDS_OBJECT_LOADEX_NO_OBJECTS;// | EVDS_OBJECT_LOADEX_NO_MODIFIERS;
 	
+	if (!system) return EVDS_ERROR_BAD_PARAMETER;
+	if (!filename) return EVDS_ERROR_BAD_PARAMETER;
+
 	proxy_object.system = system;
 	return EVDS_Object_LoadEx(&proxy_object,filename,&info);
 }
@@ -763,6 +770,9 @@ int EVDS_System_DatabaseFromString(EVDS_SYSTEM* system, const char* description)
 	EVDS_OBJECT_LOADEX info = { 0 };
 	info.flags = EVDS_OBJECT_LOADEX_NO_OBJECTS;// | EVDS_OBJECT_LOADEX_NO_MODIFIERS;
 	info.description = (char*)description;
+
+	if (!system) return EVDS_ERROR_BAD_PARAMETER;
+	if (!description) return EVDS_ERROR_BAD_PARAMETER;
 	
 	proxy_object.system = system;
 	return EVDS_Object_LoadEx(&proxy_object,0,&info);
@@ -799,6 +809,10 @@ int EVDS_System_GetDatabaseByName(EVDS_SYSTEM* system, const char* name, EVDS_VA
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_System_GetDatabaseEntries(EVDS_SYSTEM* system, const char* name, SIMC_LIST** p_list) {
 	EVDS_VARIABLE* database;
+	if (!system) return EVDS_ERROR_BAD_PARAMETER;
+	if (!name) return EVDS_ERROR_BAD_PARAMETER;
+	if (!p_list) return EVDS_ERROR_BAD_PARAMETER;
+
 	EVDS_ERRCHECK(EVDS_System_GetDatabaseByName(system,name,&database));
 	return EVDS_Variable_GetList(database,p_list);
 }
