@@ -53,7 +53,12 @@ Vessel configuration can be defined in runtime by the program, or loaded from
 an XML file.
 
 EVDS does not contain a rendering engine, but provides facilities to generate
-3D meshes and model data for rendering.
+3D meshes and model data for rendering. The physics engine is designed for high-perfomance
+multi-threaded environment with support for asynchronous rendering in mind.
+
+EVDS contains a powerful vector math library which provides consistency checks
+across different coordinate frames and allows correct transformation of vectors
+between non-inertial coordinate frames.
 
 Target Use
 --------------------------------------------------------------------------------

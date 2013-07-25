@@ -1347,19 +1347,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\source\core\evds_env.c"
-				>
-			</File>
-			<File
 				RelativePath="..\..\source\core\evds_function.c"
 				>
 			</File>
 			<File
 				RelativePath="..\..\source\core\evds_load.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\source\core\evds_material.c"
 				>
 			</File>
 			<File
@@ -1397,6 +1389,23 @@
 			</File>
 			<File
 				RelativePath="..\..\include\evds_internal.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="models"
+			Filter=""
+			>
+			<File
+				RelativePath="..\..\source\models\evds_environment.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\source\models\evds_frames.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\source\models\evds_material.c"
 				>
 			</File>
 		</Filter>

@@ -1,6 +1,11 @@
 Features
 ================================================================================
 
+At the moment this page lists both existing features and features under development.
+
+### Coordinate Frames
+ -
+
 Simulation features:
  - 6-DOF (degrees of freedom) simulation
  - Realtime and non-realtime

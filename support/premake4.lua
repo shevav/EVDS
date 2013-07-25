@@ -66,6 +66,7 @@ project "evds"
    files { "../source/core/**",
            "../source/objects/**",
            "../source/propagators/**",
+           "../source/models/**",
            "../include/**" }
    defines { "EVDS_LIBRARY", "SIMC_LIBRARY" }
    configuration { "*Dynamic*" }
