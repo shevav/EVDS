@@ -103,5 +103,6 @@ int Test_InList(void* ptr, SIMC_LIST* list);
 //Various test files list
 void Test_EVDS_SYSTEM();
 void Test_EVDS_VECTOR();
+void Test_EVDS_MODIFIER();
 
 #endif

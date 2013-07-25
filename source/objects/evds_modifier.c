@@ -35,61 +35,74 @@
 /// @brief Initialize modifier and create children copies
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_InternalModifier_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVDS_OBJECT* object) {
-	/*EVDS_SOLVER_GIMBAL_USERDATA* userdata;
-	EVDS_STATE_VECTOR vector;
-	EVDS_VARIABLE* variable;
+	//Modifier container which will hold the children copies
+	EVDS_OBJECT* container;
 	EVDS_OBJECT* parent;
-	EVDS_OBJECT* platform;
-	if (EVDS_Object_CheckType(object,"gimbal") != EVDS_OK) return EVDS_IGNORE_OBJECT; 
 
-	//Create child object (static body that will collect forces from underlying bodies)
+	SIMC_LIST* list;
+	SIMC_LIST_ENTRY* entry;
+	EVDS_STATE_VECTOR vector;
+
+	//Modifier variables
+	int i,j,k;
+	EVDS_REAL vector1_count = 0;
+	EVDS_REAL vector2_count = 0;
+	EVDS_REAL vector3_count = 0;
+	EVDS_REAL vector1[3] = { 0 };
+	EVDS_REAL vector2[3] = { 0 };
+	EVDS_REAL vector3[3] = { 0 };
+
+	//Check type
+	if (EVDS_Object_CheckType(object,"modifier") != EVDS_OK) return EVDS_IGNORE_OBJECT; 
+
+	//Read variables
+	EVDS_Object_GetRealVariable(object,"vector1.count",&vector1_count,0);
+	EVDS_Object_GetRealVariable(object,"vector2.count",&vector2_count,0);
+	EVDS_Object_GetRealVariable(object,"vector3.count",&vector3_count,0);
+
+	EVDS_Object_GetRealVariable(object,"vector1.x",&vector1[0],0);
+	EVDS_Object_GetRealVariable(object,"vector1.y",&vector1[1],0);
+	EVDS_Object_GetRealVariable(object,"vector1.z",&vector1[2],0);
+	EVDS_Object_GetRealVariable(object,"vector2.x",&vector2[0],0);
+	EVDS_Object_GetRealVariable(object,"vector2.y",&vector2[1],0);
+	EVDS_Object_GetRealVariable(object,"vector2.z",&vector2[2],0);
+	EVDS_Object_GetRealVariable(object,"vector3.x",&vector3[0],0);
+	EVDS_Object_GetRealVariable(object,"vector3.y",&vector3[1],0);
+	EVDS_Object_GetRealVariable(object,"vector3.z",&vector3[2],0);
+
+	//Create new container as a mass-less static body
 	EVDS_Object_GetParent(object,&parent);
-	if (EVDS_Object_CreateBy(object,"Modifier platform",parent,&platform) == EVDS_ERROR_NOT_FOUND) {
-
-		//Create new gimbal platform as a static body
-		EVDS_Object_SetType(platform,"static_body");
-		if (EVDS_Object_GetVariable(object,"mass",&variable) == EVDS_OK) {
-			EVDS_REAL mass;
-			EVDS_Variable_GetReal(variable,&mass);
-			EVDS_Object_AddRealVariable(platform,"mass",mass,0);
-		}
-
-		//Move the platform into position of gimbal
-		EVDS_Object_GetStateVector(object,&vector);
-		EVDS_Object_SetStateVector(platform,&vector);
-
-		//Move children to that platform
-		EVDS_Object_MoveChildren(object,platform);
+	if (EVDS_Object_CreateBy(object,"Modifier children",parent,&container) != EVDS_ERROR_NOT_FOUND) {
+		return EVDS_CLAIM_OBJECT; //Early return (modifier already created)
 	}
+	EVDS_Object_SetType(container,"static_body");
 
-	//Remove mass from gimbal object. It will not take part in mass calculations, but the platform will
-	EVDS_Object_AddRealVariable(object,"mass",0,&variable);
-	EVDS_Variable_SetReal(variable,0);
-
-	//Create userdata
-	userdata = (EVDS_SOLVER_GIMBAL_USERDATA*)malloc(sizeof(EVDS_SOLVER_GIMBAL_USERDATA));
-	memset(userdata,0,sizeof(EVDS_SOLVER_GIMBAL_USERDATA));
-	userdata->platform = platform;
-	EVDS_ERRCHECK(EVDS_Object_SetSolverdata(object,userdata));
-
-	//Add variables to this object
-	EVDS_Object_AddRealVariable(object,"pitch.min",0,&userdata->pitch_min);
-	EVDS_Object_AddRealVariable(object,"pitch.max",0,&userdata->pitch_max);
-	EVDS_Object_AddRealVariable(object,"pitch.rate",0,&userdata->pitch_rate);
-	EVDS_Object_AddRealVariable(object,"pitch.bits",0,&userdata->pitch_bits);
-	EVDS_Object_AddRealVariable(object,"pitch.command",0,&userdata->pitch_command);
-	EVDS_Object_AddRealVariable(object,"pitch.current",0,&userdata->pitch_current);
-
-	EVDS_Object_AddRealVariable(object,"yaw.min",0,&userdata->yaw_min);
-	EVDS_Object_AddRealVariable(object,"yaw.max",0,&userdata->yaw_max);
-	EVDS_Object_AddRealVariable(object,"yaw.rate",0,&userdata->yaw_rate);
-	EVDS_Object_AddRealVariable(object,"yaw.bits",0,&userdata->yaw_bits);
-	EVDS_Object_AddRealVariable(object,"yaw.command",0,&userdata->yaw_command);
-	EVDS_Object_AddRealVariable(object,"yaw.current",0,&userdata->yaw_current);
-
-	EVDS_Object_AddVariable(object,"zero_quaternion",EVDS_VARIABLE_TYPE_QUATERNION,&userdata->zero_quaternion);
+	//Move the platform into position of modifier
 	EVDS_Object_GetStateVector(object,&vector);
-	EVDS_Variable_SetQuaternion(userdata->zero_quaternion,&vector.orientation);*/
+	EVDS_Object_SetStateVector(container,&vector);
+
+	//For every child, create instances
+	/*EVDS_Object_GetAllChildren(object,&list);
+	entry = SIMC_List_GetFirst(list);
+	while (entry) {
+		for (int i = 0; i < (int)vector1_count; i++) {
+			for (int j = 0; j < (int)vector2_count; j++) {
+				for (int k = 0; k < (int)vector3_count; k++) {
+					EVDS_VECTOR offset;
+					EVDS_Object_GetStateVector(object,&vector);
+
+					EVDS_Vector_Set(&offset,EVDS_VECTOR_POSITION,container,
+						i*vector1[0] + j*vector2[0] + k*vector2[0],
+						i*vector1[1] + j*vector2[1] + k*vector2[1],
+						i*vector1[2] + j*vector2[2] + k*vector2[2]);
+
+											
+				}
+			}
+		}
+		entry = SIMC_List_GetNext(list,entry);
+	}*/
+	//EVDS_Object_GetStateVector(object,&vector);
 	return EVDS_CLAIM_OBJECT;
 }
 
