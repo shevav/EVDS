@@ -92,7 +92,8 @@ int Test_InList(void* ptr, SIMC_LIST* list);
 	SIMC_LIST* list; \
 	SIMC_LIST_ENTRY* entry; \
 	printf("\tTest: "name"\n"); \
-	ERROR_CHECK(EVDS_System_Create(&system));
+	ERROR_CHECK(EVDS_System_Create(&system)); \
+	EVDS_Common_Register(system);
 
 #define END_TEST EVDS_System_Destroy(system); }
 

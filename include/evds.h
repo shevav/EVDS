@@ -1479,6 +1479,8 @@ EVDS_API int EVDS_Gimbal_Register(EVDS_SYSTEM* system);
 EVDS_API int EVDS_Planet_Register(EVDS_SYSTEM* system);
 // Wiring, piping, connectors, etc
 EVDS_API int EVDS_Wiring_Register(EVDS_SYSTEM* system);
+// Modifier
+EVDS_API int EVDS_Modifier_Register(EVDS_SYSTEM* system);
 
 // Forward euler propagator
 EVDS_API int EVDS_Propagator_ForwardEuler_Register(EVDS_SYSTEM* system);
@@ -1508,6 +1510,7 @@ EVDS_FuelTank_Register(system); \
 EVDS_Gimbal_Register(system); \
 EVDS_Planet_Register(system); \
 EVDS_Wiring_Register(system); \
+EVDS_Modifier_Register(system); \
 EVDS_Propagator_ForwardEuler_Register(system); \
 EVDS_Propagator_Heun_Register(system); \
 EVDS_Propagator_RK4_Register(system);

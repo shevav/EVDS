@@ -25,9 +25,53 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 #include <math.h>
 #include "evds.h"
 
+
+#ifndef DOXYGEN_INTERNAL_STRUCTS
+typedef struct EVDS_MODIFIER_VARIABLES_TAG {
+	int i,j,k;
+
+	EVDS_REAL vector1_count;
+	EVDS_REAL vector2_count;
+	EVDS_REAL vector3_count;
+	EVDS_REAL vector1[3];
+	EVDS_REAL vector2[3];
+	EVDS_REAL vector3[3];
+} EVDS_MODIFIER_VARIABLES;
+#endif
+
+
+int EVDS_InternalModifier_Copy(EVDS_MODIFIER_VARIABLES* vars, EVDS_OBJECT* container, EVDS_OBJECT* object) {
+	char name[257] = { 0 }; //Null-terminate the name
+	char modifier_suffix[257] = { 0 };
+	EVDS_OBJECT* new_object;
+	EVDS_STATE_VECTOR vector;
+	EVDS_VECTOR offset;
+
+	//Create a new copy of the object
+	EVDS_Object_Copy(object,container,&new_object);
+	EVDS_Object_GetStateVector(new_object,&vector);
+
+	//Add suffix and rename
+	EVDS_Object_GetName(new_object,name,256);
+	snprintf(modifier_suffix,256," (%dx%dx%d)",vars->i+1,vars->j+1,vars->k+1);
+	strncat(name,modifier_suffix,256);
+	EVDS_Object_SetName(new_object,name);
+
+	//Calculate child copies offset
+	EVDS_Vector_Set(&offset,EVDS_VECTOR_POSITION,container,
+		vars->i*vars->vector1[0] + vars->j*vars->vector2[0] + vars->k*vars->vector3[0],
+		vars->i*vars->vector1[1] + vars->j*vars->vector2[1] + vars->k*vars->vector3[1],
+		vars->i*vars->vector1[2] + vars->j*vars->vector2[2] + vars->k*vars->vector3[2]);
+
+	//Apply transformation
+	EVDS_Vector_Add(&vector.position,&vector.position,&offset);
+	EVDS_Object_SetStateVector(new_object,&vector);
+	return EVDS_OK;
+}
 
 
 
@@ -35,44 +79,42 @@
 /// @brief Initialize modifier and create children copies
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_InternalModifier_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVDS_OBJECT* object) {
-	//Modifier container which will hold the children copies
-	EVDS_OBJECT* container;
-	EVDS_OBJECT* parent;
-
 	SIMC_LIST* list;
 	SIMC_LIST_ENTRY* entry;
 	EVDS_STATE_VECTOR vector;
 
+	//Modifier container which will hold the children copies
+	EVDS_OBJECT* container;
+	EVDS_OBJECT* parent;
+
 	//Modifier variables
-	int i,j,k;
-	EVDS_REAL vector1_count = 0;
-	EVDS_REAL vector2_count = 0;
-	EVDS_REAL vector3_count = 0;
-	EVDS_REAL vector1[3] = { 0 };
-	EVDS_REAL vector2[3] = { 0 };
-	EVDS_REAL vector3[3] = { 0 };
+	EVDS_MODIFIER_VARIABLES vars = { 0 };
 
 	//Check type
 	if (EVDS_Object_CheckType(object,"modifier") != EVDS_OK) return EVDS_IGNORE_OBJECT; 
 
 	//Read variables
-	EVDS_Object_GetRealVariable(object,"vector1.count",&vector1_count,0);
-	EVDS_Object_GetRealVariable(object,"vector2.count",&vector2_count,0);
-	EVDS_Object_GetRealVariable(object,"vector3.count",&vector3_count,0);
+	EVDS_Object_GetRealVariable(object,"vector1.count",&vars.vector1_count,0);
+	EVDS_Object_GetRealVariable(object,"vector2.count",&vars.vector2_count,0);
+	EVDS_Object_GetRealVariable(object,"vector3.count",&vars.vector3_count,0);
+	
+	if (vars.vector1_count < 1.0) vars.vector1_count = 1.0;
+	if (vars.vector2_count < 1.0) vars.vector2_count = 1.0;
+	if (vars.vector3_count < 1.0) vars.vector3_count = 1.0;
 
-	EVDS_Object_GetRealVariable(object,"vector1.x",&vector1[0],0);
-	EVDS_Object_GetRealVariable(object,"vector1.y",&vector1[1],0);
-	EVDS_Object_GetRealVariable(object,"vector1.z",&vector1[2],0);
-	EVDS_Object_GetRealVariable(object,"vector2.x",&vector2[0],0);
-	EVDS_Object_GetRealVariable(object,"vector2.y",&vector2[1],0);
-	EVDS_Object_GetRealVariable(object,"vector2.z",&vector2[2],0);
-	EVDS_Object_GetRealVariable(object,"vector3.x",&vector3[0],0);
-	EVDS_Object_GetRealVariable(object,"vector3.y",&vector3[1],0);
-	EVDS_Object_GetRealVariable(object,"vector3.z",&vector3[2],0);
+	EVDS_Object_GetRealVariable(object,"vector1.x",&vars.vector1[0],0);
+	EVDS_Object_GetRealVariable(object,"vector1.y",&vars.vector1[1],0);
+	EVDS_Object_GetRealVariable(object,"vector1.z",&vars.vector1[2],0);
+	EVDS_Object_GetRealVariable(object,"vector2.x",&vars.vector2[0],0);
+	EVDS_Object_GetRealVariable(object,"vector2.y",&vars.vector2[1],0);
+	EVDS_Object_GetRealVariable(object,"vector2.z",&vars.vector2[2],0);
+	EVDS_Object_GetRealVariable(object,"vector3.x",&vars.vector3[0],0);
+	EVDS_Object_GetRealVariable(object,"vector3.y",&vars.vector3[1],0);
+	EVDS_Object_GetRealVariable(object,"vector3.z",&vars.vector3[2],0);
 
 	//Create new container as a mass-less static body
 	EVDS_Object_GetParent(object,&parent);
-	if (EVDS_Object_CreateBy(object,"Modifier children",parent,&container) != EVDS_ERROR_NOT_FOUND) {
+	if (EVDS_Object_CreateBy(object,"Children",parent,&container) != EVDS_ERROR_NOT_FOUND) {
 		return EVDS_CLAIM_OBJECT; //Early return (modifier already created)
 	}
 	EVDS_Object_SetType(container,"static_body");
@@ -82,27 +124,30 @@ int EVDS_InternalModifier_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, E
 	EVDS_Object_SetStateVector(container,&vector);
 
 	//For every child, create instances
-	/*EVDS_Object_GetAllChildren(object,&list);
+	EVDS_Object_GetAllChildren(object,&list);
 	entry = SIMC_List_GetFirst(list);
 	while (entry) {
-		for (int i = 0; i < (int)vector1_count; i++) {
-			for (int j = 0; j < (int)vector2_count; j++) {
-				for (int k = 0; k < (int)vector3_count; k++) {
-					EVDS_VECTOR offset;
-					EVDS_Object_GetStateVector(object,&vector);
-
-					EVDS_Vector_Set(&offset,EVDS_VECTOR_POSITION,container,
-						i*vector1[0] + j*vector2[0] + k*vector2[0],
-						i*vector1[1] + j*vector2[1] + k*vector2[1],
-						i*vector1[2] + j*vector2[2] + k*vector2[2]);
-
-											
+		EVDS_OBJECT* child = (EVDS_OBJECT*)SIMC_List_GetData(list,entry);
+		for (vars.i = 0; vars.i < (int)vars.vector1_count; vars.i++) {
+			for (vars.j = 0; vars.j < (int)vars.vector2_count; vars.j++) {
+				for (vars.k = 0; vars.k < (int)vars.vector3_count; vars.k++) {
+					if ((vars.i != 0) || (vars.j != 0) || (vars.k != 0)) {
+						EVDS_InternalModifier_Copy(&vars,container,child);
+					}
 				}
 			}
 		}
-		entry = SIMC_List_GetNext(list,entry);
-	}*/
-	//EVDS_Object_GetStateVector(object,&vector);
+
+		//Move the child into container
+		SIMC_List_Stop(list,entry);
+		EVDS_Object_SetParent(child,container);
+
+		//Start again from scratch (list is 1 child less full)
+		entry = SIMC_List_GetFirst(list);
+	}
+
+	//Initialize container
+	EVDS_Object_Initialize(container,1);
 	return EVDS_CLAIM_OBJECT;
 }
 
