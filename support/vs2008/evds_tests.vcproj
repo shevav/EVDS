@@ -1347,7 +1347,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\tests\tests_evds_modifier.c"
+				RelativePath="..\..\tests\tests_evds_objects.c"
 				>
 			</File>
 			<File
