@@ -91,12 +91,12 @@ int EVDS_InternalGimbal_Solve(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVDS_OBJ
 	if (pitch_bits >= 1.0) {
 		if (pitch_bits > 31) pitch_bits = 31;
 		pitch_step = (pitch_max - pitch_min) / ((1 << (int)pitch_bits) - 1);
-		pitch_command = ((int)(pitch_command / pitch_step)) * pitch_step;
+		pitch_command = ((int)(pitch_command / pitch_step+0.5)) * pitch_step;
 	}
 	if (yaw_bits >= 1.0) {
 		if (yaw_bits > 31) pitch_bits = 31;
-		yaw_step = (yaw_max - yaw_min) / ((1 << (int)pitch_bits) - 1);
-		yaw_command = ((int)(yaw_command / yaw_step)) * yaw_step;
+		yaw_step = (yaw_max - yaw_min) / ((1 << (int)yaw_bits) - 1);
+		yaw_command = ((int)(yaw_command / yaw_step+0.5)) * yaw_step;
 	}
 
 	//Apply rate
@@ -106,11 +106,13 @@ int EVDS_InternalGimbal_Solve(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVDS_OBJ
 			pitch_current = pitch_command;
 		} else {
 			if (pitch_command < pitch_current) {
-				pitch_current += delta;
-			} else {
 				pitch_current -= delta;
+			} else {
+				pitch_current += delta;
 			}
 		}
+	} else {
+		pitch_current = pitch_command;
 	}
 	if (yaw_rate > 0.0) {
 		EVDS_REAL delta = delta_time * yaw_rate;
@@ -118,18 +120,28 @@ int EVDS_InternalGimbal_Solve(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVDS_OBJ
 			yaw_current = yaw_command;
 		} else {
 			if (yaw_command < yaw_current) {
-				yaw_current += delta;
-			} else {
 				yaw_current -= delta;
+			} else {
+				yaw_current += delta;
 			}
 		}
+	} else {
+		yaw_current = yaw_command;
 	}
 
 	//Apply physical limits
-	if (pitch_current > pitch_max) pitch_current = pitch_max;
-	if (pitch_current < pitch_min) pitch_current = pitch_min;
-	if (yaw_current > yaw_max) yaw_current = yaw_max;
-	if (yaw_current < yaw_min) yaw_current = yaw_min;
+	if ((pitch_max != 0.0) && (pitch_min != 0.0)) {
+		if (pitch_current > pitch_max) pitch_current = pitch_max;
+		if (pitch_current < pitch_min) pitch_current = pitch_min;
+	}
+	if ((yaw_max != 0.0) && (yaw_min != 0.0)) {
+		if (yaw_current > yaw_max) yaw_current = yaw_max;
+		if (yaw_current < yaw_min) yaw_current = yaw_min;
+	}
+
+	//Remember position
+	EVDS_Variable_SetReal(userdata->pitch_current,	pitch_current);
+	EVDS_Variable_SetReal(userdata->yaw_current,	yaw_current);
 
 	//Turn the gimbal platform itself
 	EVDS_Object_GetStateVector(userdata->platform,&vector);
@@ -165,7 +177,7 @@ int EVDS_InternalGimbal_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVD
 
 	//Create child object (static body that will collect forces from underlying bodies)
 	EVDS_Object_GetParent(object,&parent);
-	if (EVDS_Object_CreateBy(object,"Gimbal platform",parent,&platform) == EVDS_ERROR_NOT_FOUND) {
+	if (EVDS_Object_CreateBy(object,"Platform",parent,&platform) == EVDS_ERROR_NOT_FOUND) {
 
 		//Create new gimbal platform as a static body
 		EVDS_Object_SetType(platform,"static_body");
@@ -186,6 +198,9 @@ int EVDS_InternalGimbal_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVD
 	//Remove mass from gimbal object. It will not take part in mass calculations, but the platform will
 	EVDS_Object_AddRealVariable(object,"mass",0,&variable);
 	EVDS_Variable_SetReal(variable,0);
+
+	//Initialize platform
+	EVDS_Object_Initialize(platform,1);
 
 	//Create userdata
 	userdata = (EVDS_SOLVER_GIMBAL_USERDATA*)malloc(sizeof(EVDS_SOLVER_GIMBAL_USERDATA));

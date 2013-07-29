@@ -59,6 +59,13 @@ int Test_InList(void* ptr, SIMC_LIST* list);
 		Test_Failure(#vector,#vx" "#vy" "#vz,__FILE__,__LINE__); \
 	}
 
+#define REAL_EQUAL_TO(real,value) \
+	if (fabs(real - value) < EVDS_EPS) { \
+		Test_Passed(#real,#value,__FILE__,__LINE__); \
+	} else { \
+		Test_Failure(#real,#value,__FILE__,__LINE__); \
+	}
+
 #define IS_IN_LIST(ptr,list) \
 	if (Test_InList(ptr,list)) { \
 		Test_Passed(#ptr,"IN "#list,__FILE__,__LINE__); \
@@ -105,5 +112,9 @@ int Test_InList(void* ptr, SIMC_LIST* list);
 void Test_EVDS_SYSTEM();
 void Test_EVDS_VECTOR();
 void Test_EVDS_MODIFIER();
+void Test_EVDS_GIMBAL();
+
+//Disable annoying warnings
+#pragma warning(disable: 4101)
 
 #endif
