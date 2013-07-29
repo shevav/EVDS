@@ -1269,19 +1269,6 @@ EVDS_API void EVDS_Vector_GetVelocityVector(EVDS_VECTOR* v, EVDS_VECTOR* velocit
 // Shortcut to set velocity by vector
 EVDS_API void EVDS_Vector_SetVelocityVector(EVDS_VECTOR* v, EVDS_VECTOR* velocity);
 
-// Convert geographic coordinates of the object to a position vector
-EVDS_API void EVDS_Vector_FromGeographicCoordinates(EVDS_OBJECT* object, EVDS_VECTOR* target, 
-												    EVDS_REAL latitude, EVDS_REAL longitude, EVDS_REAL altitude);
-// Convert position vector into geographic coordinates of the object
-EVDS_API void EVDS_Vector_ToGeographicCoordinates(EVDS_OBJECT* object, EVDS_VECTOR* v, 
-												  EVDS_REAL* latitude, EVDS_REAL* longitude, EVDS_REAL* altitude);
-// Convert quaternion to objects LVLH frame
-EVDS_API void EVDS_Quaternion_ToLVLHCoordinates(EVDS_OBJECT* object, EVDS_QUATERNION* q_lvlh, EVDS_QUATERNION* q,
-											    EVDS_REAL latitude, EVDS_REAL longitude);
-// Convert quaternion from objects LVLH frame
-EVDS_API void EVDS_Quaternion_FromLVLHCoordinates(EVDS_OBJECT* object, EVDS_QUATERNION* q_lvlh, EVDS_QUATERNION* q,
-												  EVDS_REAL latitude, EVDS_REAL longitude);
-
 // Copy one vector into another
 EVDS_API void EVDS_Vector_Copy(EVDS_VECTOR* target, EVDS_VECTOR* v);
 // Copy one quaternion into another
@@ -1364,6 +1351,37 @@ EVDS_API void EVDS_Tensor_IsSymmetric(EVDS_VECTOR* mx, EVDS_VECTOR* my, EVDS_VEC
 EVDS_API void EVDS_StateVector_Initialize(EVDS_STATE_VECTOR* v, EVDS_OBJECT* target_coordinates);
 // Create new derivative of state vector
 EVDS_API void EVDS_StateVector_Derivative_Initialize(EVDS_STATE_VECTOR_DERIVATIVE* v, EVDS_OBJECT* target_coordinates);
+////////////////////////////////////////////////////////////////////////////////
+/// @}
+////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// @defgroup EVDS_FRAME Special Frames of Reference API
+/// @brief API for converting between special and predefined frames of reference
+///
+/// @{
+////////////////////////////////////////////////////////////////////////////////
+
+// Convert geographic coordinates of the object to a position vector
+EVDS_API void EVDS_Vector_FromGeographicCoordinates(EVDS_OBJECT* object, EVDS_VECTOR* target, 
+													EVDS_GEODETIC_COORDIANTE* coordinate);
+// Convert position vector into geographic coordinates of the object
+EVDS_API void EVDS_Vector_ToGeographicCoordinates(EVDS_OBJECT* object, EVDS_VECTOR* v, 
+												  EVDS_GEODETIC_COORDIANTE* coordinate);
+// Convert quaternion to objects LVLH frame
+EVDS_API void EVDS_Quaternion_ToLVLHCoordinates(EVDS_OBJECT* object, EVDS_QUATERNION* q_lvlh, EVDS_QUATERNION* q,
+											    EVDS_GEODETIC_COORDIANTE* coordinate);
+// Convert quaternion from objects LVLH frame
+EVDS_API void EVDS_Quaternion_FromLVLHCoordinates(EVDS_OBJECT* object, EVDS_QUATERNION* q_lvlh, EVDS_QUATERNION* q,
+												  EVDS_GEODETIC_COORDIANTE* coordinate);
+
 ////////////////////////////////////////////////////////////////////////////////
 /// @}
 ////////////////////////////////////////////////////////////////////////////////

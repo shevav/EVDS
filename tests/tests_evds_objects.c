@@ -71,7 +71,7 @@ void Test_EVDS_MODIFIER() {
 
 
 void Test_EVDS_GIMBAL() {
-	/*START_TEST("Parameterless gimbal platform") {
+	START_TEST("Parameterless gimbal platform") {
 		EVDS_REAL x,y,z;
 		EVDS_OBJECT* root;
 		EVDS_OBJECT* platform;
@@ -162,7 +162,7 @@ void Test_EVDS_GIMBAL() {
 		REAL_EQUAL_TO(x,EVDS_RAD(0.0));
 		REAL_EQUAL_TO(y,EVDS_RAD(-90.0));
 		REAL_EQUAL_TO(z,EVDS_RAD(-90.0));
-	} END_TEST*/
+	} END_TEST
 
 
 	START_TEST("Gimbal platform behavior") {

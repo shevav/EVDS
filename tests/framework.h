@@ -113,6 +113,7 @@ void Test_EVDS_SYSTEM();
 void Test_EVDS_VECTOR();
 void Test_EVDS_MODIFIER();
 void Test_EVDS_GIMBAL();
+void Test_EVDS_FRAMES();
 
 //Disable annoying warnings
 #pragma warning(disable: 4101)

@@ -177,4 +177,5 @@ addons:
   objects
 - Unique identifiers must be made truly unique
 - Add more unit tests
-- Fix coordinate frame code, add geocentric coordinates as a type
+- Work more on predefined coordinate frames
+- Add proper support for geodetic datums

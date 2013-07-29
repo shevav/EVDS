@@ -36,7 +36,7 @@
 /// @todo Add documentation
 ////////////////////////////////////////////////////////////////////////////////
 void EVDS_Vector_ToGeographicCoordinates(EVDS_OBJECT* object, EVDS_VECTOR* v,
-										 EVDS_REAL* latitude, EVDS_REAL* longitude, EVDS_REAL* altitude) {
+										 EVDS_GEODETIC_COORDIANTE* coordinate) {
 	EVDS_REAL x,y,z,r;
 	if (!object) return;
 
@@ -57,13 +57,13 @@ void EVDS_Vector_ToGeographicCoordinates(EVDS_OBJECT* object, EVDS_VECTOR* v,
 		//FIXME
 
 		//Output coordinates
-		if (longitude)	*longitude = EVDS_DEG(atan2(y,x));
-		if (latitude)	*latitude  = EVDS_DEG(asin(z/r));
-		if (altitude)	*altitude  = r - radius;
+		coordinate->longitude		= EVDS_DEG(atan2(y,x));
+		coordinate->latitude		= EVDS_DEG(asin(z/r));
+		coordinate->mean_elevation  = r - radius;
 	} else {
-		if (longitude)	*longitude = EVDS_DEG(atan2(y,x));
-		if (latitude)	*latitude  = EVDS_DEG(asin(z/r));
-		if (altitude)	*altitude  = r;
+		coordinate->longitude		= EVDS_DEG(atan2(y,x));
+		coordinate->latitude		= EVDS_DEG(asin(z/r));
+		coordinate->mean_elevation	= r;
 	}
 }
 
@@ -76,7 +76,7 @@ void EVDS_Vector_ToGeographicCoordinates(EVDS_OBJECT* object, EVDS_VECTOR* v,
 /// @todo Add documentation
 ////////////////////////////////////////////////////////////////////////////////
 void EVDS_Vector_FromGeographicCoordinates(EVDS_OBJECT* object, EVDS_VECTOR* target,
-										   EVDS_REAL latitude, EVDS_REAL longitude, EVDS_REAL altitude) {
+										   EVDS_GEODETIC_COORDIANTE* coordinate) {
 	EVDS_REAL x,y,z,r;
 	if (!object) return;
 
@@ -93,15 +93,15 @@ void EVDS_Vector_FromGeographicCoordinates(EVDS_OBJECT* object, EVDS_VECTOR* tar
 		//FIXME
 
 		//Output coordinates
-		r = altitude + radius;
-		x = r*cos(EVDS_RAD(longitude))*cos(EVDS_RAD(latitude));
-		y = r*sin(EVDS_RAD(longitude))*cos(EVDS_RAD(latitude));
-		z = r*sin(EVDS_RAD(latitude));
+		r = coordinate->mean_elevation + radius;
+		x = r*cos(EVDS_RAD(coordinate->longitude))*cos(EVDS_RAD(coordinate->latitude));
+		y = r*sin(EVDS_RAD(coordinate->longitude))*cos(EVDS_RAD(coordinate->latitude));
+		z = r*sin(EVDS_RAD(coordinate->latitude));
 	} else {
-		r = altitude;
-		x = r*cos(EVDS_RAD(longitude))*cos(EVDS_RAD(latitude));
-		y = r*sin(EVDS_RAD(longitude))*cos(EVDS_RAD(latitude));
-		z = r*sin(EVDS_RAD(latitude));
+		r = coordinate->mean_elevation;
+		x = r*cos(EVDS_RAD(coordinate->longitude))*cos(EVDS_RAD(coordinate->latitude));
+		y = r*sin(EVDS_RAD(coordinate->longitude))*cos(EVDS_RAD(coordinate->latitude));
+		z = r*sin(EVDS_RAD(coordinate->latitude));
 	}
 	
 	//Set vector in target coordinates
@@ -118,10 +118,10 @@ void EVDS_Vector_FromGeographicCoordinates(EVDS_OBJECT* object, EVDS_VECTOR* tar
 /// @todo Add documentation
 ////////////////////////////////////////////////////////////////////////////////
 void EVDS_Quaternion_ToLVLHCoordinates(EVDS_OBJECT* object, EVDS_QUATERNION* q_lvlh, EVDS_QUATERNION* q,
-									   EVDS_REAL latitude, EVDS_REAL longitude) {
+									   EVDS_GEODETIC_COORDIANTE* coordinate) {
 	EVDS_QUATERNION q_lon,q_lat; //Rotations to go from North pole to given latitude/longitude
-	EVDS_Quaternion_FromEuler(&q_lon,object,0,0,EVDS_RAD(longitude));
-	EVDS_Quaternion_FromEuler(&q_lat,object,0,EVDS_RAD(90-latitude),0);
+	EVDS_Quaternion_FromEuler(&q_lon,object,0,0,EVDS_RAD(coordinate->longitude));
+	EVDS_Quaternion_FromEuler(&q_lat,object,0,EVDS_RAD(90-coordinate->latitude),0);
 
 	//Rotate quaternion Q from inertial to LVLH coordinates
 	EVDS_Quaternion_Convert(q_lvlh,q,object);
@@ -138,10 +138,10 @@ void EVDS_Quaternion_ToLVLHCoordinates(EVDS_OBJECT* object, EVDS_QUATERNION* q_l
 /// @todo Add documentation
 ////////////////////////////////////////////////////////////////////////////////
 void EVDS_Quaternion_FromLVLHCoordinates(EVDS_OBJECT* object, EVDS_QUATERNION* q_lvlh, EVDS_QUATERNION* q,
-										 EVDS_REAL latitude, EVDS_REAL longitude) {
+										 EVDS_GEODETIC_COORDIANTE* coordinate) {
 	EVDS_QUATERNION q_lon,q_lat; //Rotations to go from North pole to given latitude/longitude
-	EVDS_Quaternion_FromEuler(&q_lon,object,0,0,EVDS_RAD(longitude));
-	EVDS_Quaternion_FromEuler(&q_lat,object,0,EVDS_RAD(90-latitude),0);
+	EVDS_Quaternion_FromEuler(&q_lon,object,0,0,EVDS_RAD(coordinate->longitude));
+	EVDS_Quaternion_FromEuler(&q_lat,object,0,EVDS_RAD(90-coordinate->latitude),0);
 
 	//Rotate quaternion Q from LVLH to inertial coordinates
 	EVDS_Quaternion_Convert(q_lvlh,q,object);
