@@ -170,12 +170,11 @@ addons:
 - Support for piecewise interpolation for interpolation equations.
 - Support for 2D tables for use with linear interpolation.
 - A way to specify explicitly which variables are interpolated by.
-- Modifiers that allow creating patterns of objects must be created as normal
- EVDS objects
 - If variable already exists with wrong type, many functions will silently fail
  without any way to find out exact reason
-- Fix the lack of unit tests
 - Add additional debug asserts in various code points to avoid common errors.
 - Modifiers that are actually EVDS objects. Support for saving and loading runtime
   objects
 - Unique identifiers must be made truly unique
+- Add more unit tests
+- Fix coordinate frame code, add geocentric coordinates as a type
