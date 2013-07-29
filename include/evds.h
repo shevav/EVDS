@@ -268,16 +268,17 @@ typedef struct EVDS_STATE_VECTOR_DERIVATIVE_TAG {
 
 ////////////////////////////////////////////////////////////////////////////////
 /// @ingroup EVDS_MATH
-/// @brief Geodetic coordinates
+/// @brief Geodetic (geographic) coordinate.
 ///
-/// This data structure represents geodetic (geographic) coordinates.
+/// This data structure represents geodetic coordinates around a body.
 ////////////////////////////////////////////////////////////////////////////////
-typedef struct EVDS_GEOCOORDS_TAG {
+typedef struct EVDS_GEODETIC_COORDIANTE_TAG {
 	EVDS_REAL latitude;			///< Geodetic latitude
 	EVDS_REAL longitude;		///< Longitude
 	EVDS_REAL elevation;		///< Elevation above geoid/ellipsoid
+	EVDS_REAL mean_elevation;	///< Elevation above mean planetary radius
 	EVDS_REAL radial_distance;	///< Distance from planets reference point
-} EVDS_GEOCOORDS;
+} EVDS_GEODETIC_COORDIANTE;
 
 
 
