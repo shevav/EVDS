@@ -42,12 +42,12 @@
 /// The following variables may be used when computing gravitational field
 /// (only the smallest sufficient set of these variables is required):
 /// Variable			| Description
-/// --------------------|--------------------------
-/// mu					| Gravitational parameter of the planet (in \f$m^3 s^{-2}\f$)
+/// --------------------|-------------------------------------------------------
 /// mass				| Mass of the planet (in \f$kg\f$)
-/// j2					| Second spherical harmonic \f$J_2\f$
-/// radius				| Planet radius (required if 'j2' is specified)
-/// rs					| Sphere of influence
+/// gravity.mu			| Gravitational parameter of the planet (in \f$m^3 s^{-2}\f$)
+/// gravity.j2			| Second spherical harmonic \f$J_2\f$
+/// gravity.rs			| Sphere of influence
+/// geometry.radius		| Planet radius (required if 'j2' is specified)
 /// gravitational_field | Function pointer to EVDS_Callback_GetGravitationalField
 ///
 /// Gravitational field is returned as an acceleration vector in same coordinates as position.
@@ -81,7 +81,7 @@
 ///  - \f$\theta\f$ is the geocentric latitude.
 ///  - \f$\lambda\f$ is the geocentric longitude.
 ///
-/// If only \f$J_2\f$ harmonic remains, the spherical harmonics can be simplified using:
+/// To simplify spherical harmonics, only \f$J_2\f$ harmonic can be used:
 /// \f{eqnarray*}{
 ///		sin(\theta) &=& sin(arcsin(\frac{z}{\sqrt{x^2 + y^2 + z^2}}))
 ///			= \frac{z}{r} \\
@@ -107,6 +107,11 @@
 ///			\left[ \frac{1}{r} - \frac{z^2}{r^4} \right] -
 ///			\frac{z}{r^2} \Phi
 /// \f}
+///
+/// If \f$J_2\f$ factor is not specified and planet is defined as an ellipsoid, WGS84-like
+/// gravity model for ellipsoid is used.
+///
+/// @todo Add information on the preceding gravity model
 /// 
 ///
 /// These are the suggested values for solar system major bodies:
@@ -181,11 +186,11 @@ int EVDS_Environment_GetGravitationalField(EVDS_SYSTEM* system, EVDS_VECTOR* pos
 		EVDS_Vector_Convert(&G0,&planet_state.position,target_coordinates);
 
 		//Get planets parameters
-		EVDS_Object_GetRealVariable(planet,"mu",&mu,&mu_var);
-		EVDS_Object_GetRealVariable(planet,"j2",&j2,&j2_var);
+		EVDS_Object_GetRealVariable(planet,"gravity.mu",&mu,&mu_var);
+		EVDS_Object_GetRealVariable(planet,"gravity.j2",&j2,&j2_var);
+		EVDS_Object_GetRealVariable(planet,"gravity.rs",&rs,&rs_var);
 		EVDS_Object_GetRealVariable(planet,"mass",&mass,&mass_var);
-		EVDS_Object_GetRealVariable(planet,"radius",&radius,&radius_var);
-		EVDS_Object_GetRealVariable(planet,"rs",&rs,&rs_var);
+		EVDS_Object_GetRealVariable(planet,"geometry.radius",&radius,&radius_var);
 
 		//Get custom gravitational field callback
 		if (EVDS_Object_GetVariable(planet,"gravitational_field",&callback_var) == EVDS_OK) {
