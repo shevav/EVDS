@@ -37,6 +37,9 @@ void EVDS_Geodetic_DatumFromObject(EVDS_OBJECT* object, EVDS_GEODETIC_DATUM* dat
 	datum->semiminor_axis = 0;
 	datum->object = object;
 
+	//If no object passed, don't try to guess anything
+	if (!object) return;
+
 	//Determine datum based on celestial body parameters
 	if (EVDS_Object_CheckType(object,"planet") == EVDS_OK) {
 		EVDS_VARIABLE* variable;
@@ -79,22 +82,33 @@ void EVDS_Geodetic_DatumFromObject(EVDS_OBJECT* object, EVDS_GEODETIC_DATUM* dat
 
 
 ////////////////////////////////////////////////////////////////////////////////
+/// @brief Set geodetic coordinate around a given body.
+///
+/// @todo Add documentation
+////////////////////////////////////////////////////////////////////////////////
+void EVDS_Geodetic_Set(EVDS_GEODETIC_COORDIANTE* coordinate, EVDS_OBJECT* object,
+					   EVDS_REAL latitude, EVDS_REAL longitude, EVDS_REAL elevation) {
+	coordinate->latitude = latitude;
+	coordinate->longitude = longitude;
+	coordinate->elevation = elevation;
+	EVDS_Geodetic_DatumFromObject(object,&coordinate->datum);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
 /// @brief Converts geodetic coordinates around object to a position vector.
 ///
 /// @todo Add documentation
 ////////////////////////////////////////////////////////////////////////////////
-void EVDS_Geodetic_ToVector(EVDS_OBJECT* object, EVDS_VECTOR* target, EVDS_GEODETIC_COORDIANTE* source) {
+void EVDS_Geodetic_ToVector(EVDS_VECTOR* target, EVDS_GEODETIC_COORDIANTE* source) {
 	EVDS_REAL x,y,z; //Components of the result
 	EVDS_REAL eccentricity_squared,normal;
 	EVDS_REAL sin_lat,cos_lat,sin_lon,cos_lon;
-	if (!object) return;
 	if (!target) return;
 	if (!source) return;
 
-	//Determine datum based on planet object or passed in the coordinate
-	if (!source->datum.object) {
-		EVDS_Geodetic_DatumFromObject(object,&source->datum);
-	}
+	//Perform some self-checks
+	EVDS_ASSERT(source->datum.object);
 
 	//Calculate sines and cosines
 	sin_lat = sin(EVDS_RAD(source->latitude));
@@ -126,7 +140,7 @@ void EVDS_Geodetic_ToVector(EVDS_OBJECT* object, EVDS_VECTOR* target, EVDS_GEODE
 	z = (normal*(1 - eccentricity_squared) + source->elevation)*sin_lat;
 
 	//Set vector in target coordinates
-	EVDS_Vector_Set(target,EVDS_VECTOR_POSITION,object,x,y,z);
+	EVDS_Vector_Set(target,EVDS_VECTOR_POSITION,source->datum.object,x,y,z);
 }
 
 
@@ -135,10 +149,8 @@ void EVDS_Geodetic_ToVector(EVDS_OBJECT* object, EVDS_VECTOR* target, EVDS_GEODE
 ///
 /// @todo Add documentation
 ////////////////////////////////////////////////////////////////////////////////
-void EVDS_Geodetic_FromVector(EVDS_OBJECT* object, EVDS_GEODETIC_COORDIANTE* target, EVDS_VECTOR* source) {
-	/*EVDS_GEODETIC_DATUM default_datum; //Datum used for the conversion
-	EVDS_GEODETIC_DATUM* datum;
-	EVDS_REAL x,y,z; //Components of the result
+void EVDS_Geodetic_FromVector(EVDS_GEODETIC_COORDIANTE* target, EVDS_VECTOR* source) {
+	/*EVDS_REAL x,y,z; //Components of the result
 	EVDS_REAL eccentricity_squared,normal;
 	EVDS_REAL sin_lat,cos_lat,sin_lon,cos_lon;
 	if (!object) return;
@@ -146,11 +158,8 @@ void EVDS_Geodetic_FromVector(EVDS_OBJECT* object, EVDS_GEODETIC_COORDIANTE* tar
 	if (!source) return;
 
 	//Determine datum based on planet object or passed in the coordinate
-	if (source->datum) {
-		datum = source->datum;
-	} else {
-		EVDS_Geodetic_DatumFromObject(object,&default_datum);
-		datum = &default_datum;
+	if (!source->datum.object) {
+		EVDS_Geodetic_DatumFromObject(object,&source->datum);
 	}
 
 	//Get vector in target coordinates

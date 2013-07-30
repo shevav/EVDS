@@ -12,38 +12,38 @@ void Test_EVDS_FRAMES() {
 		ERROR_CHECK(EVDS_Object_Initialize(object,1));
 
 		//Distance from vessel of 1 km
-		geocoord.relative_distance = 1000.0;
+		EVDS_Geodetic_Set(&geocoord,object,0,0,1000);
 
 		//Check different coordinates
 		geocoord.relative_elevation = 90.0; //Elevation
 		geocoord.relative_bearing = 0.0;
-		EVDS_Geodetic_ToVector(object,&vector,&geocoord);
+		EVDS_Geodetic_ToVector(&vector,&geocoord);
 		VECTOR_EQUAL_TO_EPS(&vector,0,0,1000.0,1e-7);
 		EQUAL_TO(vector.coordinate_system,object);
 
 		geocoord.relative_elevation = -90.0; //South pole
 		geocoord.relative_bearing = 0.0;
-		EVDS_Geodetic_ToVector(object,&vector,&geocoord);
+		EVDS_Geodetic_ToVector(&vector,&geocoord);
 		VECTOR_EQUAL_TO_EPS(&vector,0,0,-1000.0,1e-7);
 
 		geocoord.relative_elevation = 0.0; //Africa
 		geocoord.relative_bearing = 0.0;
-		EVDS_Geodetic_ToVector(object,&vector,&geocoord);
+		EVDS_Geodetic_ToVector(&vector,&geocoord);
 		VECTOR_EQUAL_TO_EPS(&vector,1000.0,0,0,1e-7);
 
 		geocoord.relative_elevation = 0.0; //East
 		geocoord.relative_bearing = 90.0;
-		EVDS_Geodetic_ToVector(object,&vector,&geocoord);
+		EVDS_Geodetic_ToVector(&vector,&geocoord);
 		VECTOR_EQUAL_TO_EPS(&vector,0,1000.0,0,1e-7);
 
 		geocoord.relative_elevation = 0.0; //Pacific ocean
 		geocoord.relative_bearing = 180.0;
-		EVDS_Geodetic_ToVector(object,&vector,&geocoord);
+		EVDS_Geodetic_ToVector(&vector,&geocoord);
 		VECTOR_EQUAL_TO_EPS(&vector,-1000.0,0,0,1e-7);
 
 		geocoord.relative_elevation = 0.0; //West
 		geocoord.relative_bearing = -90.0;
-		EVDS_Geodetic_ToVector(object,&vector,&geocoord);
+		EVDS_Geodetic_ToVector(&vector,&geocoord);
 		VECTOR_EQUAL_TO_EPS(&vector,0,-1000.0,0,1e-7);
 	} END_TEST
 
@@ -63,38 +63,38 @@ void Test_EVDS_FRAMES() {
 		ERROR_CHECK(EVDS_Object_Initialize(earth,1));
 
 		//All coordinates at 1 km elevation
-		geocoord.elevation = 1000.0;
+		EVDS_Geodetic_Set(&geocoord,earth,0,0,1000);
 
 		//Check different coordinates
 		geocoord.latitude = 90.0; //North pole
 		geocoord.longitude = 0.0;
-		EVDS_Geodetic_ToVector(earth,&vector,&geocoord);
+		EVDS_Geodetic_ToVector(&vector,&geocoord);
 		VECTOR_EQUAL_TO_EPS(&vector,0,0,6378145.0+1000.0,1e-7);
 		EQUAL_TO(vector.coordinate_system,earth);
 
 		geocoord.latitude = -90.0; //South pole
 		geocoord.longitude = 0.0;
-		EVDS_Geodetic_ToVector(earth,&vector,&geocoord);
+		EVDS_Geodetic_ToVector(&vector,&geocoord);
 		VECTOR_EQUAL_TO_EPS(&vector,0,0,-6378145.0-1000.0,1e-7);
 
 		geocoord.latitude = 0.0; //Africa
 		geocoord.longitude = 0.0;
-		EVDS_Geodetic_ToVector(earth,&vector,&geocoord);
+		EVDS_Geodetic_ToVector(&vector,&geocoord);
 		VECTOR_EQUAL_TO_EPS(&vector,6378145.0+1000.0,0,0,1e-7);
 
 		geocoord.latitude = 0.0; //East
 		geocoord.longitude = 90.0;
-		EVDS_Geodetic_ToVector(earth,&vector,&geocoord);
+		EVDS_Geodetic_ToVector(&vector,&geocoord);
 		VECTOR_EQUAL_TO_EPS(&vector,0,6378145.0+1000.0,0,1e-7);
 
 		geocoord.latitude = 0.0; //Pacific ocean
 		geocoord.longitude = 180.0;
-		EVDS_Geodetic_ToVector(earth,&vector,&geocoord);
+		EVDS_Geodetic_ToVector(&vector,&geocoord);
 		VECTOR_EQUAL_TO_EPS(&vector,-6378145.0-1000.0,0,0,1e-7);
 
 		geocoord.latitude = 0.0; //West
 		geocoord.longitude = -90.0;
-		EVDS_Geodetic_ToVector(earth,&vector,&geocoord);
+		EVDS_Geodetic_ToVector(&vector,&geocoord);
 		VECTOR_EQUAL_TO_EPS(&vector,0,-6378145.0-1000.0,0,1e-7);
 	} END_TEST
 
@@ -115,38 +115,38 @@ void Test_EVDS_FRAMES() {
 		ERROR_CHECK(EVDS_Object_Initialize(earth,1));
 
 		//All coordinates at 1 km elevation
-		geocoord.elevation = 1000.0;
+		EVDS_Geodetic_Set(&geocoord,earth,0,0,1000);
 
 		//Check different coordinates
 		geocoord.latitude = 90.0; //North pole
 		geocoord.longitude = 0.0;
-		EVDS_Geodetic_ToVector(earth,&vector,&geocoord);
+		EVDS_Geodetic_ToVector(&vector,&geocoord);
 		VECTOR_EQUAL_TO_EPS(&vector,0,0,6356752.0+1000.0,1e-7);
 		EQUAL_TO(vector.coordinate_system,earth);
 
 		geocoord.latitude = -90.0; //South pole
 		geocoord.longitude = 0.0;
-		EVDS_Geodetic_ToVector(earth,&vector,&geocoord);
+		EVDS_Geodetic_ToVector(&vector,&geocoord);
 		VECTOR_EQUAL_TO_EPS(&vector,0,0,-6356752.0-1000.0,1e-7);
 
 		geocoord.latitude = 0.0; //Africa
 		geocoord.longitude = 0.0;
-		EVDS_Geodetic_ToVector(earth,&vector,&geocoord);
+		EVDS_Geodetic_ToVector(&vector,&geocoord);
 		VECTOR_EQUAL_TO_EPS(&vector,6378137.0+1000.0,0,0,1e-7);
 
 		geocoord.latitude = 0.0; //East
 		geocoord.longitude = 90.0;
-		EVDS_Geodetic_ToVector(earth,&vector,&geocoord);
+		EVDS_Geodetic_ToVector(&vector,&geocoord);
 		VECTOR_EQUAL_TO_EPS(&vector,0,6378137.0+1000.0,0,1e-7);
 
 		geocoord.latitude = 0.0; //Pacific ocean
 		geocoord.longitude = 180.0;
-		EVDS_Geodetic_ToVector(earth,&vector,&geocoord);
+		EVDS_Geodetic_ToVector(&vector,&geocoord);
 		VECTOR_EQUAL_TO_EPS(&vector,-6378137.0-1000.0,0,0,1e-7);
 
 		geocoord.latitude = 0.0; //West
 		geocoord.longitude = -90.0;
-		EVDS_Geodetic_ToVector(earth,&vector,&geocoord);
+		EVDS_Geodetic_ToVector(&vector,&geocoord);
 		VECTOR_EQUAL_TO_EPS(&vector,0,-6378137.0-1000.0,0,1e-7);
 	} END_TEST
 }
