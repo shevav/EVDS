@@ -277,6 +277,7 @@ typedef struct EVDS_STATE_VECTOR_DERIVATIVE_TAG {
 /// datum features are required.
 ////////////////////////////////////////////////////////////////////////////////
 typedef struct EVDS_GEODETIC_DATUM_TAG {
+	int valid;					///< Is datum valid
 	EVDS_REAL semimajor_axis;	///< Semi-major axis of the planet
 	EVDS_REAL semiminor_axis;	///< Semi-minor axis of the planet
 } EVDS_GEODETIC_DATUM;
