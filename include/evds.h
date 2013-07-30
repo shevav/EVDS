@@ -277,7 +277,7 @@ typedef struct EVDS_STATE_VECTOR_DERIVATIVE_TAG {
 /// datum features are required.
 ////////////////////////////////////////////////////////////////////////////////
 typedef struct EVDS_GEODETIC_DATUM_TAG {
-	int valid;					///< Is datum valid
+	EVDS_OBJECT* object;		///< Object around which the coordinate is specified
 	EVDS_REAL semimajor_axis;	///< Semi-major axis of the planet
 	EVDS_REAL semiminor_axis;	///< Semi-minor axis of the planet
 } EVDS_GEODETIC_DATUM;
@@ -309,10 +309,19 @@ typedef struct EVDS_GEODETIC_DATUM_TAG {
 ///
 ////////////////////////////////////////////////////////////////////////////////
 typedef struct EVDS_GEODETIC_COORDIANTE_TAG {
-	EVDS_REAL latitude;				///< Latitude
-	EVDS_REAL longitude;			///< Longitude
-	EVDS_REAL elevation;			///< Elevation
-	EVDS_GEODETIC_DATUM* datum;		///< Datum in which coordinate is specified
+	union {
+		EVDS_REAL latitude;				///< Latitude
+		EVDS_REAL relative_elevation;
+	};
+	union {
+		EVDS_REAL longitude;			///< Longitude
+		EVDS_REAL relative_bearing;
+	};
+	union {
+		EVDS_REAL elevation;			///< Elevation
+		EVDS_REAL relative_distance;
+	};
+	EVDS_GEODETIC_DATUM datum;		///< Datum in which coordinate is specified
 } EVDS_GEODETIC_COORDIANTE;
 
 

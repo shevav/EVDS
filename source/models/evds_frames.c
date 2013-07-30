@@ -35,6 +35,7 @@ void EVDS_Geodetic_DatumFromObject(EVDS_OBJECT* object, EVDS_GEODETIC_DATUM* dat
 	//Default: datum corresponding to bearing/elevation around vessels reference point
 	datum->semimajor_axis = 0;
 	datum->semiminor_axis = 0;
+	datum->object = object;
 
 	//Determine datum based on celestial body parameters
 	if (EVDS_Object_CheckType(object,"planet") == EVDS_OK) {
@@ -83,8 +84,6 @@ void EVDS_Geodetic_DatumFromObject(EVDS_OBJECT* object, EVDS_GEODETIC_DATUM* dat
 /// @todo Add documentation
 ////////////////////////////////////////////////////////////////////////////////
 void EVDS_Geodetic_ToVector(EVDS_OBJECT* object, EVDS_VECTOR* target, EVDS_GEODETIC_COORDIANTE* source) {
-	EVDS_GEODETIC_DATUM default_datum; //Datum used for the conversion
-	EVDS_GEODETIC_DATUM* datum;
 	EVDS_REAL x,y,z; //Components of the result
 	EVDS_REAL eccentricity_squared,normal;
 	EVDS_REAL sin_lat,cos_lat,sin_lon,cos_lon;
@@ -93,11 +92,8 @@ void EVDS_Geodetic_ToVector(EVDS_OBJECT* object, EVDS_VECTOR* target, EVDS_GEODE
 	if (!source) return;
 
 	//Determine datum based on planet object or passed in the coordinate
-	if (source->datum) {
-		datum = source->datum;
-	} else {
-		EVDS_Geodetic_DatumFromObject(object,&default_datum);
-		datum = &default_datum;
+	if (!source->datum.object) {
+		EVDS_Geodetic_DatumFromObject(object,&source->datum);
 	}
 
 	//Calculate sines and cosines
@@ -108,20 +104,20 @@ void EVDS_Geodetic_ToVector(EVDS_OBJECT* object, EVDS_VECTOR* target, EVDS_GEODE
 	
 	//Calculate eccentricity of ellipsoid
 	// The 'if' excludes invalid inputs and optimizes calculation for spheres
-	if (datum->semiminor_axis < datum->semimajor_axis) {
+	if (source->datum.semiminor_axis < source->datum.semimajor_axis) {
 		eccentricity_squared = 1 - 
-			(datum->semiminor_axis*datum->semiminor_axis)/
-			(datum->semimajor_axis*datum->semimajor_axis);
+			(source->datum.semiminor_axis*source->datum.semiminor_axis)/
+			(source->datum.semimajor_axis*source->datum.semimajor_axis);
 	} else {
 		eccentricity_squared = 0.0;
 	}
 
 	//Calculate normal
 	if (eccentricity_squared > 0.0) {
-		normal = datum->semimajor_axis /
+		normal = source->datum.semimajor_axis /
 			sqrt(1 - eccentricity_squared * sin_lat * sin_lat);
 	} else {
-		normal = datum->semimajor_axis;
+		normal = source->datum.semimajor_axis;
 	}
 
 	//Convert geographic coordinates to X,Y,Z
