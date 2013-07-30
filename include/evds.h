@@ -268,16 +268,50 @@ typedef struct EVDS_STATE_VECTOR_DERIVATIVE_TAG {
 
 ////////////////////////////////////////////////////////////////////////////////
 /// @ingroup EVDS_MATH
+/// @brief Geodetic datum.
+///
+/// Represents a geodetic datum for use with the geographic coordinate conversion
+/// functions EVDS_Geodetic_FromVector() and EVDS_Geodetic_ToVector().
+///
+/// This data structure will be extended in the future if any additional geodetic
+/// datum features are required.
+////////////////////////////////////////////////////////////////////////////////
+typedef struct EVDS_GEODETIC_DATUM_TAG {
+	EVDS_REAL semimajor_axis;	///< Semi-major axis of the planet
+	EVDS_REAL semiminor_axis;	///< Semi-minor axis of the planet
+} EVDS_GEODETIC_DATUM;
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// @ingroup EVDS_MATH
 /// @brief Geodetic (geographic) coordinate.
 ///
-/// This data structure represents geodetic coordinates around a body.
+/// This data structure represents geodetic coordinates around a body. The coordinates
+/// are specified around ellipsoid defined by parameters specified for the planet or
+/// body around which they are calculated, or by datum which can be explicitly passed
+/// into coordinate conversion functions.
+///
+/// For non-celestial bodies the geodetic coordinates will correspond to the following
+/// coordinates with origin around objects reference point:
+/// Geodetic coordinate			| Vessel-relative coordinate
+///	----------------------------|-------------------------------
+///	Latitude					| Elevation
+///	Longitude					| Relative bearing
+/// Elevation					| Distance
+///
+/// See EVDS_Geodetic_FromVector(), EVDS_Geodetic_ToVector()
+/// for more information on conversion and datum support.
+///
+/// @note Datum must be specified for the coordinates used with the EVDS_Geodetic_ToVector()
+///       function call! Datum must be a valid pointer or null, which which case datum will be calculated
+///       based on geometry of the celestial body.
+///
 ////////////////////////////////////////////////////////////////////////////////
 typedef struct EVDS_GEODETIC_COORDIANTE_TAG {
-	EVDS_REAL latitude;			///< Geodetic latitude
-	EVDS_REAL longitude;		///< Longitude
-	EVDS_REAL elevation;		///< Elevation above geoid/ellipsoid
-	EVDS_REAL mean_elevation;	///< Elevation above mean planetary radius
-	EVDS_REAL radial_distance;	///< Distance from planets reference point
+	EVDS_REAL latitude;				///< Latitude
+	EVDS_REAL longitude;			///< Longitude
+	EVDS_REAL elevation;			///< Elevation
+	EVDS_GEODETIC_DATUM* datum;		///< Datum in which coordinate is specified
 } EVDS_GEODETIC_COORDIANTE;
 
 
@@ -1391,17 +1425,15 @@ EVDS_API int EVDS_Environment_GetRadiationParameters(EVDS_SYSTEM* system, EVDS_V
 /// @{
 ////////////////////////////////////////////////////////////////////////////////
 
-// Convert geographic coordinates of the object to a position vector
-EVDS_API void EVDS_Vector_FromGeographicCoordinates(EVDS_OBJECT* object, EVDS_VECTOR* target, 
-													EVDS_GEODETIC_COORDIANTE* coordinate);
-// Convert position vector into geographic coordinates of the object
-EVDS_API void EVDS_Vector_ToGeographicCoordinates(EVDS_OBJECT* object, EVDS_VECTOR* v, 
-												  EVDS_GEODETIC_COORDIANTE* coordinate);
+// Converts geodetic coordinates around object to a position vector
+EVDS_API void EVDS_Geodetic_ToVector(EVDS_OBJECT* object, EVDS_VECTOR* target, EVDS_GEODETIC_COORDIANTE* source);
+// Convert position vector to geodetic coordinates around object
+EVDS_API void EVDS_Geodetic_FromVector(EVDS_OBJECT* object, EVDS_GEODETIC_COORDIANTE* target, EVDS_VECTOR* source);
 // Convert quaternion to objects LVLH frame
-EVDS_API void EVDS_Quaternion_ToLVLHCoordinates(EVDS_OBJECT* object, EVDS_QUATERNION* q_lvlh, EVDS_QUATERNION* q,
-											    EVDS_GEODETIC_COORDIANTE* coordinate);
+EVDS_API void EVDS_LVLH_QuaternionToLVLH(EVDS_OBJECT* object, EVDS_QUATERNION* target_lvlh, EVDS_QUATERNION* source,
+										 EVDS_GEODETIC_COORDIANTE* coordinate);
 // Convert quaternion from objects LVLH frame
-EVDS_API void EVDS_Quaternion_FromLVLHCoordinates(EVDS_OBJECT* object, EVDS_QUATERNION* q_lvlh, EVDS_QUATERNION* q,
+EVDS_API void EVDS_LVLH_QuaternionFromLVLH(EVDS_OBJECT* object, EVDS_QUATERNION* target, EVDS_QUATERNION* source_lvlh,
 												  EVDS_GEODETIC_COORDIANTE* coordinate);
 
 ////////////////////////////////////////////////////////////////////////////////
