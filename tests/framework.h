@@ -59,6 +59,15 @@ int Test_InList(void* ptr, SIMC_LIST* list);
 		Test_Failure(#vector,#vx" "#vy" "#vz,__FILE__,__LINE__); \
 	}
 
+#define VECTOR_EQUAL_TO_EPS(vector,vx,vy,vz,eps) \
+	if ((fabs((vector)->x - (vx)) < eps) && \
+		(fabs((vector)->y - (vy)) < eps) && \
+		(fabs((vector)->z - (vz)) < eps)) { \
+		Test_Passed(#vector,#vx" "#vy" "#vz,__FILE__,__LINE__); \
+	} else { \
+		Test_Failure(#vector,#vx" "#vy" "#vz,__FILE__,__LINE__); \
+	}
+
 #define REAL_EQUAL_TO(real,value) \
 	if (fabs(real - value) < EVDS_EPS) { \
 		Test_Passed(#real,#value,__FILE__,__LINE__); \

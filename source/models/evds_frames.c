@@ -45,7 +45,7 @@ void EVDS_Geodetic_ToVector(EVDS_OBJECT* object, EVDS_VECTOR* target, EVDS_GEODE
 		EVDS_REAL radius = 0;
 
 		//Read planet radius
-		if (EVDS_Object_GetVariable(object,"radius",&radius_var) == EVDS_OK) {
+		if (EVDS_Object_GetVariable(object,"geometry.radius",&radius_var) == EVDS_OK) {
 			EVDS_Variable_GetReal(radius_var,&radius);
 		}
 		//Read planet flattening to output coordinates over ellipsoid
@@ -89,7 +89,7 @@ void EVDS_Geodetic_FromVector(EVDS_OBJECT* object, EVDS_GEODETIC_COORDIANTE* tar
 		EVDS_REAL radius = 0;
 
 		//Read planet radius
-		if (EVDS_Object_GetVariable(object,"radius",&radius_var) == EVDS_OK) {
+		if (EVDS_Object_GetVariable(object,"geometry.radius",&radius_var) == EVDS_OK) {
 			EVDS_Variable_GetReal(radius_var,&radius);
 		}
 		//Read planet flattening to output coordinates over ellipsoid
