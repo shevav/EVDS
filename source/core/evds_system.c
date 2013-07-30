@@ -862,7 +862,7 @@ int EVDS_System_QueryDatabase(EVDS_SYSTEM* system, const char* query, EVDS_VARIA
 //  @retval EVDS_ERROR_NOT_FOUND Could not resolve the dataref
 /// @retval EVDS_ERROR_INVALID_OBJECT Root object was destroyed
 ////////////////////////////////////////////////////////////////////////////////
-int EVDS_System_QueryObject(EVDS_OBJECT* root, const char* query, EVDS_VARIABLE** p_variable, EVDS_OBJECT** p_object) {
+int EVDS_System_QueryByReference(EVDS_OBJECT* root, const char* query, EVDS_VARIABLE** p_variable, EVDS_OBJECT** p_object) {
 	EVDS_OBJECT* object = root; //Object, inside which the query is performed
 	EVDS_VARIABLE* variable = 0; //Variable, inside which the query is performed
 	int in_variable = 0; //Is currently inside a variable

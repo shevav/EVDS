@@ -1868,7 +1868,7 @@ void EVDS_InternalObject_RecursiveBuildReference(EVDS_OBJECT* object, EVDS_OBJEC
 /// @brief Get objects reference in the system. @evds_limited_init
 ///
 /// This function returns full name/reference to this object for use with
-/// the EVDS_System_QueryObject() API call.
+/// the EVDS_System_QueryByReference() API call.
 ///
 /// @note Some objects can have empty names defined, so multiple following `/` symbols
 ///       are expected from the output.

@@ -917,8 +917,8 @@ EVDS_API int EVDS_System_GetObjectsByType(EVDS_SYSTEM* system, const char* type,
 EVDS_API int EVDS_System_GetObjectByUID(EVDS_SYSTEM* system, unsigned int uid, EVDS_OBJECT* parent, EVDS_OBJECT** p_object);
 // Get object by name (can search in children of a given object)
 EVDS_API int EVDS_System_GetObjectByName(EVDS_SYSTEM* system, const char* name, EVDS_OBJECT* parent, EVDS_OBJECT** p_object);
-// Query a variable by data reference
-EVDS_API int EVDS_System_QueryObject(EVDS_OBJECT* root, const char* query, EVDS_VARIABLE** p_variable, EVDS_OBJECT** p_object);
+// Query a variable/object by data reference
+EVDS_API int EVDS_System_QueryByReference(EVDS_OBJECT* root, const char* query, EVDS_VARIABLE** p_variable, EVDS_OBJECT** p_object);
 
 // Cleanup objects (multithreaded only)
 EVDS_API int EVDS_System_CleanupObjects(EVDS_SYSTEM* system);
@@ -1068,7 +1068,7 @@ EVDS_API int EVDS_Object_GetVariable(EVDS_OBJECT* object, const char* name, EVDS
 EVDS_API int EVDS_Object_GetVariables(EVDS_OBJECT* object, SIMC_LIST** p_list);
 // Get floating-point variable by name (only after initialized OR only in initializers thread)
 EVDS_API int EVDS_Object_GetRealVariable(EVDS_OBJECT* object, const char* name, EVDS_REAL* value, EVDS_VARIABLE** p_variable);
-// Get objects reference in the system (for use with EVDS_System_QueryObject())
+// Get objects reference in the system (for use with EVDS_System_QueryByReference())
 EVDS_API int EVDS_Object_GetReference(EVDS_OBJECT* object, EVDS_OBJECT* root, char* reference, size_t max_length);
 
 // Get children
@@ -1218,9 +1218,6 @@ EVDS_API int EVDS_Variable_GetFunction1D(EVDS_VARIABLE* variable, EVDS_REAL x, E
 // Get value from a 3D function
 //EVDS_API int EVDS_Variable_GetFunction3D(EVDS_VARIABLE* variable, EVDS_REAL x, EVDS_REAL y, EVDS_REAL z, EVDS_REAL* p_value);
 
-// Query a variable by data reference
-//EVDS_API int EVDS_Variable_QueryVariable(EVDS_VARIABLE* root, const char* query, EVDS_VARIABLE** p_variable);
-
 // Set userdata
 EVDS_API int EVDS_Variable_SetUserdata(EVDS_VARIABLE* variable, void* userdata);
 // Get userdata
@@ -1363,8 +1360,33 @@ EVDS_API void EVDS_StateVector_Derivative_Initialize(EVDS_STATE_VECTOR_DERIVATIV
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// @defgroup EVDS_FRAME Special Frames of Reference API
-/// @brief API for converting between special and predefined frames of reference
+/// @defgroup EVDS_ENVIRONMENT Environment API
+/// @brief A set of default models and code to determine envrionment parameters
+///
+/// @{
+////////////////////////////////////////////////////////////////////////////////
+// Get acceleration due to gravity in the given position (local X Y Z acceleration, field)
+EVDS_API int EVDS_Environment_GetGravitationalField(EVDS_SYSTEM* system, EVDS_VECTOR* position, EVDS_REAL* phi, EVDS_VECTOR* field);
+// Get magnetic field vector in the given position (local X Y Z magnetic field)
+EVDS_API int EVDS_Environment_GetMagneticField(EVDS_SYSTEM* system, EVDS_VECTOR* position, EVDS_VECTOR* field);
+// Get atmospheric parameters (including contents by elements)
+EVDS_API int EVDS_Environment_GetAtmosphericParameters(EVDS_SYSTEM* system, EVDS_VECTOR* position, EVDS_ENVIRONMENT_ATMOSPHERE* parameters);
+// Get radiation intensity (including energy spectrum)
+EVDS_API int EVDS_Environment_GetRadiationParameters(EVDS_SYSTEM* system, EVDS_VECTOR* position, EVDS_ENVIRONMENT_RADIATION* parameters);
+////////////////////////////////////////////////////////////////////////////////
+/// @}
+////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// @defgroup EVDS_FRAME Frames of Reference API
+/// @brief API for converting between special (non-cartesian) frames of reference
 ///
 /// @{
 ////////////////////////////////////////////////////////////////////////////////
@@ -1382,31 +1404,6 @@ EVDS_API void EVDS_Quaternion_ToLVLHCoordinates(EVDS_OBJECT* object, EVDS_QUATER
 EVDS_API void EVDS_Quaternion_FromLVLHCoordinates(EVDS_OBJECT* object, EVDS_QUATERNION* q_lvlh, EVDS_QUATERNION* q,
 												  EVDS_GEODETIC_COORDIANTE* coordinate);
 
-////////////////////////////////////////////////////////////////////////////////
-/// @}
-////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-/// @defgroup EVDS_ENVIRONMENT Environment API
-/// @brief A set of default models and code to determine envrionment parameters
-///
-/// @{
-////////////////////////////////////////////////////////////////////////////////
-// Get acceleration due to gravity in the given position (local X Y Z acceleration, field)
-EVDS_API int EVDS_Environment_GetGravitationalField(EVDS_SYSTEM* system, EVDS_VECTOR* position, EVDS_REAL* phi, EVDS_VECTOR* field);
-// Get magnetic field vector in the given position (local X Y Z magnetic field)
-EVDS_API int EVDS_Environment_GetMagneticField(EVDS_SYSTEM* system, EVDS_VECTOR* position, EVDS_VECTOR* field);
-// Get atmospheric parameters (including contents by elements)
-EVDS_API int EVDS_Environment_GetAtmosphericParameters(EVDS_SYSTEM* system, EVDS_VECTOR* position, EVDS_ENVIRONMENT_ATMOSPHERE* parameters);
-// Get radiation intensity (including energy spectrum)
-EVDS_API int EVDS_Environment_GetRadiationParameters(EVDS_SYSTEM* system, EVDS_VECTOR* position, EVDS_ENVIRONMENT_RADIATION* parameters);
 ////////////////////////////////////////////////////////////////////////////////
 /// @}
 ////////////////////////////////////////////////////////////////////////////////

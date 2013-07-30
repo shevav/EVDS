@@ -20,8 +20,8 @@ void Test_EVDS_SYSTEM() {
 		EQUAL_TO(EVDS_System_CleanupObjects(0), EVDS_ERROR_BAD_PARAMETER);
 
 		NEED_ARBITRARY_OBJECT();
-		EQUAL_TO(EVDS_System_QueryObject(object,0,0,0), EVDS_ERROR_BAD_PARAMETER);
-		EQUAL_TO(EVDS_System_QueryObject(0,"test",0,0), EVDS_ERROR_BAD_PARAMETER);
+		EQUAL_TO(EVDS_System_QueryByReference(object,0,0,0), EVDS_ERROR_BAD_PARAMETER);
+		EQUAL_TO(EVDS_System_QueryByReference(0,"test",0,0), EVDS_ERROR_BAD_PARAMETER);
 
 		EQUAL_TO(EVDS_System_DatabaseFromFile(system,0), EVDS_ERROR_BAD_PARAMETER);
 		EQUAL_TO(EVDS_System_DatabaseFromFile(0,"test"), EVDS_ERROR_BAD_PARAMETER);
