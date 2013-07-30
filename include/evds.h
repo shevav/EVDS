@@ -292,35 +292,33 @@ typedef struct EVDS_GEODETIC_DATUM_TAG {
 /// body around which they are calculated, or by datum which can be explicitly passed
 /// into coordinate conversion functions.
 ///
+/// @note Datum must be specified for the coordinates used with the EVDS_Geodetic_ToVector()
+///       function call! Datum must be a valid pointer or null, which which case datum will be calculated
+///       based on geometry of the celestial body. FIXME
+///
 /// For non-celestial bodies the geodetic coordinates will correspond to the following
 /// coordinates with origin around objects reference point:
 /// Geodetic coordinate			| Vessel-relative coordinate
 ///	----------------------------|-------------------------------
-///	Latitude					| Elevation
+///	Latitude					| Relative elevation
 ///	Longitude					| Relative bearing
-/// Elevation					| Distance
+/// Elevation					| Relative distance
 ///
-/// See EVDS_Geodetic_FromVector(), EVDS_Geodetic_ToVector()
-/// for more information on conversion and datum support.
+/// The geodetic coordinates have the following valid ranges:
+/// Geodetic coordinate			| Units		| Range
+///	----------------------------|-----------|-------------------------
+///	Latitude					| degrees	| \f$[-90.0, 90.0]\f$
+///	Longitude					| degrees	| \f$[-180.0, 180.0)\f$
+/// Elevation					| m			| \f$[0.0, \infty)\f$
 ///
-/// @note Datum must be specified for the coordinates used with the EVDS_Geodetic_ToVector()
-///       function call! Datum must be a valid pointer or null, which which case datum will be calculated
-///       based on geometry of the celestial body.
+/// @note Geodetic longitude \f$180.0 \ degrees\f$ is not represented in EVDS_GEODETIC_COORDINATE.
+///       Longitude of \f$-180.0 \ degrees\f$ is used instead.
 ///
 ////////////////////////////////////////////////////////////////////////////////
 typedef struct EVDS_GEODETIC_COORDIANTE_TAG {
-	union {
-		EVDS_REAL latitude;				///< Latitude
-		EVDS_REAL relative_elevation;
-	};
-	union {
-		EVDS_REAL longitude;			///< Longitude
-		EVDS_REAL relative_bearing;
-	};
-	union {
-		EVDS_REAL elevation;			///< Elevation
-		EVDS_REAL relative_distance;
-	};
+	EVDS_REAL latitude;				///< Geodetic latitude (relative elevation)
+	EVDS_REAL longitude;			///< Geodetic longitude (relative bearing)
+	EVDS_REAL elevation;			///< Elevation (relative distance)
 	EVDS_GEODETIC_DATUM datum;		///< Datum in which coordinate is specified
 } EVDS_GEODETIC_COORDIANTE;
 
@@ -1436,14 +1434,14 @@ EVDS_API int EVDS_Environment_GetRadiationParameters(EVDS_SYSTEM* system, EVDS_V
 ////////////////////////////////////////////////////////////////////////////////
 
 // Calculates datum based on object
-EVDS_API void EVDS_Geodetic_DatumFromObject(EVDS_OBJECT* object, EVDS_GEODETIC_DATUM* datum);
+EVDS_API void EVDS_Geodetic_DatumFromObject(EVDS_GEODETIC_DATUM* datum, EVDS_OBJECT* object);
 // Set geodetic coordinate around object
 EVDS_API void EVDS_Geodetic_Set(EVDS_GEODETIC_COORDIANTE* coordinate, EVDS_OBJECT* object,
 								EVDS_REAL latitude, EVDS_REAL longitude, EVDS_REAL elevation);
 // Converts geodetic coordinates around object to a position vector
 EVDS_API void EVDS_Geodetic_ToVector(EVDS_VECTOR* target, EVDS_GEODETIC_COORDIANTE* source);
 // Convert position vector to geodetic coordinates around object
-EVDS_API void EVDS_Geodetic_FromVector(EVDS_GEODETIC_COORDIANTE* target, EVDS_VECTOR* source);
+EVDS_API void EVDS_Geodetic_FromVector(EVDS_GEODETIC_COORDIANTE* target, EVDS_VECTOR* source, EVDS_GEODETIC_DATUM* target_datum);
 // Convert quaternion to objects LVLH frame
 EVDS_API void EVDS_LVLH_QuaternionToLVLH(EVDS_OBJECT* object, EVDS_QUATERNION* target_lvlh, EVDS_QUATERNION* source,
 										 EVDS_GEODETIC_COORDIANTE* coordinate);

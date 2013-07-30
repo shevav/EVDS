@@ -31,7 +31,7 @@
 ///
 /// @todo Add documentation
 ////////////////////////////////////////////////////////////////////////////////
-void EVDS_Geodetic_DatumFromObject(EVDS_OBJECT* object, EVDS_GEODETIC_DATUM* datum) {
+void EVDS_Geodetic_DatumFromObject(EVDS_GEODETIC_DATUM* datum, EVDS_OBJECT* object) {
 	//Default: datum corresponding to bearing/elevation around vessels reference point
 	datum->semimajor_axis = 0;
 	datum->semiminor_axis = 0;
@@ -91,7 +91,7 @@ void EVDS_Geodetic_Set(EVDS_GEODETIC_COORDIANTE* coordinate, EVDS_OBJECT* object
 	coordinate->latitude = latitude;
 	coordinate->longitude = longitude;
 	coordinate->elevation = elevation;
-	EVDS_Geodetic_DatumFromObject(object,&coordinate->datum);
+	EVDS_Geodetic_DatumFromObject(&coordinate->datum,object);
 }
 
 
@@ -128,8 +128,7 @@ void EVDS_Geodetic_ToVector(EVDS_VECTOR* target, EVDS_GEODETIC_COORDIANTE* sourc
 
 	//Calculate normal
 	if (eccentricity_squared > 0.0) {
-		normal = source->datum.semimajor_axis /
-			sqrt(1 - eccentricity_squared * sin_lat * sin_lat);
+		normal = source->datum.semimajor_axis / sqrt(1 - eccentricity_squared * sin_lat * sin_lat);
 	} else {
 		normal = source->datum.semimajor_axis;
 	}
@@ -145,57 +144,90 @@ void EVDS_Geodetic_ToVector(EVDS_VECTOR* target, EVDS_GEODETIC_COORDIANTE* sourc
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// @brief Convert position vector to geodetic coordinates around object.
+/// @brief Converts position vector into geodetic coordinate.
+///
+/// @note The geodetic coordinate will be calculated around the body, in which
+///       the source vector is specified. EVDS_Vector_Convert() call is required
+///       to get geodetic coordinates around a specific body, or alternatively
+///       the target datum may be specified around a specific object.
 ///
 /// @todo Add documentation
 ////////////////////////////////////////////////////////////////////////////////
-void EVDS_Geodetic_FromVector(EVDS_GEODETIC_COORDIANTE* target, EVDS_VECTOR* source) {
-	/*EVDS_REAL x,y,z; //Components of the result
-	EVDS_REAL eccentricity_squared,normal;
-	EVDS_REAL sin_lat,cos_lat,sin_lon,cos_lon;
-	if (!object) return;
+void EVDS_Geodetic_FromVector(EVDS_GEODETIC_COORDIANTE* target, EVDS_VECTOR* source, EVDS_GEODETIC_DATUM* target_datum) {
+	EVDS_REAL x,y,z; //Components of the result
 	if (!target) return;
 	if (!source) return;
 
-	//Determine datum based on planet object or passed in the coordinate
-	if (!source->datum.object) {
-		EVDS_Geodetic_DatumFromObject(object,&source->datum);
+	//Determine datum based on vector coordinate system object if needed
+	if (!target_datum) {
+		EVDS_Geodetic_DatumFromObject(&target->datum,source->coordinate_system);
+	} else {
+		memcpy(&target->datum,target_datum,sizeof(EVDS_GEODETIC_DATUM));
+
 	}
 
-	//Get vector in target coordinates
-	EVDS_Vector_Get(source,&x,&y,&z,object);
+	//Get vector components relative to datum body
+	EVDS_Vector_Get(source,&x,&y,&z,target->datum.object);
 
 	//Check if datum is spheric
-	if (datum->semimajor_axis == datum->semiminor_axis) {
+	if (target->datum.semimajor_axis == target->datum.semiminor_axis) {
 		EVDS_REAL r = sqrt(x*x+y*y+z*z)+EVDS_EPS;
 
-		target->datum		= 0;
 		target->longitude	= EVDS_DEG(atan2(y,x));
 		target->latitude	= EVDS_DEG(asin(z/r));
-		target->elevation	= r - radius;
-	} else {
+		target->elevation	= r - target->datum.semimajor_axis;
+	} else { //Non-spheric datum
+		EVDS_REAL eccentricity_squared,normal;
+		EVDS_REAL p,q,k,k_prev,k0,ci;
+		EVDS_REAL lat,tan_lat,sin_lat;
+		int iterations;
 
-	}
+		//Calculate some information about ellipsoid
+		eccentricity_squared = 1 - 
+			(target->datum.semiminor_axis*target->datum.semiminor_axis)/
+			(target->datum.semimajor_axis*target->datum.semimajor_axis);
+		k0 = 1/(1 - eccentricity_squared);
+		p = sqrt(x*x+y*y);
 
-	//Write back geographic coordinates
-	if (EVDS_Object_CheckType(object,"planet") == EVDS_OK) {
-		EVDS_VARIABLE* radius_var = 0;
-		EVDS_REAL radius = 0;
+		//Calculate longitude
+		target->longitude = EVDS_DEG(atan2(y,x));
+		if (target->longitude == 180.0) target->longitude = -180.0;
 
-		//Read planet radius
-		if (EVDS_Object_GetVariable(object,"geometry.radius",&radius_var) == EVDS_OK) {
-			EVDS_Variable_GetReal(radius_var,&radius);
+		//Use newtons method to calculate latitude
+		k = k0;
+		k_prev = 1/EVDS_EPS;
+		iterations = 0;
+
+		while ((fabs(k-k_prev) > EVDS_EPS) && (iterations < 8)) {
+			q = p*p + (1 - eccentricity_squared)*z*z*k*k*k;
+			ci = pow(q,3.0/2.0)/(target->datum.semimajor_axis*eccentricity_squared);
+
+			k_prev = k;
+			k = 1 + q / (ci - p*p);
+			iterations++;
 		}
-		//Read planet flattening to output coordinates over ellipsoid
-		//FIXME
 
-		//Output coordinates
+		if (p != 0.0) {
+			tan_lat = k*z/p;
+		} else {
+			if (k*z > 0) {
+				tan_lat = 1e100;
+			} else {
+				tan_lat = -1e100;
+			}
+		}
+		lat = atan(tan_lat);
+		target->latitude = EVDS_DEG(lat);
 
-	} else {
-		target->longitude	= EVDS_DEG(atan2(y,x));
-		target->latitude	= EVDS_DEG(asin(z/r));
-		target->elevation	= r;
-	}*/
+		//Calculate elevation around ellipsoid
+		sin_lat = sin(lat);
+		normal = target->datum.semimajor_axis / sqrt(1 - eccentricity_squared * sin_lat * sin_lat);
+		if (sin_lat != 0.0) {
+			target->elevation = z/sin_lat - normal*(1 - eccentricity_squared);
+		} else {
+			target->elevation = p - normal;
+		}
+	}
 }
 
 

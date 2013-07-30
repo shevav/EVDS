@@ -2,9 +2,7 @@
 
 void Test_EVDS_MODIFIER() {
 	START_TEST("Linear modifier test") {
-		EVDS_OBJECT* root;
 		EVDS_OBJECT* container;
-		ERROR_CHECK(EVDS_System_GetRootInertialSpace(system,&root));
 		ERROR_CHECK(EVDS_Object_LoadFromString(root,
 "<EVDS version=\"31\">"
 "    <object name=\"Modifier\" type=\"modifier\">"
@@ -73,12 +71,10 @@ void Test_EVDS_MODIFIER() {
 void Test_EVDS_GIMBAL() {
 	START_TEST("Parameterless gimbal platform") {
 		EVDS_REAL x,y,z;
-		EVDS_OBJECT* root;
 		EVDS_OBJECT* platform;
 		EVDS_VARIABLE* pitch_command;
 		EVDS_VARIABLE* yaw_command;
 
-		ERROR_CHECK(EVDS_System_GetRootInertialSpace(system,&root));
 		ERROR_CHECK(EVDS_Object_LoadFromString(root,
 "<EVDS version=\"31\">"
 "    <object name=\"Gimbal\" type=\"gimbal\">"
@@ -167,14 +163,12 @@ void Test_EVDS_GIMBAL() {
 
 	START_TEST("Gimbal platform behavior") {
 		EVDS_REAL t,x,y,z;
-		EVDS_OBJECT* root;
 		EVDS_OBJECT* platform;
 		EVDS_VARIABLE* pitch_command;
 		EVDS_VARIABLE* yaw_command;
 		EVDS_VARIABLE* pitch_current;
 		EVDS_VARIABLE* yaw_current;
 
-		ERROR_CHECK(EVDS_System_GetRootInertialSpace(system,&root));
 		ERROR_CHECK(EVDS_Object_LoadFromString(root,
 "<EVDS version=\"31\">"
 "    <object name=\"Gimbal\" type=\"gimbal\">"

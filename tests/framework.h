@@ -75,6 +75,13 @@ int Test_InList(void* ptr, SIMC_LIST* list);
 		Test_Failure(#real,#value,__FILE__,__LINE__); \
 	}
 
+#define REAL_EQUAL_TO_EPS(real,value,eps) \
+	if (fabs(real - value) < eps) { \
+		Test_Passed(#real,#value,__FILE__,__LINE__); \
+	} else { \
+		Test_Failure(#real,#value,__FILE__,__LINE__); \
+	}
+
 #define IS_IN_LIST(ptr,list) \
 	if (Test_InList(ptr,list)) { \
 		Test_Passed(#ptr,"IN "#list,__FILE__,__LINE__); \
@@ -107,8 +114,10 @@ int Test_InList(void* ptr, SIMC_LIST* list);
 	EVDS_REAL real; \
 	SIMC_LIST* list; \
 	SIMC_LIST_ENTRY* entry; \
+	EVDS_OBJECT* root; \
 	printf("\tTest: "name"\n"); \
 	ERROR_CHECK(EVDS_System_Create(&system)); \
+	ERROR_CHECK(EVDS_System_GetRootInertialSpace(system,&root)); \
 	EVDS_Common_Register(system);
 
 #define END_TEST EVDS_System_Destroy(system); }

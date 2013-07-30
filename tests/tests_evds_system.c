@@ -46,8 +46,6 @@ void Test_EVDS_SYSTEM() {
 
 
 	START_TEST("Root inertial space") {
-		EVDS_OBJECT* root;
-		ERROR_CHECK(EVDS_System_GetRootInertialSpace(system,&root));
 		ERROR_CHECK(EVDS_Object_Create(system,0,&object));
 
 		EQUAL_TO(root->parent,0);
@@ -66,9 +64,6 @@ void Test_EVDS_SYSTEM() {
 
 
 	START_TEST("EVDS_System_CleanupObjects") {
-		EVDS_OBJECT* root;
-		ERROR_CHECK(EVDS_System_GetRootInertialSpace(system,&root));
-
 		NEED_ARBITRARY_OBJECT();
 		IS_IN_LIST(object,root->raw_children);
 
