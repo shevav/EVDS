@@ -27,9 +27,27 @@
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// @brief Create datum based on the object
+/// @brief Create datum based on the object.
 ///
-/// @todo Add documentation
+/// This function returns datum derived from object parameters. If no object is
+/// specified or the object is not a planetary body, a datum corresponding to
+/// sphere with zero-radius is returned.
+///
+/// If planetary body has `geometry.semimajor_axis` variable defined, the datum will be
+/// derieved from planets ellipsoid based on one of the following parameters
+/// (\f$a\f$ is semimajor axis, \f$b\f$ is semiminor axis):
+/// Variable						| Formula used
+/// --------------------------------|----------------------
+/// `geometry.semiminor_axis`		| Datum derived from semimajor and semiminor axes directly
+/// `geometry.flattening`			| \f$b = a (1 - flattening)\f$
+/// `geometry.inverse_flattening`	| \f$b = a (1 - \frac{1}{inverse\_ flattening})\f$
+///
+/// If planetary body has only `geometry.radius` defined, the datum will be derived for a
+/// spherical body with given radius.
+///
+/// @returns Datum from given object
+/// @param[out] datum Datum will be saved here
+/// @param[in] object Object, from which datum will be derived
 ////////////////////////////////////////////////////////////////////////////////
 void EVDS_Geodetic_DatumFromObject(EVDS_GEODETIC_DATUM* datum, EVDS_OBJECT* object) {
 	//Default: datum corresponding to bearing/elevation around vessels reference point
@@ -84,7 +102,14 @@ void EVDS_Geodetic_DatumFromObject(EVDS_GEODETIC_DATUM* datum, EVDS_OBJECT* obje
 ////////////////////////////////////////////////////////////////////////////////
 /// @brief Set geodetic coordinate around a given body.
 ///
-/// @todo Add documentation
+/// Datum will be automatically derived from the object around which coordinates are specified.
+///
+/// @returns Geodetic coordinate with defined datum
+/// @param[out] coordinate Geodetic coordinate
+/// @param[in] object Object, around which coordinates are specified
+/// @param[in] latitude Geodetic latitude
+/// @param[in] longitude Geodetic longitude
+/// @param[in] elevation Geodetic elevation (height)
 ////////////////////////////////////////////////////////////////////////////////
 void EVDS_Geodetic_Set(EVDS_GEODETIC_COORDIANTE* coordinate, EVDS_OBJECT* object,
 					   EVDS_REAL latitude, EVDS_REAL longitude, EVDS_REAL elevation) {
@@ -98,17 +123,36 @@ void EVDS_Geodetic_Set(EVDS_GEODETIC_COORDIANTE* coordinate, EVDS_OBJECT* object
 ////////////////////////////////////////////////////////////////////////////////
 /// @brief Converts geodetic coordinates around object to a position vector.
 ///
-/// @todo Add documentation
+/// First the eccentricity and normal of an ellipsoid are calculated. \f$a\f$ is the semimajor axis,
+/// \f$b\f$ is the semiminor axis.
+/// \f{eqnarray*}{
+///		e^2 &=& 1 - \frac{b^2}{a^2} \\
+///		R_N &=& \frac{a}{\sqrt{1 - e^2 sin^2(latitude)}}
+/// \f}
+///
+/// The cartesian coordinates are calculated as:
+/// \f{eqnarray*}{
+///		x &=& (R_n + elevation) \ cos(longitude) \ cos(latitude) \\
+///		y &=& (R_n + elevation) \ sin(longitude) \ cos(latitude) \\
+///		z &=& (R_n (1 - e^2) + elevation) \ sin(latitude)
+/// \f}
+///
+/// @note The geodetic coordinate must have proper datum defined. See EVDS_Geodetic_Set().
+///
+/// @returns Position vector based on geodetic coordinate.
+/// @param[out] target Position vector in coordinate system of body, around which geodetic coordinates are specified.
+/// @param[in] source Geodetic coordinate with correctly defined datum.
 ////////////////////////////////////////////////////////////////////////////////
 void EVDS_Geodetic_ToVector(EVDS_VECTOR* target, EVDS_GEODETIC_COORDIANTE* source) {
 	EVDS_REAL x,y,z; //Components of the result
-	EVDS_REAL eccentricity_squared,normal;
-	EVDS_REAL sin_lat,cos_lat,sin_lon,cos_lon;
+	EVDS_REAL eccentricity_squared,normal; //Ellipsoid parameters
+	EVDS_REAL sin_lat,cos_lat,sin_lon,cos_lon; //Sines/cosines
 	if (!target) return;
 	if (!source) return;
 
 	//Perform some self-checks
 	EVDS_ASSERT(source->datum.object);
+	EVDS_ASSERT(source->datum.semiminor_axis <= source->datum.semimajor_axis);
 
 	//Calculate sines and cosines
 	sin_lat = sin(EVDS_RAD(source->latitude));
@@ -146,24 +190,82 @@ void EVDS_Geodetic_ToVector(EVDS_VECTOR* target, EVDS_GEODETIC_COORDIANTE* sourc
 ////////////////////////////////////////////////////////////////////////////////
 /// @brief Converts position vector into geodetic coordinate.
 ///
-/// @note The geodetic coordinate will be calculated around the body, in which
-///       the source vector is specified. EVDS_Vector_Convert() call is required
-///       to get geodetic coordinates around a specific body, or alternatively
-///       the target datum may be specified around a specific object.
+/// The target coordinate datum is determined from `target_datum` parameter or
+/// automatically derived from coordinate system of `source` vector.
 ///
-/// @todo Add documentation
+/// The equations for conversion are listed below. \f$a\f$ is the semimajor axis,
+/// \f$b\f$ is the semiminor axis.
+/// If the target datum is spherical, a simple spherical coordinates conversion is used:
+/// \f{eqnarray*}{
+///		longitude &=& arctg(\frac{y}{x}) = arctg2(y,x) \\
+///		latitude &=& arcsin(\frac{z}{r}) \\
+///		elevation &=& \sqrt{x^2 + y^2 + z^2} - a
+/// \f}
+///
+/// If datum is defined with a reference ellipsoid, newtons iteration method must be used to
+/// solve Bowring's irrational geodetic-latitude equation:
+/// \f{eqnarray*}{
+///		\kappa - 1 - \frac{e^2 a \kappa}{\sqrt{p^2 + (1 - e^2)z^2 \kappa^2}} = 0
+/// \f}
+/// where:
+/// \f{eqnarray*}{
+///		\kappa &=& \frac{p}{z} tan(latitude) \\
+///		\kappa_0 &=& (1 - e^2)^{-1} \\
+///		p &=& \sqrt{x^2 + y^2} \\
+///		e^2 &=& 1 - \frac{b^2}{a^2}
+/// \f}
+///
+/// The following iteration is used until \f$\kappa\f$ converges with EVDS_EPSf precision,
+/// but no more than 8 iterations (but typically converges in 2-3 iterations):
+/// \f{eqnarray*}{
+///		c_i &=& \frac{(p^2 + (1 - e^2) z^2 \kappa_i^2)^{3/2}}{a e^2} \\
+///		\kappa_{i+1} &=& 1 + \frac{p^2 + (1 - e^2) z^2 \kappa_i^3}{c_i - p^2}
+/// \f}
+///
+/// So the final expression for latitude becomes:
+/// \f{eqnarray*}{
+///		tan(latitude) &=&
+///			\begin{cases}
+///			\frac{\kappa z}{p}, & p \neq 0 \\
+///			\infty, & p = 0, \ \kappa z \gt 0 \\
+///			-\infty, & p = 0, \ \kappa z \le 0 \\
+///			\end{cases} \\
+///		latitude &=& atan(tan(latitude))
+/// \f}
+///
+/// The elevation can be determined from ellipsoid geometry, and longitude determined as in spheric datum case:
+/// \f{eqnarray*}{
+///		R_N &=& \frac{a}{\sqrt{1 - e^2 sin^2(latitude)}} \\
+///		elevation &=& 
+///			\begin{cases}
+///			\frac{z}{sin(latitude)} - R_N (1 - e^2), & sin(latitude) \neq 0 \\
+///			p - R_N, & sin(latitude) = 0 \\
+///			\end{cases} \\
+///		longitude &=& arctg(\frac{y}{x}) = arctg2(y,x)
+/// \f}
+///
+/// @note The function returns longitude in range of \f$[-180.0, 180.0)\f$, excluding longitude 180.0.
+///       If longitude calculations result in 180.0 degrees, it will be returned as -180.0 degrees.
+///
+/// @returns Geodetic position based on position vector.
+/// @param[out] target Geodetic coordinate in target datum.
+/// @param[in] source Position vector.
+/// @param[in] target_datum Datum that must be used for the target coordinate.
 ////////////////////////////////////////////////////////////////////////////////
 void EVDS_Geodetic_FromVector(EVDS_GEODETIC_COORDIANTE* target, EVDS_VECTOR* source, EVDS_GEODETIC_DATUM* target_datum) {
 	EVDS_REAL x,y,z; //Components of the result
 	if (!target) return;
 	if (!source) return;
 
+	//Input checks
+	EVDS_ASSERT(source->coordinate_system);
+	EVDS_ASSERT(source->derivative_level == EVDS_VECTOR_POSITION);
+
 	//Determine datum based on vector coordinate system object if needed
 	if (!target_datum) {
 		EVDS_Geodetic_DatumFromObject(&target->datum,source->coordinate_system);
 	} else {
 		memcpy(&target->datum,target_datum,sizeof(EVDS_GEODETIC_DATUM));
-
 	}
 
 	//Get vector components relative to datum body
@@ -176,9 +278,10 @@ void EVDS_Geodetic_FromVector(EVDS_GEODETIC_COORDIANTE* target, EVDS_VECTOR* sou
 		target->longitude	= EVDS_DEG(atan2(y,x));
 		target->latitude	= EVDS_DEG(asin(z/r));
 		target->elevation	= r - target->datum.semimajor_axis;
+		if (target->longitude == 180.0) target->longitude = -180.0;
 	} else { //Non-spheric datum
 		EVDS_REAL eccentricity_squared,normal;
-		EVDS_REAL p,q,k,k_prev,k0,ci;
+		EVDS_REAL p,k,k_prev,k0,ci;
 		EVDS_REAL lat,tan_lat,sin_lat;
 		int iterations;
 
@@ -194,26 +297,27 @@ void EVDS_Geodetic_FromVector(EVDS_GEODETIC_COORDIANTE* target, EVDS_VECTOR* sou
 		if (target->longitude == 180.0) target->longitude = -180.0;
 
 		//Use newtons method to calculate latitude
-		k = k0;
-		k_prev = 1/EVDS_EPS;
+		k = k0; //k0 as initial guess gives convergion within 2-3 iterations
+		k_prev = EVDS_INFINITY; //No good previous value
 		iterations = 0;
 
 		while ((fabs(k-k_prev) > EVDS_EPS) && (iterations < 8)) {
-			q = p*p + (1 - eccentricity_squared)*z*z*k*k*k;
-			ci = pow(q,3.0/2.0)/(target->datum.semimajor_axis*eccentricity_squared);
-
 			k_prev = k;
-			k = 1 + q / (ci - p*p);
+
+			ci = pow(p*p + (1 - eccentricity_squared)*z*z*k*k,3.0/2.0)/
+				(target->datum.semimajor_axis*eccentricity_squared);
+			k = 1 + (p*p + (1 - eccentricity_squared)*z*z*k*k*k) / (ci - p*p);
 			iterations++;
 		}
 
+		//Determine tangent of latitude from k
 		if (p != 0.0) {
 			tan_lat = k*z/p;
-		} else {
-			if (k*z > 0) {
-				tan_lat = 1e100;
-			} else {
-				tan_lat = -1e100;
+		} else { //One of the poles
+			if (k*z > 0) { //North pole
+				tan_lat = EVDS_INFINITY;
+			} else { //South pole
+				tan_lat = -EVDS_INFINITY;
 			}
 		}
 		lat = atan(tan_lat);
@@ -224,7 +328,7 @@ void EVDS_Geodetic_FromVector(EVDS_GEODETIC_COORDIANTE* target, EVDS_VECTOR* sou
 		normal = target->datum.semimajor_axis / sqrt(1 - eccentricity_squared * sin_lat * sin_lat);
 		if (sin_lat != 0.0) {
 			target->elevation = z/sin_lat - normal*(1 - eccentricity_squared);
-		} else {
+		} else { //Special case when located on equator
 			target->elevation = p - normal;
 		}
 	}

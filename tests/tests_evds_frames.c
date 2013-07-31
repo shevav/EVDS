@@ -227,6 +227,7 @@ void Test_EVDS_FRAMES() {
 
 
 	START_TEST("Geodetic coordinates (oblate planet, numerical stability)") {
+		EVDS_REAL lat,lon;
 		EVDS_GEODETIC_COORDIANTE geocoord = { 0 };
 		EVDS_GEODETIC_COORDIANTE target;
 		EVDS_OBJECT* earth;
@@ -351,5 +352,35 @@ void Test_EVDS_FRAMES() {
 		REAL_EQUAL_TO_EPS(target.latitude,-90.0,EVDS_EPSf);
 		REAL_EQUAL_TO_EPS(target.longitude,-180.0,EVDS_EPSf);
 		REAL_EQUAL_TO_EPS(target.elevation,geocoord.elevation,EVDS_EPSf);
+
+
+		vector.x = 0.0;
+		vector.y = 0.0;
+		vector.z = 6356752.0 + 1000.0;
+		EVDS_Geodetic_FromVector(&target,&vector,0);
+		REAL_EQUAL_TO_EPS(target.latitude,90.0,EVDS_EPSf);
+		REAL_EQUAL_TO_EPS(target.longitude,0.0,EVDS_EPSf);
+		REAL_EQUAL_TO_EPS(target.elevation,geocoord.elevation,EVDS_EPSf);
+
+		vector.x = 0.0;
+		vector.y = 0.0;
+		vector.z = - 6356752.0 - 1000.0;
+		EVDS_Geodetic_FromVector(&target,&vector,0);
+		REAL_EQUAL_TO_EPS(target.latitude,-90.0,EVDS_EPSf);
+		REAL_EQUAL_TO_EPS(target.longitude,0.0,EVDS_EPSf);
+		REAL_EQUAL_TO_EPS(target.elevation,geocoord.elevation,EVDS_EPSf);
+
+
+		for (lat = -90.0; lat <= 90.0; lat += 10.0) {
+			for (lon = -180.0; lon < 180.0; lon += 10.0) {
+				geocoord.latitude = lat;
+				geocoord.longitude = lon;
+				EVDS_Geodetic_ToVector(&vector,&geocoord);
+				EVDS_Geodetic_FromVector(&target,&vector,0);
+				REAL_EQUAL_TO_EPS(target.latitude,geocoord.latitude,EVDS_EPSf);
+				REAL_EQUAL_TO_EPS(target.longitude,geocoord.longitude,EVDS_EPSf);
+				REAL_EQUAL_TO_EPS(target.elevation,geocoord.elevation,EVDS_EPSf);
+			}
+		}
 	} END_TEST
 }

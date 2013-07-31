@@ -73,6 +73,10 @@ typedef unsigned int EVDS_VARIABLE_TYPE;
 #define EVDS_EPS 1e-15
 /// Smallest meaningful number represented by a single-precision float
 #define EVDS_EPSf 1e-6f
+/// Largest meaningful number represented by EVDS_REAL
+#define EVDS_INFINITY (1e308)
+/// Largest meaningful number represented by a single-precision float
+#define EVDS_INFINITYf (1e37)
 
 /// PI constant
 #define EVDS_PI 3.14159265358979323846264338327950288419716939937510
@@ -271,9 +275,14 @@ typedef struct EVDS_STATE_VECTOR_DERIVATIVE_TAG {
 /// @brief Geodetic datum.
 ///
 /// Represents a geodetic datum for use with the geographic coordinate conversion
-/// functions EVDS_Geodetic_FromVector() and EVDS_Geodetic_ToVector().
+/// functions. EVDS currently only supports planetwide geodetic datums, represented
+/// by an ellipsoid centered in the planets reference point (center of mass).
 ///
-/// This data structure will be extended in the future if any additional geodetic
+/// The ellipsoid is defined by semimajor, semiminor axes and references the planetary
+/// body object. The datum can be derived from parameters of the celestial body, see
+/// EVDS_Geodetic_DatumFromObject().
+///
+/// This data structure may be extended in the future if any additional geodetic
 /// datum features are required.
 ////////////////////////////////////////////////////////////////////////////////
 typedef struct EVDS_GEODETIC_DATUM_TAG {
@@ -285,16 +294,13 @@ typedef struct EVDS_GEODETIC_DATUM_TAG {
 
 ////////////////////////////////////////////////////////////////////////////////
 /// @ingroup EVDS_MATH
-/// @brief Geodetic (geographic) coordinate.
+/// @brief Geodetic coordinate (latitude, longitude, elevation).
 ///
-/// This data structure represents geodetic coordinates around a body. The coordinates
-/// are specified around ellipsoid defined by parameters specified for the planet or
-/// body around which they are calculated, or by datum which can be explicitly passed
-/// into coordinate conversion functions.
+/// This data structure represents geodetic coordinates around a body. The coordinates are
+/// specified using a datum specified explicitly or derived from planetary body parameters.
 ///
-/// @note Datum must be specified for the coordinates used with the EVDS_Geodetic_ToVector()
-///       function call! Datum must be a valid pointer or null, which which case datum will be calculated
-///       based on geometry of the celestial body. FIXME
+/// @note Datum must be correctly specified for EVDS_Geodetic_ToVector() function call. See
+///       EVDS_Geodetic_Set() for defining geodetic coordinates and automatically calculating datum.
 ///
 /// For non-celestial bodies the geodetic coordinates will correspond to the following
 /// coordinates with origin around objects reference point:

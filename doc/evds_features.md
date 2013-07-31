@@ -49,5 +49,5 @@ At the moment this page lists both existing features and *features under develop
  - Vessels/objects can be referenced across files (imported from external file)
  - Built-in tesselator to generate meshes for procedural models (for rendering,
    finite element models, etc)
- - @ref EVDS_Objects "List of common objects available in EVDS".
- - @ref EVDS_Addons "List of optional official addons for EVDS".
+ - @ref EVDS_Object_Types "List of common objects available in EVDS".
+ - @ref EVDS_Addon_List "List of optional official addons for EVDS".
