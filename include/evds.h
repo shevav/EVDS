@@ -74,9 +74,9 @@ typedef unsigned int EVDS_VARIABLE_TYPE;
 /// Smallest meaningful number represented by a single-precision float
 #define EVDS_EPSf 1e-6f
 /// Largest meaningful number represented by EVDS_REAL
-#define EVDS_INFINITY (1e308)
+#define EVDS_INFINITY 1e308
 /// Largest meaningful number represented by a single-precision float
-#define EVDS_INFINITYf (1e37)
+#define EVDS_INFINITYf 1e37f
 
 /// PI constant
 #define EVDS_PI 3.14159265358979323846264338327950288419716939937510

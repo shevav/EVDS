@@ -137,9 +137,9 @@ void EVDS_Geodetic_Set(EVDS_GEODETIC_COORDIANTE* coordinate, EVDS_OBJECT* object
 ///
 /// The cartesian coordinates are calculated as:
 /// \f{eqnarray*}{
-///		x &=& (R_n + elevation) \ cos(longitude) \ cos(latitude) \\
-///		y &=& (R_n + elevation) \ sin(longitude) \ cos(latitude) \\
-///		z &=& (R_n (1 - e^2) + elevation) \ sin(latitude)
+///		x &=& (R_N + elevation) \ cos(longitude) \ cos(latitude) \\
+///		y &=& (R_N + elevation) \ sin(longitude) \ cos(latitude) \\
+///		z &=& (R_N (1 - e^2) + elevation) \ sin(latitude)
 /// \f}
 ///
 /// @note The geodetic coordinate must have proper datum defined. See EVDS_Geodetic_Set().
