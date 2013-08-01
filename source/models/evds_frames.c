@@ -345,11 +345,32 @@ void EVDS_Geodetic_FromVector(EVDS_GEODETIC_COORDIANTE* target, EVDS_VECTOR* sou
 ////////////////////////////////////////////////////////////////////////////////
 /// @brief Get state vector of the LVLH frame.
 ///
-/// @todo Add documentation
+/// Returns state vector that can be used for an object to represent LVLH coordinate frame.
+/// The state vector is returned in the coordinates of the object referenced by
+/// EVDS_GEODETIC_COORDINATE datum.
+///
+/// @note The coordinate frame will only be created as non-inertial if the geodetic coordinate
+///       datum references a rotating planet/rotating coordinate frame!
+///
+/// Example of use:
+/// ~~~{.c}
+///		EVDS_STATE_VECTOR vector;
+///		EVDS_GEODETIC_COORDINATE geodetic_coordinate;
+///
+///		//Create LVLH coordinate frame
+///		EVDS_Object_Create(system,earth,&frame);
+///
+///		//Place LVLH coordinate frame at some point on the planet
+///		EVDS_Geodetic_Set(&geodetic_coordinate,earth,50.45,30.52,0);
+///		EVDS_LVLH_GetStateVector(&vector,&geodetic_coordinate);
+///		EVDS_Object_SetStateVector(frame,&vector);
+/// ~~~
+///
+/// @returns State vector for a LVLH coordinate frame.
+/// @param[out] target State vector corresponding to LVLH coordinate frame.
+/// @param[in] coordinate Geodetic coordinate of the LVLH frame origin.
 ////////////////////////////////////////////////////////////////////////////////
 void EVDS_LVLH_GetStateVector(EVDS_STATE_VECTOR* target, EVDS_GEODETIC_COORDIANTE* coordinate) {
-	EVDS_VECTOR vector;
-
 	//Initialize state vector
 	EVDS_StateVector_Initialize(target, coordinate->datum.object);
 
@@ -364,10 +385,36 @@ void EVDS_LVLH_GetStateVector(EVDS_STATE_VECTOR* target, EVDS_GEODETIC_COORDIANT
 ////////////////////////////////////////////////////////////////////////////////
 /// @brief Convert quaternion to objects LVLH frame.
 ///
-/// Returns quaternion in objects coordinate frame (although the quaternion represents
-/// attitude in LVLH coordinate system).
+/// Returns quaternion in coordinate frame of the object referenced by EVDS_GEODETIC_COORDINATE
+/// datum, rotated to represent the attitude in LVLH coordinate frame.
 ///
-/// @todo Add documentation
+/// @note Although the quaternion represents attitude in LVLH coordinate system, it will be returned (numerically)
+///       in coordinate system of the object referenced by datum (e.g. planet-surface relative coordinates).
+///
+/// The numerical values of the returned quaternion will correspond to attitude in the LVLH coordinate frame.
+/// Here's an example of converting aircraft attitude into LVLH euler angles (horizon-relative pitch, yaw, roll):
+/// ~~~{.c}
+///		EVDS_OBJECT* aircraft;
+///		EVDS_STATE_VECTOR vector;
+///		EVDS_QUATERNION attitude; //LVLH attitude
+///		EVDS_GEODETIC_COORDINATE position; //Geodetic position
+///		EVDS_REAL pitch,yaw,roll; //Horizon-relative Euler angles
+///
+///		EVDS_Object_GetStateVector(aircraft,&vector);
+///		EVDS_Geodetic_FromVector(&position,&vector.position,0); //Automatic datum
+///		EVDS_LVLH_QuaternionToLVLH(&attitude,&vector.orientation,position); //Determine LVLH attitude
+///
+///		//Convert quaternion into angles numerically (without involving conversion)
+///		EVDS_Quaternion_ToEuler(&attitude,attitude.coordinate_system,&roll,&pitch,&yaw);
+///		roll = EVDS_DEG(roll);
+///		pitch = EVDS_DEG(pitch);
+///		yaw = EVDS_DEG(yaw);
+/// ~~~
+///
+/// @returns Quaternion in LVLH frame, in coordinates of object referenced by datum.
+/// @param[out] target_lvlh Quaternion in LVLH coordinate frame.
+/// @param[in] source Source quaternion.
+/// @param[in] coordinate Geodetic coordinate of the LVLH frame origin.
 ////////////////////////////////////////////////////////////////////////////////
 void EVDS_LVLH_QuaternionToLVLH(EVDS_QUATERNION* target_lvlh, EVDS_QUATERNION* source, EVDS_GEODETIC_COORDIANTE* coordinate) {
 	EVDS_QUATERNION q_lon,q_lat; //Rotations to go from North pole to given latitude/longitude
@@ -384,9 +431,32 @@ void EVDS_LVLH_QuaternionToLVLH(EVDS_QUATERNION* target_lvlh, EVDS_QUATERNION* s
 ////////////////////////////////////////////////////////////////////////////////
 /// @brief Convert quaternion from objects LVLH frame.
 ///
-/// Returns quaternion in objects coordinate frame.
+/// Returns quaternion in coordinate frame of the object referenced by EVDS_GEODETIC_COORDINATE
+/// datum, rotated from LVLH coordinate frame.
 ///
-/// @todo Add documentation
+/// @note The source quaternion in LVLH coordinate frame must be specified in coordinate frame of the object
+///       referenced by the geodetic coordinates datum.
+///
+/// Here's an example of initializing aircraft altitude based on horizon-relative Euler angles:
+/// ~~~{.c}
+///		EVDS_OBJECT* aircraft;
+///		EVDS_STATE_VECTOR vector;
+///		EVDS_QUATERNION attitude; //LVLH attitude
+///		EVDS_GEODETIC_COORDINATE position; //Geodetic position
+///
+///		EVDS_Object_GetStateVector(aircraft,&vector);
+///		EVDS_Geodetic_FromVector(&position,&vector.position,0); //Automatic datum
+///
+///		//Create quaternion numerically equivalent to required attitude, in planets coordinate system
+///		EVDS_Quaternion_FromEuler(&attitude,position.datum.object,EVDS_DEG(roll),EVDS_DEG(pitch),EVDS_DEG(yaw));
+///		EVDS_LVLH_QuaternionFromLVLH(&attitude,&attitude,position);
+///		EVDS_Object_SetOrientationQuaternion(aircraft,&attitude);
+/// ~~~
+///
+/// @returns Quaternion in LVLH frame, in coordinates of object referenced by datum.
+/// @param[out] target Target quaternion.
+/// @param[in] source_lvlh Quaternion in LVLH coordinate frame.
+/// @param[in] coordinate Geodetic coordinate of the LVLH frame origin.
 ////////////////////////////////////////////////////////////////////////////////
 void EVDS_LVLH_QuaternionFromLVLH(EVDS_QUATERNION* target, EVDS_QUATERNION* source_lvlh, EVDS_GEODETIC_COORDIANTE* coordinate) {
 	EVDS_QUATERNION q_lon,q_lat; //Rotations to go from North pole to given latitude/longitude
