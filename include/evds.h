@@ -321,12 +321,12 @@ typedef struct EVDS_GEODETIC_DATUM_TAG {
 ///       Longitude of \f$-180.0 \ degrees\f$ is used instead.
 ///
 ////////////////////////////////////////////////////////////////////////////////
-typedef struct EVDS_GEODETIC_COORDIANTE_TAG {
+typedef struct EVDS_GEODETIC_COORDINATE_TAG {
 	EVDS_REAL latitude;				///< Geodetic latitude (relative elevation)
 	EVDS_REAL longitude;			///< Geodetic longitude (relative bearing)
 	EVDS_REAL elevation;			///< Elevation (relative distance)
 	EVDS_GEODETIC_DATUM datum;		///< Datum in which coordinate is specified
-} EVDS_GEODETIC_COORDIANTE;
+} EVDS_GEODETIC_COORDINATE;
 
 
 
@@ -1442,18 +1442,18 @@ EVDS_API int EVDS_Environment_GetRadiationParameters(EVDS_SYSTEM* system, EVDS_V
 // Calculates datum based on object
 EVDS_API void EVDS_Geodetic_DatumFromObject(EVDS_GEODETIC_DATUM* datum, EVDS_OBJECT* object);
 // Set geodetic coordinate around object
-EVDS_API void EVDS_Geodetic_Set(EVDS_GEODETIC_COORDIANTE* coordinate, EVDS_OBJECT* object,
+EVDS_API void EVDS_Geodetic_Set(EVDS_GEODETIC_COORDINATE* coordinate, EVDS_OBJECT* object,
 								EVDS_REAL latitude, EVDS_REAL longitude, EVDS_REAL elevation);
 // Converts geodetic coordinates around object to a position vector
-EVDS_API void EVDS_Geodetic_ToVector(EVDS_VECTOR* target, EVDS_GEODETIC_COORDIANTE* source);
+EVDS_API void EVDS_Geodetic_ToVector(EVDS_VECTOR* target, EVDS_GEODETIC_COORDINATE* source);
 // Convert position vector to geodetic coordinates around object
-EVDS_API void EVDS_Geodetic_FromVector(EVDS_GEODETIC_COORDIANTE* target, EVDS_VECTOR* source, EVDS_GEODETIC_DATUM* target_datum);
+EVDS_API void EVDS_Geodetic_FromVector(EVDS_GEODETIC_COORDINATE* target, EVDS_VECTOR* source, EVDS_GEODETIC_DATUM* target_datum);
 // Return state vector of the LVLH frame
-EVDS_API void EVDS_LVLH_GetStateVector(EVDS_STATE_VECTOR* target, EVDS_GEODETIC_COORDIANTE* coordinate);
+EVDS_API void EVDS_LVLH_GetStateVector(EVDS_STATE_VECTOR* target, EVDS_GEODETIC_COORDINATE* coordinate);
 // Convert quaternion to objects LVLH frame
-EVDS_API void EVDS_LVLH_QuaternionToLVLH(EVDS_QUATERNION* target_lvlh, EVDS_QUATERNION* source, EVDS_GEODETIC_COORDIANTE* coordinate);
+EVDS_API void EVDS_LVLH_QuaternionToLVLH(EVDS_QUATERNION* target_lvlh, EVDS_QUATERNION* source, EVDS_GEODETIC_COORDINATE* coordinate);
 // Convert quaternion from objects LVLH frame
-EVDS_API void EVDS_LVLH_QuaternionFromLVLH(EVDS_QUATERNION* target, EVDS_QUATERNION* source_lvlh, EVDS_GEODETIC_COORDIANTE* coordinate);
+EVDS_API void EVDS_LVLH_QuaternionFromLVLH(EVDS_QUATERNION* target, EVDS_QUATERNION* source_lvlh, EVDS_GEODETIC_COORDINATE* coordinate);
 
 ////////////////////////////////////////////////////////////////////////////////
 /// @}

@@ -3,7 +3,7 @@
 void Test_EVDS_FRAMES() {
 	START_TEST("LVLH coordinates (general)") {
 		EVDS_VECTOR x,y,z;
-		EVDS_GEODETIC_COORDIANTE geocoord = { 0 };
+		EVDS_GEODETIC_COORDINATE geocoord = { 0 };
 		EVDS_OBJECT* earth;
 		EVDS_OBJECT* frame;
 
@@ -108,7 +108,7 @@ void Test_EVDS_FRAMES() {
 	START_TEST("LVLH coordinates (quaternion conversion equivalence)") {
 		EVDS_REAL lat,lon;
 		EVDS_QUATERNION src;
-		EVDS_GEODETIC_COORDIANTE geocoord = { 0 };
+		EVDS_GEODETIC_COORDINATE geocoord = { 0 };
 		EVDS_OBJECT* earth;
 		ERROR_CHECK(EVDS_Object_LoadFromString(root,
 "<EVDS version=\"31\">"
@@ -145,7 +145,7 @@ void Test_EVDS_FRAMES() {
 
 
 	START_TEST("Geodetic coordinates (misc)") {
-		EVDS_GEODETIC_COORDIANTE geocoord;
+		EVDS_GEODETIC_COORDINATE geocoord;
 		ERROR_CHECK(EVDS_Object_LoadFromString(root,
 "<EVDS version=\"31\">"
 "	<object name=\"Vessel\" type=\"vessel\" />"
@@ -177,8 +177,8 @@ void Test_EVDS_FRAMES() {
 
 
 	START_TEST("Geodetic coordinates (around vessel)") {
-		EVDS_GEODETIC_COORDIANTE geocoord = { 0 };
-		EVDS_GEODETIC_COORDIANTE target;
+		EVDS_GEODETIC_COORDINATE geocoord = { 0 };
+		EVDS_GEODETIC_COORDINATE target;
 
 		ERROR_CHECK(EVDS_Object_LoadFromString(root,
 "<EVDS version=\"31\">"
@@ -249,8 +249,8 @@ void Test_EVDS_FRAMES() {
 
 
 	START_TEST("Geodetic coordinates (spheric planet)") {
-		EVDS_GEODETIC_COORDIANTE geocoord = { 0 };
-		EVDS_GEODETIC_COORDIANTE target;
+		EVDS_GEODETIC_COORDINATE geocoord = { 0 };
+		EVDS_GEODETIC_COORDINATE target;
 		EVDS_OBJECT* earth;
 
 		ERROR_CHECK(EVDS_Object_LoadFromString(root,
@@ -325,8 +325,8 @@ void Test_EVDS_FRAMES() {
 
 
 	START_TEST("Geodetic coordinates (oblate planet)") {
-		EVDS_GEODETIC_COORDIANTE geocoord = { 0 };
-		EVDS_GEODETIC_COORDIANTE target;
+		EVDS_GEODETIC_COORDINATE geocoord = { 0 };
+		EVDS_GEODETIC_COORDINATE target;
 		EVDS_OBJECT* earth;
 
 		ERROR_CHECK(EVDS_Object_LoadFromString(root,
@@ -403,8 +403,8 @@ void Test_EVDS_FRAMES() {
 
 	START_TEST("Geodetic coordinates (oblate planet, numerical stability)") {
 		EVDS_REAL lat,lon;
-		EVDS_GEODETIC_COORDIANTE geocoord = { 0 };
-		EVDS_GEODETIC_COORDIANTE target;
+		EVDS_GEODETIC_COORDINATE geocoord = { 0 };
+		EVDS_GEODETIC_COORDINATE target;
 		EVDS_OBJECT* earth;
 
 		ERROR_CHECK(EVDS_Object_LoadFromString(root,

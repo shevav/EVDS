@@ -112,7 +112,7 @@ void EVDS_Geodetic_DatumFromObject(EVDS_GEODETIC_DATUM* datum, EVDS_OBJECT* obje
 /// @param[in] longitude Geodetic longitude
 /// @param[in] elevation Geodetic elevation (height)
 ////////////////////////////////////////////////////////////////////////////////
-void EVDS_Geodetic_Set(EVDS_GEODETIC_COORDIANTE* coordinate, EVDS_OBJECT* object,
+void EVDS_Geodetic_Set(EVDS_GEODETIC_COORDINATE* coordinate, EVDS_OBJECT* object,
 					   EVDS_REAL latitude, EVDS_REAL longitude, EVDS_REAL elevation) {
 	if (longitude >= 180.0) {
 		longitude = -180.0 + fmod(longitude - 180.0,360.0);
@@ -148,7 +148,7 @@ void EVDS_Geodetic_Set(EVDS_GEODETIC_COORDIANTE* coordinate, EVDS_OBJECT* object
 /// @param[out] target Position vector in coordinate system of body, around which geodetic coordinates are specified.
 /// @param[in] source Geodetic coordinate with correctly defined datum.
 ////////////////////////////////////////////////////////////////////////////////
-void EVDS_Geodetic_ToVector(EVDS_VECTOR* target, EVDS_GEODETIC_COORDIANTE* source) {
+void EVDS_Geodetic_ToVector(EVDS_VECTOR* target, EVDS_GEODETIC_COORDINATE* source) {
 	EVDS_REAL x,y,z; //Components of the result
 	EVDS_REAL eccentricity_squared,normal; //Ellipsoid parameters
 	EVDS_REAL sin_lat,cos_lat,sin_lon,cos_lon; //Sines/cosines
@@ -257,7 +257,7 @@ void EVDS_Geodetic_ToVector(EVDS_VECTOR* target, EVDS_GEODETIC_COORDIANTE* sourc
 /// @param[in] source Position vector.
 /// @param[in] target_datum Datum that must be used for the target coordinate.
 ////////////////////////////////////////////////////////////////////////////////
-void EVDS_Geodetic_FromVector(EVDS_GEODETIC_COORDIANTE* target, EVDS_VECTOR* source, EVDS_GEODETIC_DATUM* target_datum) {
+void EVDS_Geodetic_FromVector(EVDS_GEODETIC_COORDINATE* target, EVDS_VECTOR* source, EVDS_GEODETIC_DATUM* target_datum) {
 	EVDS_REAL x,y,z; //Components of the result
 	if (!target) return;
 	if (!source) return;
@@ -370,7 +370,7 @@ void EVDS_Geodetic_FromVector(EVDS_GEODETIC_COORDIANTE* target, EVDS_VECTOR* sou
 /// @param[out] target State vector corresponding to LVLH coordinate frame.
 /// @param[in] coordinate Geodetic coordinate of the LVLH frame origin.
 ////////////////////////////////////////////////////////////////////////////////
-void EVDS_LVLH_GetStateVector(EVDS_STATE_VECTOR* target, EVDS_GEODETIC_COORDIANTE* coordinate) {
+void EVDS_LVLH_GetStateVector(EVDS_STATE_VECTOR* target, EVDS_GEODETIC_COORDINATE* coordinate) {
 	//Initialize state vector
 	EVDS_StateVector_Initialize(target, coordinate->datum.object);
 
@@ -416,7 +416,7 @@ void EVDS_LVLH_GetStateVector(EVDS_STATE_VECTOR* target, EVDS_GEODETIC_COORDIANT
 /// @param[in] source Source quaternion.
 /// @param[in] coordinate Geodetic coordinate of the LVLH frame origin.
 ////////////////////////////////////////////////////////////////////////////////
-void EVDS_LVLH_QuaternionToLVLH(EVDS_QUATERNION* target_lvlh, EVDS_QUATERNION* source, EVDS_GEODETIC_COORDIANTE* coordinate) {
+void EVDS_LVLH_QuaternionToLVLH(EVDS_QUATERNION* target_lvlh, EVDS_QUATERNION* source, EVDS_GEODETIC_COORDINATE* coordinate) {
 	EVDS_QUATERNION q_lon,q_lat; //Rotations to go from North pole to given latitude/longitude
 	EVDS_Quaternion_FromEuler(&q_lon,coordinate->datum.object,0,0,EVDS_RAD(coordinate->longitude));
 	EVDS_Quaternion_FromEuler(&q_lat,coordinate->datum.object,0,EVDS_RAD(90-coordinate->latitude),0);
@@ -458,7 +458,7 @@ void EVDS_LVLH_QuaternionToLVLH(EVDS_QUATERNION* target_lvlh, EVDS_QUATERNION* s
 /// @param[in] source_lvlh Quaternion in LVLH coordinate frame.
 /// @param[in] coordinate Geodetic coordinate of the LVLH frame origin.
 ////////////////////////////////////////////////////////////////////////////////
-void EVDS_LVLH_QuaternionFromLVLH(EVDS_QUATERNION* target, EVDS_QUATERNION* source_lvlh, EVDS_GEODETIC_COORDIANTE* coordinate) {
+void EVDS_LVLH_QuaternionFromLVLH(EVDS_QUATERNION* target, EVDS_QUATERNION* source_lvlh, EVDS_GEODETIC_COORDINATE* coordinate) {
 	EVDS_QUATERNION q_lon,q_lat; //Rotations to go from North pole to given latitude/longitude
 	EVDS_Quaternion_FromEuler(&q_lon,coordinate->datum.object,0,0,EVDS_RAD(coordinate->longitude));
 	EVDS_Quaternion_FromEuler(&q_lat,coordinate->datum.object,0,EVDS_RAD(90-coordinate->latitude),0);
