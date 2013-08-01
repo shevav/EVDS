@@ -1448,12 +1448,12 @@ EVDS_API void EVDS_Geodetic_Set(EVDS_GEODETIC_COORDIANTE* coordinate, EVDS_OBJEC
 EVDS_API void EVDS_Geodetic_ToVector(EVDS_VECTOR* target, EVDS_GEODETIC_COORDIANTE* source);
 // Convert position vector to geodetic coordinates around object
 EVDS_API void EVDS_Geodetic_FromVector(EVDS_GEODETIC_COORDIANTE* target, EVDS_VECTOR* source, EVDS_GEODETIC_DATUM* target_datum);
+// Return state vector of the LVLH frame
+EVDS_API void EVDS_LVLH_GetStateVector(EVDS_STATE_VECTOR* target, EVDS_GEODETIC_COORDIANTE* coordinate);
 // Convert quaternion to objects LVLH frame
-EVDS_API void EVDS_LVLH_QuaternionToLVLH(EVDS_OBJECT* object, EVDS_QUATERNION* target_lvlh, EVDS_QUATERNION* source,
-										 EVDS_GEODETIC_COORDIANTE* coordinate);
+EVDS_API void EVDS_LVLH_QuaternionToLVLH(EVDS_QUATERNION* target_lvlh, EVDS_QUATERNION* source, EVDS_GEODETIC_COORDIANTE* coordinate);
 // Convert quaternion from objects LVLH frame
-EVDS_API void EVDS_LVLH_QuaternionFromLVLH(EVDS_OBJECT* object, EVDS_QUATERNION* target, EVDS_QUATERNION* source_lvlh,
-												  EVDS_GEODETIC_COORDIANTE* coordinate);
+EVDS_API void EVDS_LVLH_QuaternionFromLVLH(EVDS_QUATERNION* target, EVDS_QUATERNION* source_lvlh, EVDS_GEODETIC_COORDIANTE* coordinate);
 
 ////////////////////////////////////////////////////////////////////////////////
 /// @}

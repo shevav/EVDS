@@ -1,6 +1,149 @@
 #include "framework.h"
 
 void Test_EVDS_FRAMES() {
+	START_TEST("LVLH coordinates (general)") {
+		EVDS_VECTOR x,y,z;
+		EVDS_GEODETIC_COORDIANTE geocoord = { 0 };
+		EVDS_OBJECT* earth;
+		EVDS_OBJECT* frame;
+
+		ERROR_CHECK(EVDS_Object_LoadFromString(root,
+"<EVDS version=\"31\">"
+"	<object name=\"Earth\" type=\"planet\">"
+"		<parameter name=\"gravity.mu\">398600440000000</parameter>"
+"		<parameter name=\"geometry.radius\">6378145.0</parameter>" //Spherical planet
+"	</object>"
+"</EVDS>",&earth));
+		ERROR_CHECK(EVDS_Object_Initialize(earth,1));
+
+		//Create coordinate frame
+		ERROR_CHECK(EVDS_Object_Create(system,earth,&frame));
+
+		//Check normal vector
+		EVDS_Geodetic_Set(&geocoord,earth,0,0,1000);
+		EVDS_LVLH_GetStateVector(&frame->state,&geocoord);
+		EVDS_Vector_Set(&vector,EVDS_VECTOR_DIRECTION,frame,0,0,1);
+		EVDS_Vector_Convert(&vector,&vector,root);
+		VECTOR_EQUAL_TO(&vector,1,0,0);
+
+		EVDS_Geodetic_Set(&geocoord,earth,0,90,1000);
+		EVDS_LVLH_GetStateVector(&frame->state,&geocoord);
+		EVDS_Vector_Set(&vector,EVDS_VECTOR_DIRECTION,frame,0,0,1);
+		EVDS_Vector_Convert(&vector,&vector,root);
+		VECTOR_EQUAL_TO(&vector,0,1,0);
+
+		EVDS_Geodetic_Set(&geocoord,earth,0,-180,1000);
+		EVDS_LVLH_GetStateVector(&frame->state,&geocoord);
+		EVDS_Vector_Set(&vector,EVDS_VECTOR_DIRECTION,frame,0,0,1);
+		EVDS_Vector_Convert(&vector,&vector,root);
+		VECTOR_EQUAL_TO(&vector,-1,0,0);
+
+		EVDS_Geodetic_Set(&geocoord,earth,0,-90,1000);
+		EVDS_LVLH_GetStateVector(&frame->state,&geocoord);
+		EVDS_Vector_Set(&vector,EVDS_VECTOR_DIRECTION,frame,0,0,1);
+		EVDS_Vector_Convert(&vector,&vector,root);
+		VECTOR_EQUAL_TO(&vector,0,-1,0);
+
+
+		EVDS_Geodetic_Set(&geocoord,earth,90,0,1000);
+		EVDS_LVLH_GetStateVector(&frame->state,&geocoord);
+		EVDS_Vector_Set(&vector,EVDS_VECTOR_DIRECTION,frame,0,0,1);
+		EVDS_Vector_Convert(&vector,&vector,root);
+		VECTOR_EQUAL_TO(&vector,0,0,1);
+
+		EVDS_Geodetic_Set(&geocoord,earth,-90,0,1000);
+		EVDS_LVLH_GetStateVector(&frame->state,&geocoord);
+		EVDS_Vector_Set(&vector,EVDS_VECTOR_DIRECTION,frame,0,0,1);
+		EVDS_Vector_Convert(&vector,&vector,root);
+		VECTOR_EQUAL_TO(&vector,0,0,-1);
+
+
+		EVDS_Geodetic_Set(&geocoord,earth,90,90,1000);
+		EVDS_LVLH_GetStateVector(&frame->state,&geocoord);
+		EVDS_Vector_Set(&vector,EVDS_VECTOR_DIRECTION,frame,0,0,1);
+		EVDS_Vector_Convert(&vector,&vector,root);
+		VECTOR_EQUAL_TO(&vector,0,0,1);
+
+		EVDS_Geodetic_Set(&geocoord,earth,90,-180,1000);
+		EVDS_LVLH_GetStateVector(&frame->state,&geocoord);
+		EVDS_Vector_Set(&vector,EVDS_VECTOR_DIRECTION,frame,0,0,1);
+		EVDS_Vector_Convert(&vector,&vector,root);
+		VECTOR_EQUAL_TO(&vector,0,0,1);
+
+		EVDS_Geodetic_Set(&geocoord,earth,90,-90,1000);
+		EVDS_LVLH_GetStateVector(&frame->state,&geocoord);
+		EVDS_Vector_Set(&vector,EVDS_VECTOR_DIRECTION,frame,0,0,1);
+		EVDS_Vector_Convert(&vector,&vector,root);
+		VECTOR_EQUAL_TO(&vector,0,0,1);
+
+
+		//Check coordinate systems in few node points
+		EVDS_Geodetic_Set(&geocoord,earth,0,0,1000);
+		EVDS_LVLH_GetStateVector(&frame->state,&geocoord);
+		EVDS_Vector_Set(&x,EVDS_VECTOR_DIRECTION,frame,1,0,0);
+		EVDS_Vector_Set(&y,EVDS_VECTOR_DIRECTION,frame,0,1,0);
+		EVDS_Vector_Set(&z,EVDS_VECTOR_DIRECTION,frame,0,0,1);
+		EVDS_Vector_Convert(&x,&x,root);
+		EVDS_Vector_Convert(&y,&y,root);
+		EVDS_Vector_Convert(&z,&z,root);
+		VECTOR_EQUAL_TO(&x,0,0,-1);
+		VECTOR_EQUAL_TO(&y,0,1,0);
+		VECTOR_EQUAL_TO(&z,1,0,0);
+
+
+		EVDS_Geodetic_Set(&geocoord,earth,0,90,1000);
+		EVDS_LVLH_GetStateVector(&frame->state,&geocoord);
+		EVDS_Vector_Set(&x,EVDS_VECTOR_DIRECTION,frame,1,0,0);
+		EVDS_Vector_Set(&y,EVDS_VECTOR_DIRECTION,frame,0,1,0);
+		EVDS_Vector_Set(&z,EVDS_VECTOR_DIRECTION,frame,0,0,1);
+		EVDS_Vector_Convert(&x,&x,root);
+		EVDS_Vector_Convert(&y,&y,root);
+		EVDS_Vector_Convert(&z,&z,root);
+		VECTOR_EQUAL_TO(&x,0,0,-1);
+		VECTOR_EQUAL_TO(&y,-1,0,0);
+		VECTOR_EQUAL_TO(&z,0,1,0);
+	} END_TEST
+
+
+	START_TEST("LVLH coordinates (quaternion conversion equivalence)") {
+		EVDS_REAL lat,lon;
+		EVDS_QUATERNION src;
+		EVDS_GEODETIC_COORDIANTE geocoord = { 0 };
+		EVDS_OBJECT* earth;
+		ERROR_CHECK(EVDS_Object_LoadFromString(root,
+"<EVDS version=\"31\">"
+"	<object name=\"Earth\" type=\"planet\">"
+"		<parameter name=\"gravity.mu\">398600440000000</parameter>"
+"		<parameter name=\"geometry.radius\">6378145.0</parameter>" //Spherical planet
+"	</object>"
+"</EVDS>",&earth));
+		ERROR_CHECK(EVDS_Object_Initialize(earth,1));
+
+		//Set coordinate frame
+		for (lat = -90.0; lat <= 90.0; lat += 20.0) {
+			for (lon = -180.0; lon < 180.0; lon += 20.0) {
+				EVDS_Geodetic_Set(&geocoord,earth,lat,lon,1000);
+				EVDS_Quaternion_FromEuler(&src,earth,EVDS_RAD(123),EVDS_RAD(456),EVDS_RAD(789));
+				EVDS_LVLH_QuaternionFromLVLH(&quaternion,&src,&geocoord);
+				EVDS_LVLH_QuaternionToLVLH(&quaternion,&quaternion,&geocoord);
+				REAL_EQUAL_TO(src.q[0],quaternion.q[0]);
+				REAL_EQUAL_TO(src.q[1],quaternion.q[1]);
+				REAL_EQUAL_TO(src.q[2],quaternion.q[2]);
+				REAL_EQUAL_TO(src.q[3],quaternion.q[3]);
+
+				/*EVDS_LVLH_QuaternionToLVLH(&quaternion,&src,&geocoord);
+				EVDS_LVLH_QuaternionFromLVLH(&quaternion,&quaternion,&geocoord);
+				REAL_EQUAL_TO(src.q[0],quaternion.q[0]);
+				REAL_EQUAL_TO(src.q[1],quaternion.q[1]);
+				REAL_EQUAL_TO(src.q[2],quaternion.q[2]);
+				REAL_EQUAL_TO(src.q[3],quaternion.q[3]);*/
+			}
+		}
+	} END_TEST
+
+
+
+
 	START_TEST("Geodetic coordinates (around vessel)") {
 		EVDS_GEODETIC_COORDIANTE geocoord = { 0 };
 		EVDS_GEODETIC_COORDIANTE target;

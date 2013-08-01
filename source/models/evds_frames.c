@@ -103,6 +103,7 @@ void EVDS_Geodetic_DatumFromObject(EVDS_GEODETIC_DATUM* datum, EVDS_OBJECT* obje
 /// @brief Set geodetic coordinate around a given body.
 ///
 /// Datum will be automatically derived from the object around which coordinates are specified.
+/// If longitude value greater or equal to 180.0 is passed, it will be remapped into \f$[-180.0, 180.0)\f$ range.
 ///
 /// @returns Geodetic coordinate with defined datum
 /// @param[out] coordinate Geodetic coordinate
@@ -113,6 +114,8 @@ void EVDS_Geodetic_DatumFromObject(EVDS_GEODETIC_DATUM* datum, EVDS_OBJECT* obje
 ////////////////////////////////////////////////////////////////////////////////
 void EVDS_Geodetic_Set(EVDS_GEODETIC_COORDIANTE* coordinate, EVDS_OBJECT* object,
 					   EVDS_REAL latitude, EVDS_REAL longitude, EVDS_REAL elevation) {
+	if (longitude == 180.0) longitude = -180.0; //FIXME: proper remapping
+
 	coordinate->latitude = latitude;
 	coordinate->longitude = longitude;
 	coordinate->elevation = elevation;
@@ -338,6 +341,22 @@ void EVDS_Geodetic_FromVector(EVDS_GEODETIC_COORDIANTE* target, EVDS_VECTOR* sou
 
 
 ////////////////////////////////////////////////////////////////////////////////
+/// @brief Get state vector of the LVLH frame.
+///
+/// @todo Add documentation
+////////////////////////////////////////////////////////////////////////////////
+void EVDS_LVLH_GetStateVector(EVDS_STATE_VECTOR* target, EVDS_GEODETIC_COORDIANTE* coordinate) {
+	//Initialize state vector
+	EVDS_StateVector_Initialize(target, coordinate->datum.object);
+
+	//Rotate and translate coordinate frame
+	EVDS_LVLH_QuaternionFromLVLH(&target->orientation, &target->orientation, coordinate);
+}
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////
 /// @brief Convert quaternion to objects LVLH frame.
 ///
 /// Returns quaternion in objects coordinate frame (although the quaternion represents
@@ -345,14 +364,13 @@ void EVDS_Geodetic_FromVector(EVDS_GEODETIC_COORDIANTE* target, EVDS_VECTOR* sou
 ///
 /// @todo Add documentation
 ////////////////////////////////////////////////////////////////////////////////
-void EVDS_LVLH_QuaternionToLVLH(EVDS_OBJECT* object, EVDS_QUATERNION* target_lvlh, EVDS_QUATERNION* source,
-								EVDS_GEODETIC_COORDIANTE* coordinate) {
+void EVDS_LVLH_QuaternionToLVLH(EVDS_QUATERNION* target_lvlh, EVDS_QUATERNION* source, EVDS_GEODETIC_COORDIANTE* coordinate) {
 	EVDS_QUATERNION q_lon,q_lat; //Rotations to go from North pole to given latitude/longitude
-	EVDS_Quaternion_FromEuler(&q_lon,object,0,0,EVDS_RAD(coordinate->longitude));
-	EVDS_Quaternion_FromEuler(&q_lat,object,0,EVDS_RAD(90-coordinate->latitude),0);
+	EVDS_Quaternion_FromEuler(&q_lon,coordinate->datum.object,0,0,EVDS_RAD(coordinate->longitude));
+	EVDS_Quaternion_FromEuler(&q_lat,coordinate->datum.object,0,EVDS_RAD(90-coordinate->latitude),0);
 
 	//Rotate quaternion Q from inertial to LVLH coordinates
-	EVDS_Quaternion_Convert(target_lvlh,source,object);
+	EVDS_Quaternion_Convert(target_lvlh,source,coordinate->datum.object);
 	EVDS_Quaternion_MultiplyConjugatedQ(target_lvlh,&q_lon,target_lvlh);
 	EVDS_Quaternion_MultiplyConjugatedQ(target_lvlh,&q_lat,target_lvlh);
 }
@@ -365,14 +383,13 @@ void EVDS_LVLH_QuaternionToLVLH(EVDS_OBJECT* object, EVDS_QUATERNION* target_lvl
 ///
 /// @todo Add documentation
 ////////////////////////////////////////////////////////////////////////////////
-void EVDS_LVLH_QuaternionFromLVLH(EVDS_OBJECT* object, EVDS_QUATERNION* target, EVDS_QUATERNION* source_lvlh,
-								  EVDS_GEODETIC_COORDIANTE* coordinate) {
+void EVDS_LVLH_QuaternionFromLVLH(EVDS_QUATERNION* target, EVDS_QUATERNION* source_lvlh, EVDS_GEODETIC_COORDIANTE* coordinate) {
 	EVDS_QUATERNION q_lon,q_lat; //Rotations to go from North pole to given latitude/longitude
-	EVDS_Quaternion_FromEuler(&q_lon,object,0,0,EVDS_RAD(coordinate->longitude));
-	EVDS_Quaternion_FromEuler(&q_lat,object,0,EVDS_RAD(90-coordinate->latitude),0);
+	EVDS_Quaternion_FromEuler(&q_lon,coordinate->datum.object,0,0,EVDS_RAD(coordinate->longitude));
+	EVDS_Quaternion_FromEuler(&q_lat,coordinate->datum.object,0,EVDS_RAD(90-coordinate->latitude),0);
 
 	//Rotate quaternion Q from LVLH to inertial coordinates
-	EVDS_Quaternion_Convert(target,source_lvlh,object);
+	EVDS_Quaternion_Convert(target,source_lvlh,coordinate->datum.object);
 	EVDS_Quaternion_Multiply(target,&q_lat,target);
 	EVDS_Quaternion_Multiply(target,&q_lon,target);
 }
