@@ -114,7 +114,9 @@ void EVDS_Geodetic_DatumFromObject(EVDS_GEODETIC_DATUM* datum, EVDS_OBJECT* obje
 ////////////////////////////////////////////////////////////////////////////////
 void EVDS_Geodetic_Set(EVDS_GEODETIC_COORDIANTE* coordinate, EVDS_OBJECT* object,
 					   EVDS_REAL latitude, EVDS_REAL longitude, EVDS_REAL elevation) {
-	if (longitude == 180.0) longitude = -180.0; //FIXME: proper remapping
+	if (longitude >= 180.0) {
+		longitude = -180.0 + fmod(longitude - 180.0,360.0);
+	}
 
 	coordinate->latitude = latitude;
 	coordinate->longitude = longitude;

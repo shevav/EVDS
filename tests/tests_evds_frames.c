@@ -144,6 +144,38 @@ void Test_EVDS_FRAMES() {
 
 
 
+	START_TEST("Geodetic coordinates (misc)") {
+		EVDS_GEODETIC_COORDIANTE geocoord;
+		ERROR_CHECK(EVDS_Object_LoadFromString(root,
+"<EVDS version=\"31\">"
+"	<object name=\"Vessel\" type=\"vessel\" />"
+"</EVDS>",&object));
+		ERROR_CHECK(EVDS_Object_Initialize(object,1));
+
+		EVDS_Geodetic_Set(&geocoord,object,0,-180.0,0);
+		REAL_EQUAL_TO(geocoord.longitude,-180.0);
+
+		EVDS_Geodetic_Set(&geocoord,object,0,0.0,0);
+		REAL_EQUAL_TO(geocoord.longitude,0.0);
+
+		EVDS_Geodetic_Set(&geocoord,object,0,180.0,0);
+		REAL_EQUAL_TO(geocoord.longitude,-180.0);
+
+		EVDS_Geodetic_Set(&geocoord,object,0,180.0 + 90.0,0);
+		REAL_EQUAL_TO(geocoord.longitude,-90.0);
+
+		EVDS_Geodetic_Set(&geocoord,object,0,360.0,0);
+		REAL_EQUAL_TO(geocoord.longitude,0.0);
+
+		EVDS_Geodetic_Set(&geocoord,object,0,360.0*1000.0 + 90.0,0);
+		REAL_EQUAL_TO(geocoord.longitude,90.0);
+		EVDS_Geodetic_Set(&geocoord,object,0,360.0*1000.0 - 45.0,0);
+		REAL_EQUAL_TO(geocoord.longitude,-45.0);
+		EVDS_Geodetic_Set(&geocoord,object,0,360.0*100000.0 + 25.0,0);
+		REAL_EQUAL_TO(geocoord.longitude,25.0);
+	} END_TEST
+
+
 	START_TEST("Geodetic coordinates (around vessel)") {
 		EVDS_GEODETIC_COORDIANTE geocoord = { 0 };
 		EVDS_GEODETIC_COORDIANTE target;
