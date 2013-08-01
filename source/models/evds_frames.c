@@ -348,11 +348,14 @@ void EVDS_Geodetic_FromVector(EVDS_GEODETIC_COORDIANTE* target, EVDS_VECTOR* sou
 /// @todo Add documentation
 ////////////////////////////////////////////////////////////////////////////////
 void EVDS_LVLH_GetStateVector(EVDS_STATE_VECTOR* target, EVDS_GEODETIC_COORDIANTE* coordinate) {
+	EVDS_VECTOR vector;
+
 	//Initialize state vector
 	EVDS_StateVector_Initialize(target, coordinate->datum.object);
 
 	//Rotate and translate coordinate frame
 	EVDS_LVLH_QuaternionFromLVLH(&target->orientation, &target->orientation, coordinate);
+	EVDS_Geodetic_ToVector(&target->position, coordinate);
 }
 
 
