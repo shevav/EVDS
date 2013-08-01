@@ -246,7 +246,7 @@ typedef struct EVDS_STATE_VECTOR_TAG {
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// @ingroup EVDS_MATH
+/// @ingroup EVDS_FRAME
 /// @brief Derivative of the EVDS_STATE_VECTOR.
 ///
 /// Describes derivative at the time specified in the corresponding EVDS_STATE_VECTOR.
@@ -271,7 +271,7 @@ typedef struct EVDS_STATE_VECTOR_DERIVATIVE_TAG {
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// @ingroup EVDS_MATH
+/// @ingroup EVDS_FRAME
 /// @brief Geodetic datum.
 ///
 /// Represents a geodetic datum for use with the geographic coordinate conversion
