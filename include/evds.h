@@ -32,7 +32,7 @@ extern "C" {
 ////////////////////////////////////////////////////////////////////////////////
 // Library management
 ////////////////////////////////////////////////////////////////////////////////
-#define EVDS_VERSION			31
+#define EVDS_VERSION			32
 #ifndef EVDS_DYNAMIC
 #	define EVDS_API
 #else
@@ -1287,7 +1287,6 @@ EVDS_API int EVDS_Variable_GetUserdata(EVDS_VARIABLE* variable, void** p_userdat
 ///
 /// @{
 ////////////////////////////////////////////////////////////////////////////////
-
 /// Macro to initialize a vector variable (must be called before this variable is used in any operations)
 #define EVDS_Vector_Initialize(v) (	(v).x = 0, (v).y = 0, (v).z = 0, (v).derivative_level = 0, (v).coordinate_system = 0, (v).pcoordinate_system = 0, (v).vcoordinate_system = 0 )
 
@@ -1438,7 +1437,6 @@ EVDS_API int EVDS_Environment_GetRadiationParameters(EVDS_SYSTEM* system, EVDS_V
 ///
 /// @{
 ////////////////////////////////////////////////////////////////////////////////
-
 // Calculates datum based on object
 EVDS_API void EVDS_Geodetic_DatumFromObject(EVDS_GEODETIC_DATUM* datum, EVDS_OBJECT* object);
 // Set geodetic coordinate around object
@@ -1454,7 +1452,6 @@ EVDS_API void EVDS_LVLH_GetStateVector(EVDS_STATE_VECTOR* target, EVDS_GEODETIC_
 EVDS_API void EVDS_LVLH_QuaternionToLVLH(EVDS_QUATERNION* target_lvlh, EVDS_QUATERNION* source, EVDS_GEODETIC_COORDINATE* coordinate);
 // Convert quaternion from objects LVLH frame
 EVDS_API void EVDS_LVLH_QuaternionFromLVLH(EVDS_QUATERNION* target, EVDS_QUATERNION* source_lvlh, EVDS_GEODETIC_COORDINATE* coordinate);
-
 ////////////////////////////////////////////////////////////////////////////////
 /// @}
 ////////////////////////////////////////////////////////////////////////////////
