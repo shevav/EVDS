@@ -2,6 +2,8 @@
 
 void Test_EVDS_FRAMES() {
 	START_TEST("LVLH coordinates (general)") {
+		/// These tests make sure direction vectors in LVLH coordinates correspond properly
+		/// to direction vectors in inertial coordinates.
 		EVDS_VECTOR x,y,z;
 		EVDS_GEODETIC_COORDINATE geocoord = { 0 };
 		EVDS_OBJECT* earth;
@@ -16,10 +18,10 @@ void Test_EVDS_FRAMES() {
 "</EVDS>",&earth));
 		ERROR_CHECK(EVDS_Object_Initialize(earth,1));
 
-		//Create coordinate frame
+		/// Create coordinate frame
 		ERROR_CHECK(EVDS_Object_Create(system,earth,&frame));
 
-		//Check normal vector
+		/// Check normal vector
 		EVDS_Geodetic_Set(&geocoord,earth,0,0,1000);
 		EVDS_LVLH_GetStateVector(&frame->state,&geocoord);
 		EVDS_Vector_Set(&vector,EVDS_VECTOR_DIRECTION,frame,0,0,1);
@@ -77,7 +79,7 @@ void Test_EVDS_FRAMES() {
 		VECTOR_EQUAL_TO(&vector,0,0,1);
 
 
-		//Check coordinate systems in few node points
+		/// Check coordinate systems in few node points
 		EVDS_Geodetic_Set(&geocoord,earth,0,0,1000);
 		EVDS_LVLH_GetStateVector(&frame->state,&geocoord);
 		EVDS_Vector_Set(&x,EVDS_VECTOR_DIRECTION,frame,1,0,0);
@@ -106,6 +108,8 @@ void Test_EVDS_FRAMES() {
 
 
 	START_TEST("LVLH coordinates (quaternion conversion equivalence)") {
+		/// This test makes sure that forward and backward conversion between
+		/// LVLH quaternion and inertial quaternion is correct.
 		EVDS_REAL lat,lon;
 		EVDS_QUATERNION src;
 		EVDS_GEODETIC_COORDINATE geocoord = { 0 };
