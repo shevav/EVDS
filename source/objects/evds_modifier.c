@@ -31,15 +31,29 @@
 
 
 #ifndef DOXYGEN_INTERNAL_STRUCTS
+#define EVDS_MODIFIER_TYPE_LINEAR		0
+#define EVDS_MODIFIER_TYPE_CIRCULAR		1
+#define EVDS_MODIFIER_TYPE_PATTERN		2
 typedef struct EVDS_MODIFIER_VARIABLES_TAG {
 	int i,j,k;
 
+	int type;
 	EVDS_REAL vector1_count;
 	EVDS_REAL vector2_count;
 	EVDS_REAL vector3_count;
 	EVDS_REAL vector1[3];
 	EVDS_REAL vector2[3];
 	EVDS_REAL vector3[3];
+
+	EVDS_REAL circular_step;
+	EVDS_REAL circular_radial_step;
+	EVDS_REAL circular_normal_step;
+	EVDS_REAL circular_arc_length;
+	EVDS_REAL circular_radius;
+	EVDS_REAL circular_rotate;
+
+	EVDS_REAL u[3]; //Coordinate system of plane in which circular modifier is executed
+	EVDS_REAL v[3];
 } EVDS_MODIFIER_VARIABLES;
 #endif
 
@@ -62,10 +76,56 @@ int EVDS_InternalModifier_Copy(EVDS_MODIFIER_VARIABLES* vars, EVDS_OBJECT* conta
 	EVDS_Object_SetName(new_object,name);
 
 	//Calculate child copies offset
-	EVDS_Vector_Set(&offset,EVDS_VECTOR_POSITION,container,
-		vars->i*vars->vector1[0] + vars->j*vars->vector2[0] + vars->k*vars->vector3[0],
-		vars->i*vars->vector1[1] + vars->j*vars->vector2[1] + vars->k*vars->vector3[1],
-		vars->i*vars->vector1[2] + vars->j*vars->vector2[2] + vars->k*vars->vector3[2]);
+	switch (vars->type) {
+		default:
+		case EVDS_MODIFIER_TYPE_LINEAR: {
+				EVDS_Vector_Set(&offset,EVDS_VECTOR_POSITION,container,
+					vars->i*vars->vector1[0] + vars->j*vars->vector2[0] + vars->k*vars->vector3[0],
+					vars->i*vars->vector1[1] + vars->j*vars->vector2[1] + vars->k*vars->vector3[1],
+					vars->i*vars->vector1[2] + vars->j*vars->vector2[2] + vars->k*vars->vector3[2]);
+			} break;
+		case EVDS_MODIFIER_TYPE_CIRCULAR: {
+				EVDS_REAL x = (vars->circular_radius + vars->j*vars->circular_radial_step)*cos(EVDS_RAD(vars->i * vars->circular_step));
+				EVDS_REAL y = (vars->circular_radius + vars->j*vars->circular_radial_step)*sin(EVDS_RAD(vars->i * vars->circular_step));
+
+				EVDS_Vector_Set(&offset,EVDS_VECTOR_POSITION,container,
+					vars->vector2[0] * vars->circular_radius + vars->u[0]*x + vars->v[0]*y + vars->vector1[0]*vars->circular_normal_step*vars->k,
+					vars->vector2[1] * vars->circular_radius + vars->u[1]*x + vars->v[1]*y + vars->vector1[1]*vars->circular_normal_step*vars->k,
+					vars->vector2[2] * vars->circular_radius + vars->u[2]*x + vars->v[2]*y + vars->vector1[2]*vars->circular_normal_step*vars->k);
+
+				if (vars->circular_rotate > 0.5) {
+					EVDS_VECTOR axis;
+					EVDS_QUATERNION delta_quaternion;
+					EVDS_Vector_Set(&axis,EVDS_VECTOR_DIRECTION,vector.orientation.coordinate_system,
+						vars->vector1[0],vars->vector1[1],vars->vector1[2]);
+					EVDS_Quaternion_FromVectorAngle(&delta_quaternion,&axis,EVDS_RAD(vars->i*vars->circular_step));
+					{
+						EVDS_REAL x,y,z;
+						EVDS_Quaternion_ToEuler(&delta_quaternion,delta_quaternion.coordinate_system,&x,&y,&z);
+						x = EVDS_DEG(x);
+						y = EVDS_DEG(y);
+						z = EVDS_DEG(z);
+					}
+
+					//Apply rotation
+					EVDS_Quaternion_Multiply(&vector.orientation,&delta_quaternion,&vector.orientation);
+				}
+				/*
+				//Get point on circle
+				QVector3D offset = direction*circular_radius + u*x + v*y + normal*circular_normal_step*k;
+
+				//Generate transformation
+				if (circular_rotate > 0.5) {
+					transformation = 
+						GLC_Matrix4x4(offset.x(),offset.y(),offset.z()) *
+						GLC_Matrix4x4(GLC_Vector3d(normal.x(),normal.y(),normal.z()), EVDS_RAD(i * circular_step));
+				} else {
+					transformation = 
+						//GLC_Matrix4x4(GLC_Vector3d(normal.x(),normal.y(),normal.z()), EVDS_RAD(i * circular_step)) * 
+						GLC_Matrix4x4(offset.x(),offset.y(),offset.z());
+				}						*/
+			} break;
+	}
 
 	//Apply transformation
 	EVDS_Vector_Add(&vector.position,&vector.position,&offset);
@@ -89,6 +149,8 @@ int EVDS_InternalModifier_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, E
 
 	//Modifier variables
 	EVDS_MODIFIER_VARIABLES vars = { 0 };
+	EVDS_VARIABLE* variable;
+	char type_str[257] = { 0 };
 
 	//Check type
 	if (EVDS_Object_CheckType(object,"modifier") != EVDS_OK) return EVDS_IGNORE_OBJECT; 
@@ -111,6 +173,59 @@ int EVDS_InternalModifier_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, E
 	EVDS_Object_GetRealVariable(object,"vector3.x",&vars.vector3[0],0);
 	EVDS_Object_GetRealVariable(object,"vector3.y",&vars.vector3[1],0);
 	EVDS_Object_GetRealVariable(object,"vector3.z",&vars.vector3[2],0);
+
+	EVDS_Object_GetRealVariable(object,"circular.step",&vars.circular_step,0);
+	EVDS_Object_GetRealVariable(object,"circular.radial_step",&vars.circular_radial_step,0);
+	EVDS_Object_GetRealVariable(object,"circular.normal_step",&vars.circular_normal_step,0);
+	EVDS_Object_GetRealVariable(object,"circular.arc_length",&vars.circular_arc_length,0);
+	EVDS_Object_GetRealVariable(object,"circular.radius",&vars.circular_radius,0);
+	EVDS_Object_GetRealVariable(object,"circular.rotate",&vars.circular_rotate,0);
+
+	//Fix modifier parameters
+	if (vars.circular_step == 0.0) {
+		if (vars.circular_arc_length == 0.0) vars.circular_arc_length = 360.0;
+		vars.circular_step = vars.circular_arc_length / (vars.vector1_count);
+	}
+
+	//Check modifier type, run additional calculations if needed
+	vars.type = EVDS_MODIFIER_TYPE_LINEAR;
+	EVDS_Object_GetVariable(object,"pattern",&variable);
+	EVDS_Variable_GetString(variable,type_str,256,0);
+	if (strcmp(type_str,"circular") == 0) {
+		EVDS_VECTOR normal,direction,vector;
+		EVDS_REAL mag;
+		vars.type = EVDS_MODIFIER_TYPE_CIRCULAR;
+
+		//Use EVDS vector math
+		EVDS_Vector_Set(&normal,   EVDS_VECTOR_DIRECTION,0,vars.vector1[0],vars.vector1[1],vars.vector1[2]);
+		EVDS_Vector_Set(&direction,EVDS_VECTOR_DIRECTION,0,vars.vector2[0],vars.vector2[1],vars.vector2[2]);
+
+		//Default values for normal/direction
+		EVDS_Vector_Length(&mag,&normal);
+		if (mag == 0.0) EVDS_Vector_Set(&normal,EVDS_VECTOR_DIRECTION,0,1,0,0); //+X normal
+
+		EVDS_Vector_Length(&mag,&direction);
+		if (mag == 0.0) EVDS_Vector_Set(&direction,EVDS_VECTOR_DIRECTION,0,0,0,1); //+Z direction
+
+		//Normalize directions		
+		EVDS_Vector_Normalize(&normal,&normal);
+		EVDS_Vector_Normalize(&direction,&direction);
+		
+		//Calculate local coordinate system
+		vars.u[0] = -direction.x; //'X' axis
+		vars.u[1] = -direction.y;
+		vars.u[2] = -direction.z;
+
+		EVDS_Vector_Cross(&vector,&direction,&normal);
+		vars.v[0] = vector.x; //'Y' axis completes direction and normal
+		vars.v[1] = vector.y;
+		vars.v[2] = vector.z;
+
+		/*//Do not generate first ring if radius is zero (only concentric objects)
+		if ((circular_radius == 0.0) && (j == 0)) continue;
+		//Do not generate first object is radius is non-zero
+		if ((circular_radius != 0.0) && (i == 0)) continue;*/
+	}
 
 	//Create new container as a mass-less static body
 	EVDS_Object_GetParent(object,&parent);
