@@ -129,6 +129,7 @@ int Test_InList(void* ptr, SIMC_LIST* list);
 //Various test files list
 void Test_EVDS_SYSTEM();
 void Test_EVDS_VECTOR();
+void Test_EVDS_QUATERNION();
 void Test_EVDS_MODIFIER();
 void Test_EVDS_GIMBAL();
 void Test_EVDS_FRAMES();
