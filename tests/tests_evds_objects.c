@@ -4,10 +4,9 @@ void Test_EVDS_MODIFIER() {
 	START_TEST("Linear modifier test") {
 		/// This test verifies that linear modifier creates children copies,
 		/// and that these copies are named correctly and present at their correct spots.
-		EVDS_OBJECT* container;
 		ERROR_CHECK(EVDS_Object_LoadFromString(root,
 "<EVDS version=\"31\">"
-"    <object name=\"Modifier\" type=\"modifier\">"
+"    <object name=\"Modifier\" type=\"modifier\" x=\"10\" y=\"20\" z=\"30\">"
 "        <parameter name=\"pattern\">linear</parameter>"
 "        <parameter name=\"vector1.count\">6</parameter>"
 "        <parameter name=\"vector2.count\">5</parameter>"
@@ -19,54 +18,59 @@ void Test_EVDS_MODIFIER() {
 "            <parameter name=\"mass\">100</parameter>"
 "        </object>"
 "    </object>"
+"    <object name=\"Object (3x3x3)\" type=\"static_body\" />"
 "</EVDS>",&object));
 		ERROR_CHECK(EVDS_Object_Initialize(object,1));
 
 		/// Check if original object becomes part of the modifiers children container
-		EQUAL_TO(EVDS_System_GetObjectByName(system,"Modifier (Children)",0,&container), EVDS_OK);
 		EQUAL_TO(EVDS_System_GetObjectByName(system,"Object",0,&object), EVDS_OK);
-		EQUAL_TO(object->parent,container);
-		EQUAL_TO(container->initialized,1);
+		EQUAL_TO(object->parent,root);
+		EQUAL_TO(object->initialized,1);
 
 		/// Check some key objects that must be part of the container
-		EQUAL_TO(EVDS_System_GetObjectByName(system,"Object",container,&object), EVDS_OK);
+		EQUAL_TO(EVDS_System_GetObjectByName(system,"Object",root,&object), EVDS_OK);
 		EQUAL_TO(object->initialized,1);
-		VECTOR_EQUAL_TO(&object->state.position, 1*0, 2*0, 3*0);
+		VECTOR_EQUAL_TO(&object->state.position, 10+1*0, 20+2*0, 30+3*0);
 
-		EQUAL_TO(EVDS_System_GetObjectByName(system,"Object (5x1x1)",container,&object), EVDS_OK);
+		EQUAL_TO(EVDS_System_GetObjectByName(system,"Object (5x1x1)",root,&object), EVDS_OK);
 		EQUAL_TO(object->initialized,1);
-		VECTOR_EQUAL_TO(&object->state.position, 1*4, 2*0, 3*0);
+		VECTOR_EQUAL_TO(&object->state.position, 10+1*4, 20+2*0, 30+3*0);
 
-		EQUAL_TO(EVDS_System_GetObjectByName(system,"Object (1x5x1)",container,&object), EVDS_OK);
+		EQUAL_TO(EVDS_System_GetObjectByName(system,"Object (1x5x1)",root,&object), EVDS_OK);
 		EQUAL_TO(object->initialized,1);
-		VECTOR_EQUAL_TO(&object->state.position, 1*0, 2*4, 3*0);
+		VECTOR_EQUAL_TO(&object->state.position, 10+1*0, 20+2*4, 30+3*0);
 
-		EQUAL_TO(EVDS_System_GetObjectByName(system,"Object (5x5x1)",container,&object), EVDS_OK);
+		EQUAL_TO(EVDS_System_GetObjectByName(system,"Object (5x5x1)",root,&object), EVDS_OK);
 		EQUAL_TO(object->initialized,1);
-		VECTOR_EQUAL_TO(&object->state.position, 1*4, 2*4, 3*0);
+		VECTOR_EQUAL_TO(&object->state.position, 10+1*4, 20+2*4, 30+3*0);
 
-		EQUAL_TO(EVDS_System_GetObjectByName(system,"Object (1x1x5)",container,&object), EVDS_OK);
+		EQUAL_TO(EVDS_System_GetObjectByName(system,"Object (1x1x5)",root,&object), EVDS_OK);
 		EQUAL_TO(object->initialized,1);
-		VECTOR_EQUAL_TO(&object->state.position, 1*0, 2*0, 3*4);
+		VECTOR_EQUAL_TO(&object->state.position, 10+1*0, 20+2*0, 30+3*4);
 
-		EQUAL_TO(EVDS_System_GetObjectByName(system,"Object (5x1x5)",container,&object), EVDS_OK);
+		EQUAL_TO(EVDS_System_GetObjectByName(system,"Object (5x1x5)",root,&object), EVDS_OK);
 		EQUAL_TO(object->initialized,1);
-		VECTOR_EQUAL_TO(&object->state.position, 1*4, 2*0, 3*4);
+		VECTOR_EQUAL_TO(&object->state.position, 10+1*4, 20+2*0, 30+3*4);
 
-		EQUAL_TO(EVDS_System_GetObjectByName(system,"Object (1x5x5)",container,&object), EVDS_OK);
+		EQUAL_TO(EVDS_System_GetObjectByName(system,"Object (1x5x5)",root,&object), EVDS_OK);
 		EQUAL_TO(object->initialized,1);
-		VECTOR_EQUAL_TO(&object->state.position, 1*0, 2*4, 3*4);
+		VECTOR_EQUAL_TO(&object->state.position, 10+1*0, 20+2*4, 30+3*4);
 
-		EQUAL_TO(EVDS_System_GetObjectByName(system,"Object (5x5x5)",container,&object), EVDS_OK);
+		EQUAL_TO(EVDS_System_GetObjectByName(system,"Object (5x5x5)",root,&object), EVDS_OK);
 		EQUAL_TO(object->initialized,1);
-		VECTOR_EQUAL_TO(&object->state.position, 1*4, 2*4, 3*4);
+		VECTOR_EQUAL_TO(&object->state.position, 10+1*4, 20+2*4, 30+3*4);
+
+		/// Check if special pre-defined object is not overwritten by the modifier
+		EQUAL_TO(EVDS_System_GetObjectByName(system,"Object (3x3x3)",root,&object), EVDS_OK);
+		EQUAL_TO(object->initialized,1);
+		VECTOR_EQUAL_TO(&object->state.position, 0, 0, 0);
 	} END_TEST
+
 
 	START_TEST("Circular modifier test") {
 		int i,j,k;
 
 		/// This test does same as for linear modifier, but now using circular modifier.
-		EVDS_OBJECT* container;
 		ERROR_CHECK(EVDS_Object_LoadFromString(root,
 "<EVDS version=\"31\">"
 "    <object name=\"Modifier\" type=\"modifier\">"
@@ -88,13 +92,12 @@ void Test_EVDS_MODIFIER() {
 		ERROR_CHECK(EVDS_Object_Initialize(object,1));
 
 		/// Check if original object becomes part of the modifiers children container
-		EQUAL_TO(EVDS_System_GetObjectByName(system,"Modifier (Children)",0,&container), EVDS_OK);
 		EQUAL_TO(EVDS_System_GetObjectByName(system,"Object",0,&object), EVDS_OK);
-		EQUAL_TO(object->parent,container);
-		EQUAL_TO(container->initialized,1);
+		EQUAL_TO(object->parent,root);
+		EQUAL_TO(object->initialized,1);
 
 		/// Check some key objects that must be part of the container
-		EQUAL_TO(EVDS_System_GetObjectByName(system,"Object",container,&object), EVDS_OK);
+		EQUAL_TO(EVDS_System_GetObjectByName(system,"Object",root,&object), EVDS_OK);
 		EQUAL_TO(object->initialized,1);
 		VECTOR_EQUAL_TO(&object->state.position, 0,0,0);
 
@@ -107,22 +110,22 @@ void Test_EVDS_MODIFIER() {
 			char name[256] = { 0 };
 
 			sprintf(name,"Object (%dx1x1)",i+1);
-			EQUAL_TO(EVDS_System_GetObjectByName(system,name,container,&object), EVDS_OK);
+			EQUAL_TO(EVDS_System_GetObjectByName(system,name,root,&object), EVDS_OK);
 			EQUAL_TO(object->initialized,1);
 			VECTOR_EQUAL_TO(&object->state.position, 0, 1.0 - cos(EVDS_RAD(i*60.0)), -sin(EVDS_RAD(i*60.0)));
 
 			sprintf(name,"Object (%dx5x1)",i+1);
-			EQUAL_TO(EVDS_System_GetObjectByName(system,name,container,&object), EVDS_OK);
+			EQUAL_TO(EVDS_System_GetObjectByName(system,name,root,&object), EVDS_OK);
 			EQUAL_TO(object->initialized,1);
 			VECTOR_EQUAL_TO(&object->state.position, 0, 1.0 - 5*cos(EVDS_RAD(i*60.0)), -5*sin(EVDS_RAD(i*60.0)));
 
 			sprintf(name,"Object (%dx1x5)",i+1);
-			EQUAL_TO(EVDS_System_GetObjectByName(system,name,container,&object), EVDS_OK);
+			EQUAL_TO(EVDS_System_GetObjectByName(system,name,root,&object), EVDS_OK);
 			EQUAL_TO(object->initialized,1);
 			VECTOR_EQUAL_TO(&object->state.position, 4.0, 1.0 - cos(EVDS_RAD(i*60.0)), -sin(EVDS_RAD(i*60.0)));
 
 			sprintf(name,"Object (%dx5x5)",i+1);
-			EQUAL_TO(EVDS_System_GetObjectByName(system,name,container,&object), EVDS_OK);
+			EQUAL_TO(EVDS_System_GetObjectByName(system,name,root,&object), EVDS_OK);
 			EQUAL_TO(object->initialized,1);
 			VECTOR_EQUAL_TO(&object->state.position, 4.0, 1.0 - 5*cos(EVDS_RAD(i*60.0)), -5*sin(EVDS_RAD(i*60.0)));
 		}
@@ -133,7 +136,7 @@ void Test_EVDS_MODIFIER() {
 			char name[256] = { 0 };
 
 			sprintf(name,"Object (%dx1x1)",i+1);
-			EQUAL_TO(EVDS_System_GetObjectByName(system,name,container,&object), EVDS_OK);
+			EQUAL_TO(EVDS_System_GetObjectByName(system,name,root,&object), EVDS_OK);
 			EQUAL_TO(object->initialized,1);
 			
 			//Get euler angles and check them
@@ -147,6 +150,61 @@ void Test_EVDS_MODIFIER() {
 			REAL_EQUAL_TO_EPS(EVDS_DEG(z),0,EVDS_EPSf);
 		}
 	} END_TEST
+
+
+
+
+	START_TEST("Circular modifier test (consistency of quaternions with modifiers transformation)") {
+		int i,j,k;
+
+		/// This test merely checks what happens when "yaw" is specified for modifier
+		/// (it must rotate all objects by 90 deg)
+		ERROR_CHECK(EVDS_Object_LoadFromString(root,
+"<EVDS version=\"31\">"
+"    <object name=\"Modifier\" type=\"modifier\" yaw=\"90\">"
+"        <parameter name=\"pattern\">circular</parameter>"
+"        <parameter name=\"vector1.count\">6</parameter>"
+"        <parameter name=\"vector2.count\">5</parameter>"
+"        <parameter name=\"vector3.count\">5</parameter>"
+"        <parameter name=\"circular.rotate\">1.0</parameter>"
+"        <parameter name=\"circular.radius\">1.0</parameter>"
+"        <parameter name=\"circular.normal_step\">1</parameter>"
+"        <parameter name=\"circular.radial_step\">1</parameter>"
+"        <parameter name=\"vector1.x\">1</parameter>"
+"        <parameter name=\"vector2.y\">1</parameter>"
+"        <object name=\"Object\" type=\"static_body\">"
+"            <parameter name=\"mass\">100</parameter>"
+"        </object>"
+"    </object>"
+"</EVDS>",&object));
+		ERROR_CHECK(EVDS_Object_Initialize(object,1));
+
+		/// Check if original object becomes part of the modifiers children container
+		EQUAL_TO(EVDS_System_GetObjectByName(system,"Object",0,&object), EVDS_OK);
+		EQUAL_TO(object->parent,root);
+		EQUAL_TO(object->initialized,1);
+
+		/// Check attitude of the children objects
+		for (i = 1; i < 5; i++) {
+			EVDS_REAL x,y,z,tgt_x;
+			char name[256] = { 0 };
+
+			sprintf(name,"Object (%dx1x1)",i+1);
+			EQUAL_TO(EVDS_System_GetObjectByName(system,name,root,&object), EVDS_OK);
+			EQUAL_TO(object->initialized,1);
+			
+			//Get euler angles and check them
+			EVDS_Quaternion_ToEuler(&object->state.orientation,root,&x,&y,&z);
+
+			tgt_x = 60.0*i; //Check against properly wrapped angle. Note 90 deg offset
+			if (tgt_x > 180.0) tgt_x = tgt_x - 360.0;
+
+			REAL_EQUAL_TO_EPS(EVDS_DEG(x),tgt_x,EVDS_EPSf);
+			REAL_EQUAL_TO_EPS(EVDS_DEG(y),0,EVDS_EPSf);
+			REAL_EQUAL_TO_EPS(EVDS_DEG(z),90.0,EVDS_EPSf);
+		}
+	} END_TEST
+
 
 	START_TEST("Pattern modifier test") {
 		/// This test verifies that pattern modifier creates copies of children according to

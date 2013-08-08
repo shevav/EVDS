@@ -58,28 +58,34 @@ typedef struct EVDS_MODIFIER_VARIABLES_TAG {
 #endif
 
 
-int EVDS_InternalModifier_Copy(EVDS_MODIFIER_VARIABLES* vars, EVDS_OBJECT* container, EVDS_OBJECT* object) {
+int EVDS_InternalModifier_Copy(EVDS_MODIFIER_VARIABLES* vars, EVDS_OBJECT* modifier, EVDS_OBJECT* parent, EVDS_OBJECT* object) {
 	char name[257] = { 0 }; //Null-terminate the name
 	char modifier_suffix[257] = { 0 };
 	EVDS_OBJECT* new_object;
+	EVDS_SYSTEM* system;
 	EVDS_STATE_VECTOR vector;
 	EVDS_VECTOR offset;
 
-	//Create a new copy of the object
-	EVDS_Object_Copy(object,container,&new_object);
-	EVDS_Object_GetStateVector(new_object,&vector);
-
-	//Add suffix and rename
-	EVDS_Object_GetName(new_object,name,256);
+	//Create name for the object
+	EVDS_Object_GetName(object,name,256);
 	snprintf(modifier_suffix,256," (%dx%dx%d)",vars->i+1,vars->j+1,vars->k+1);
 	strncat(name,modifier_suffix,256);
-	EVDS_Object_SetName(new_object,name);
+
+	//Create a new copy of the object (or return existing copy)
+	EVDS_Object_GetSystem(object,&system);
+	if (EVDS_System_GetObjectByName(system,name,parent,&new_object) == EVDS_OK) {
+		return EVDS_OK;
+	} else {
+		EVDS_Object_Copy(object,parent,&new_object);
+		EVDS_Object_SetName(new_object,name);
+		EVDS_Object_GetStateVector(new_object,&vector);
+	}
 
 	//Calculate child copies offset
 	switch (vars->type) {
 		default:
 		case EVDS_MODIFIER_TYPE_LINEAR: {
-				EVDS_Vector_Set(&offset,EVDS_VECTOR_POSITION,container,
+				EVDS_Vector_Set(&offset,EVDS_VECTOR_POSITION,modifier,
 					vars->i*vars->vector1[0] + vars->j*vars->vector2[0] + vars->k*vars->vector3[0],
 					vars->i*vars->vector1[1] + vars->j*vars->vector2[1] + vars->k*vars->vector3[1],
 					vars->i*vars->vector1[2] + vars->j*vars->vector2[2] + vars->k*vars->vector3[2]);
@@ -88,7 +94,7 @@ int EVDS_InternalModifier_Copy(EVDS_MODIFIER_VARIABLES* vars, EVDS_OBJECT* conta
 				EVDS_REAL x = (vars->circular_radius + vars->j*vars->circular_radial_step)*cos(EVDS_RAD(vars->i * vars->circular_step));
 				EVDS_REAL y = (vars->circular_radius + vars->j*vars->circular_radial_step)*sin(EVDS_RAD(vars->i * vars->circular_step));
 
-				EVDS_Vector_Set(&offset,EVDS_VECTOR_POSITION,container,
+				EVDS_Vector_Set(&offset,EVDS_VECTOR_POSITION,modifier,
 					vars->vector2[0] * vars->circular_radius + vars->u[0]*x + vars->v[0]*y + vars->vector1[0]*vars->circular_normal_step*vars->k,
 					vars->vector2[1] * vars->circular_radius + vars->u[1]*x + vars->v[1]*y + vars->vector1[1]*vars->circular_normal_step*vars->k,
 					vars->vector2[2] * vars->circular_radius + vars->u[2]*x + vars->v[2]*y + vars->vector1[2]*vars->circular_normal_step*vars->k);
@@ -96,7 +102,7 @@ int EVDS_InternalModifier_Copy(EVDS_MODIFIER_VARIABLES* vars, EVDS_OBJECT* conta
 				if (vars->circular_rotate > 0.5) {
 					EVDS_VECTOR axis;
 					EVDS_QUATERNION delta_quaternion;
-					EVDS_Vector_Set(&axis,EVDS_VECTOR_DIRECTION,vector.orientation.coordinate_system,
+					EVDS_Vector_Set(&axis,EVDS_VECTOR_DIRECTION,modifier,
 						vars->vector1[0],vars->vector1[1],vars->vector1[2]);
 					EVDS_Quaternion_FromVectorAngle(&delta_quaternion,&axis,EVDS_RAD(vars->i*vars->circular_step));
 					{
@@ -110,26 +116,16 @@ int EVDS_InternalModifier_Copy(EVDS_MODIFIER_VARIABLES* vars, EVDS_OBJECT* conta
 					//Apply rotation
 					EVDS_Quaternion_Multiply(&vector.orientation,&delta_quaternion,&vector.orientation);
 				}
-				/*
-				//Get point on circle
-				QVector3D offset = direction*circular_radius + u*x + v*y + normal*circular_normal_step*k;
-
-				//Generate transformation
-				if (circular_rotate > 0.5) {
-					transformation = 
-						GLC_Matrix4x4(offset.x(),offset.y(),offset.z()) *
-						GLC_Matrix4x4(GLC_Vector3d(normal.x(),normal.y(),normal.z()), EVDS_RAD(i * circular_step));
-				} else {
-					transformation = 
-						//GLC_Matrix4x4(GLC_Vector3d(normal.x(),normal.y(),normal.z()), EVDS_RAD(i * circular_step)) * 
-						GLC_Matrix4x4(offset.x(),offset.y(),offset.z());
-				}						*/
 			} break;
 	}
 
 	//Apply transformation
 	EVDS_Vector_Add(&vector.position,&vector.position,&offset);
 	EVDS_Object_SetStateVector(new_object,&vector);
+
+	//Initialize object (because parents children were already initialized
+	// prior to modifier initialization)
+	EVDS_Object_Initialize(new_object,1);
 	return EVDS_OK;
 }
 
@@ -141,10 +137,6 @@ int EVDS_InternalModifier_Copy(EVDS_MODIFIER_VARIABLES* vars, EVDS_OBJECT* conta
 int EVDS_InternalModifier_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVDS_OBJECT* object) {
 	SIMC_LIST* list;
 	SIMC_LIST_ENTRY* entry;
-	EVDS_STATE_VECTOR vector;
-
-	//Modifier container which will hold the children copies
-	EVDS_OBJECT* container;
 	EVDS_OBJECT* parent;
 
 	//Modifier variables
@@ -227,42 +219,34 @@ int EVDS_InternalModifier_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, E
 		if ((circular_radius != 0.0) && (i == 0)) continue;*/
 	}
 
-	//Create new container as a mass-less static body
+	//Get modifiers parent
 	EVDS_Object_GetParent(object,&parent);
-	if (EVDS_Object_CreateBy(object,"Children",parent,&container) != EVDS_ERROR_NOT_FOUND) {
-		return EVDS_CLAIM_OBJECT; //Early return (modifier already created)
-	}
-	EVDS_Object_SetType(container,"static_body");
-
-	//Move the platform into position of modifier
-	EVDS_Object_GetStateVector(object,&vector);
-	EVDS_Object_SetStateVector(container,&vector);
 
 	//For every child, create instances
 	EVDS_Object_GetAllChildren(object,&list);
 	entry = SIMC_List_GetFirst(list);
 	while (entry) {
 		EVDS_OBJECT* child = (EVDS_OBJECT*)SIMC_List_GetData(list,entry);
+		EVDS_Object_Store(child); //Make sure nobody deletes objects data until modifier finishes working with it
+		SIMC_List_Stop(list,entry);
+
 		for (vars.i = 0; vars.i < (int)vars.vector1_count; vars.i++) {
 			for (vars.j = 0; vars.j < (int)vars.vector2_count; vars.j++) {
 				for (vars.k = 0; vars.k < (int)vars.vector3_count; vars.k++) {
 					if ((vars.i != 0) || (vars.j != 0) || (vars.k != 0)) {
-						EVDS_InternalModifier_Copy(&vars,container,child);
+						EVDS_InternalModifier_Copy(&vars,object,parent,child);
 					}
 				}
 			}
 		}
 
-		//Move the child into container
-		SIMC_List_Stop(list,entry);
-		EVDS_Object_SetParent(child,container);
+		//Move the child into parent
+		EVDS_Object_SetParent(child,parent);
+		EVDS_Object_Release(child); //Don't need its data anymore
 
 		//Start again from scratch (list is 1 child less full)
 		entry = SIMC_List_GetFirst(list);
 	}
-
-	//Initialize container
-	EVDS_Object_Initialize(container,1);
 	return EVDS_CLAIM_OBJECT;
 }
 
