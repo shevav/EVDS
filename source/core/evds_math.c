@@ -1234,18 +1234,23 @@ void EVDS_Quaternion_Multiply(EVDS_QUATERNION* target, EVDS_QUATERNION* q, EVDS_
 	EVDS_REAL q0,q1,q2,q3;
 	EVDS_REAL r0,r1,r2,r3;
 
-	//EVDS_Quaternion_Convert(r,r,q->coordinate_system);
-	EVDS_ASSERT((q->coordinate_system == r->coordinate_system) ||
-				(q->coordinate_system == r->coordinate_system->parent));
-
-	q0 = q->q[0]; q1 = q->q[1]; q2 = q->q[2]; q3 = q->q[3];
+	//Quaternion coordinate system conversion, unless trying to rotate quaternion
+	//from one coordinate system into another.
+	if ((q->coordinate_system != r->coordinate_system) &&
+		(q->coordinate_system != r->coordinate_system->parent)) {
+		EVDS_QUATERNION qt;
+		EVDS_Quaternion_Convert(&qt,q,r->coordinate_system);
+		q0 = qt.q[0]; q1 = qt.q[1]; q2 = qt.q[2]; q3 = qt.q[3];
+	} else {
+		q0 = q->q[0]; q1 = q->q[1]; q2 = q->q[2]; q3 = q->q[3];
+	}
 	r0 = r->q[0]; r1 = r->q[1]; r2 = r->q[2]; r3 = r->q[3];
 
 	target->q[0] = r0 * q0 - r1 * q1 - r2 * q2 - r3 * q3;
 	target->q[1] = r0 * q1 + r1 * q0 - r2 * q3 + r3 * q2;
 	target->q[2] = r0 * q2 + r1 * q3 + r2 * q0 - r3 * q1;
 	target->q[3] = r0 * q3 - r1 * q2 + r2 * q1 + r3 * q0;
-	target->coordinate_system = q->coordinate_system;
+	target->coordinate_system = r->coordinate_system;
 }
 
 
@@ -1294,17 +1299,21 @@ void EVDS_Quaternion_MultiplyConjugatedQ(EVDS_QUATERNION* target, EVDS_QUATERNIO
 	EVDS_REAL q0,q1,q2,q3;
 	EVDS_REAL r0,r1,r2,r3;
 
-	//EVDS_Quaternion_Convert(r,r,q->coordinate_system);
-	EVDS_ASSERT(q->coordinate_system == r->coordinate_system);
-
-	q0 = q->q[0]; q1 = -q->q[1]; q2 = -q->q[2]; q3 = -q->q[3];
+	//Quaternion coordinate system conversion
+	if (q->coordinate_system != r->coordinate_system) {
+		EVDS_QUATERNION qt;
+		EVDS_Quaternion_Convert(&qt,q,r->coordinate_system);
+		q0 = qt.q[0]; q1 = -qt.q[1]; q2 = -qt.q[2]; q3 = -qt.q[3];
+	} else {
+		q0 = q->q[0]; q1 = -q->q[1]; q2 = -q->q[2]; q3 = -q->q[3];
+	}
 	r0 = r->q[0]; r1 =  r->q[1]; r2 =  r->q[2]; r3 =  r->q[3];
 
 	target->q[0] = r0 * q0 - r1 * q1 - r2 * q2 - r3 * q3;
 	target->q[1] = r0 * q1 + r1 * q0 - r2 * q3 + r3 * q2;
 	target->q[2] = r0 * q2 + r1 * q3 + r2 * q0 - r3 * q1;
 	target->q[3] = r0 * q3 - r1 * q2 + r2 * q1 + r3 * q0;
-	target->coordinate_system = q->coordinate_system;
+	target->coordinate_system = r->coordinate_system;
 }
 
 
@@ -1341,17 +1350,21 @@ void EVDS_Quaternion_MultiplyConjugatedR(EVDS_QUATERNION* target, EVDS_QUATERNIO
 	EVDS_REAL q0,q1,q2,q3;
 	EVDS_REAL r0,r1,r2,r3;
 
-	//EVDS_Quaternion_Convert(r,r,q->coordinate_system);
-	EVDS_ASSERT(q->coordinate_system == r->coordinate_system);
-
-	q0 = q->q[0]; q1 =  q->q[1]; q2 =  q->q[2]; q3 =  q->q[3];
+	//Quaternion coordinate system conversion
+	if (q->coordinate_system != r->coordinate_system) {
+		EVDS_QUATERNION qt;
+		EVDS_Quaternion_Convert(&qt,q,r->coordinate_system);
+		q0 = qt.q[0]; q1 =  qt.q[1]; q2 =  qt.q[2]; q3 =  qt.q[3];
+	} else {
+		q0 = q->q[0]; q1 =  q->q[1]; q2 =  q->q[2]; q3 =  q->q[3];
+	}
 	r0 = r->q[0]; r1 = -r->q[1]; r2 = -r->q[2]; r3 = -r->q[3];
 
 	target->q[0] = r0 * q0 - r1 * q1 - r2 * q2 - r3 * q3;
 	target->q[1] = r0 * q1 + r1 * q0 - r2 * q3 + r3 * q2;
 	target->q[2] = r0 * q2 + r1 * q3 + r2 * q0 - r3 * q1;
 	target->q[3] = r0 * q3 - r1 * q2 + r2 * q1 + r3 * q0;
-	target->coordinate_system = q->coordinate_system;
+	target->coordinate_system = r->coordinate_system;
 }
 
 
@@ -1418,6 +1431,7 @@ void EVDS_Vector_Rotate(EVDS_VECTOR* target, EVDS_VECTOR* v, EVDS_QUATERNION* q)
 	EVDS_REAL t0,t1,t2,t3;
 
 	//EVDS_Quaternion_Convert(v,v,v->coordinate_system->parent);
+	//FIXME: Add proper coordinate conversion
 	EVDS_ASSERT((v->coordinate_system == q->coordinate_system) ||
 		(v->coordinate_system->parent == q->coordinate_system));
 
@@ -1453,6 +1467,7 @@ void EVDS_Vector_RotateConjugated(EVDS_VECTOR* target, EVDS_VECTOR* v, EVDS_QUAT
 
 	//EVDS_Quaternion_Convert(q,q,v->coordinate_system);
 	//EVDS_Vector_Convert(v,v,q->coordinate_system);
+	//FIXME: add proper coordinate conversion
 	EVDS_ASSERT((v->coordinate_system == q->coordinate_system) ||
 		(v->coordinate_system->parent == q->coordinate_system));
 
