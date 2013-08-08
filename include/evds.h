@@ -1332,6 +1332,8 @@ EVDS_API void EVDS_Vector_Cross(EVDS_VECTOR* target, EVDS_VECTOR* v1, EVDS_VECTO
 EVDS_API void EVDS_Vector_Dot(EVDS_REAL* target, EVDS_VECTOR* v1, EVDS_VECTOR* v2);
 // Normalize vector (returns direction)
 EVDS_API void EVDS_Vector_Normalize(EVDS_VECTOR* target, EVDS_VECTOR* v);
+// Return vector length
+EVDS_API void EVDS_Vector_Length(EVDS_REAL* target, EVDS_VECTOR* v);
 
 // Multiply vector by scalar
 EVDS_API void EVDS_Vector_Multiply(EVDS_VECTOR* target, EVDS_VECTOR* v, EVDS_REAL scalar);
