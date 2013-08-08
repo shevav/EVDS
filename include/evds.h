@@ -1356,6 +1356,10 @@ EVDS_API void EVDS_StateVector_Interpolate(EVDS_STATE_VECTOR* target, EVDS_STATE
 EVDS_API void EVDS_Quaternion_FromEuler(EVDS_QUATERNION* target, EVDS_OBJECT* target_coordinates, EVDS_REAL x, EVDS_REAL y, EVDS_REAL z);
 // Get euler angles in a target coordinate system
 EVDS_API void EVDS_Quaternion_ToEuler(EVDS_QUATERNION* q, EVDS_OBJECT* target_coordinates, EVDS_REAL* x, EVDS_REAL* y, EVDS_REAL* z);
+// Set rotation vector and angle in target coordinate system
+EVDS_API void EVDS_Quaternion_FromVectorAngle(EVDS_QUATERNION* target, EVDS_VECTOR* axis, EVDS_REAL angle);
+// Get rotation vector and angle in target coordinate system
+EVDS_API void EVDS_Quaternion_ToVectorAngle(EVDS_QUATERNION* q, EVDS_VECTOR* axis, EVDS_REAL* angle);
 // Convert quaternion to a matrix
 EVDS_API void EVDS_Quaternion_ToMatrix(EVDS_QUATERNION* q, EVDS_MATRIX m);
 // Multiply two quaternions (must be specified in the same coordinate system)

@@ -1082,15 +1082,14 @@ void EVDS_StateVector_Interpolate(EVDS_STATE_VECTOR* target, EVDS_STATE_VECTOR* 
 ////////////////////////////////////////////////////////////////////////////////
 /// @brief Set quaternion from euler angles
 ////////////////////////////////////////////////////////////////////////////////
-void EVDS_Quaternion_FromEuler(EVDS_QUATERNION* target, EVDS_OBJECT* target_coordinates, EVDS_REAL x, EVDS_REAL y, EVDS_REAL z)
-{
-	double c1 = cos(x*0.5);
-	double c2 = cos(y*0.5);
-	double c3 = cos(z*0.5);
+void EVDS_Quaternion_FromEuler(EVDS_QUATERNION* target, EVDS_OBJECT* target_coordinates, EVDS_REAL x, EVDS_REAL y, EVDS_REAL z) {
+	EVDS_REAL c1 = cos(x*0.5);
+	EVDS_REAL c2 = cos(y*0.5);
+	EVDS_REAL c3 = cos(z*0.5);
 
-	double s1 = sin(x*0.5);
-	double s2 = sin(y*0.5);
-	double s3 = sin(z*0.5);
+	EVDS_REAL s1 = sin(x*0.5);
+	EVDS_REAL s2 = sin(y*0.5);
+	EVDS_REAL s3 = sin(z*0.5);
 
 	target->q[0] = c1*c2*c3 + s1*s2*s3;
 	target->q[1] = s1*c2*c3 - c1*s2*s3;
@@ -1105,8 +1104,8 @@ void EVDS_Quaternion_FromEuler(EVDS_QUATERNION* target, EVDS_OBJECT* target_coor
 ////////////////////////////////////////////////////////////////////////////////
 void EVDS_Quaternion_ToEuler(EVDS_QUATERNION* q, EVDS_OBJECT* target_coordinates, EVDS_REAL* x, EVDS_REAL* y, EVDS_REAL* z) {
 	//      w  x  y  z
-	double q0,q1,q2,q3;
-	double sine;
+	EVDS_REAL q0,q1,q2,q3;
+	EVDS_REAL sine;
 	EVDS_QUATERNION temp;
 	EVDS_Quaternion_Convert(&temp,q,target_coordinates);
 	q0 = temp.q[0];	q1 = temp.q[1];	q2 = temp.q[2];	q3 = temp.q[3];
@@ -1122,12 +1121,50 @@ void EVDS_Quaternion_ToEuler(EVDS_QUATERNION* q, EVDS_OBJECT* target_coordinates
 
 
 ////////////////////////////////////////////////////////////////////////////////
+/// @brief Set rotation vector and angle in target coordinate system
+////////////////////////////////////////////////////////////////////////////////
+void EVDS_Quaternion_FromVectorAngle(EVDS_QUATERNION* target, EVDS_VECTOR* axis, EVDS_REAL angle) {
+	EVDS_REAL c = cos(angle*0.5);
+	EVDS_REAL s = sin(angle*0.5);
+
+	target->q[0] = c;
+	target->q[1] = -s * axis->x;
+	target->q[2] = -s * axis->y;
+	target->q[3] = -s * axis->z;
+	target->coordinate_system = axis->coordinate_system;	
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// @brief Get rotation vector and angle in target coordinate system
+////////////////////////////////////////////////////////////////////////////////
+void EVDS_Quaternion_ToVectorAngle(EVDS_QUATERNION* q, EVDS_VECTOR* axis, EVDS_REAL* angle) {
+	//      w  x  y  z
+	EVDS_REAL q0,q1,q2,q3;
+	EVDS_REAL mag;
+	q0 = q->q[0];	q1 = q->q[1];	q2 = q->q[2];	q3 = q->q[3];
+
+	//Calculate rotation axis (normalized x,y,z components of quaternion)
+	EVDS_Vector_Set(axis,EVDS_VECTOR_DIRECTION,q->coordinate_system,q1,q2,q3);
+	EVDS_Vector_Normalize(axis,axis);
+
+	//Find arccos of real component of a corresponding normalized quaternion
+	mag = sqrt(q0*q0 + q1*q1 + q2*q2 + q3*q3);
+	if (mag != 0.0) {
+		*angle = 2.0*acos(q1/mag);
+	} else {
+		*angle = 0.0;
+	}
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
 /// @brief Return quaternion as a 4x4 matrix
 ////////////////////////////////////////////////////////////////////////////////
 void EVDS_Quaternion_ToMatrix(EVDS_QUATERNION* q, EVDS_MATRIX m)
 {
 	//      w  x  y  z
-	double q0,q1,q2,q3;
+	EVDS_REAL q0,q1,q2,q3;
 	q0 = q->q[0]; q1 = q->q[1]; q2 = q->q[2]; q3 = q->q[3];
 
 	m[0*4+0] = q0*q0+q1*q1-q2*q2-q3*q3;
@@ -1194,8 +1231,8 @@ void EVDS_Quaternion_ToMatrix(EVDS_QUATERNION* q, EVDS_MATRIX m)
 ////////////////////////////////////////////////////////////////////////////////
 void EVDS_Quaternion_Multiply(EVDS_QUATERNION* target, EVDS_QUATERNION* q, EVDS_QUATERNION* r)
 {
-	double q0,q1,q2,q3;
-	double r0,r1,r2,r3;
+	EVDS_REAL q0,q1,q2,q3;
+	EVDS_REAL r0,r1,r2,r3;
 
 	//EVDS_Quaternion_Convert(r,r,q->coordinate_system);
 	EVDS_ASSERT((q->coordinate_system == r->coordinate_system) ||
@@ -1254,8 +1291,8 @@ void EVDS_Quaternion_Multiply(EVDS_QUATERNION* target, EVDS_QUATERNION* q, EVDS_
 ////////////////////////////////////////////////////////////////////////////////
 void EVDS_Quaternion_MultiplyConjugatedQ(EVDS_QUATERNION* target, EVDS_QUATERNION* q, EVDS_QUATERNION* r)
 {
-	double q0,q1,q2,q3;
-	double r0,r1,r2,r3;
+	EVDS_REAL q0,q1,q2,q3;
+	EVDS_REAL r0,r1,r2,r3;
 
 	//EVDS_Quaternion_Convert(r,r,q->coordinate_system);
 	EVDS_ASSERT(q->coordinate_system == r->coordinate_system);
@@ -1301,8 +1338,8 @@ void EVDS_Quaternion_MultiplyConjugatedQ(EVDS_QUATERNION* target, EVDS_QUATERNIO
 ////////////////////////////////////////////////////////////////////////////////
 void EVDS_Quaternion_MultiplyConjugatedR(EVDS_QUATERNION* target, EVDS_QUATERNION* q, EVDS_QUATERNION* r)
 {
-	double q0,q1,q2,q3;
-	double r0,r1,r2,r3;
+	EVDS_REAL q0,q1,q2,q3;
+	EVDS_REAL r0,r1,r2,r3;
 
 	//EVDS_Quaternion_Convert(r,r,q->coordinate_system);
 	EVDS_ASSERT(q->coordinate_system == r->coordinate_system);
@@ -1376,9 +1413,9 @@ void EVDS_Quaternion_Normalize(EVDS_QUATERNION* target, EVDS_QUATERNION* q) {
 ////////////////////////////////////////////////////////////////////////////////
 void EVDS_Vector_Rotate(EVDS_VECTOR* target, EVDS_VECTOR* v, EVDS_QUATERNION* q)
 {
-	double q0,q1,q2,q3;
-	double    v1,v2,v3;
-	double t0,t1,t2,t3;
+	EVDS_REAL q0,q1,q2,q3;
+	EVDS_REAL    v1,v2,v3;
+	EVDS_REAL t0,t1,t2,t3;
 
 	//EVDS_Quaternion_Convert(v,v,v->coordinate_system->parent);
 	EVDS_ASSERT((v->coordinate_system == q->coordinate_system) ||
@@ -1410,9 +1447,9 @@ void EVDS_Vector_Rotate(EVDS_VECTOR* target, EVDS_VECTOR* v, EVDS_QUATERNION* q)
 ////////////////////////////////////////////////////////////////////////////////
 void EVDS_Vector_RotateConjugated(EVDS_VECTOR* target, EVDS_VECTOR* v, EVDS_QUATERNION* q)
 {
-	double q0,q1,q2,q3;
-	double    v1,v2,v3;
-	double t0,t1,t2,t3;
+	EVDS_REAL q0,q1,q2,q3;
+	EVDS_REAL    v1,v2,v3;
+	EVDS_REAL t0,t1,t2,t3;
 
 	//EVDS_Quaternion_Convert(q,q,v->coordinate_system);
 	//EVDS_Vector_Convert(v,v,q->coordinate_system);
