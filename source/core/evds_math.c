@@ -1128,9 +1128,9 @@ void EVDS_Quaternion_FromVectorAngle(EVDS_QUATERNION* target, EVDS_VECTOR* axis,
 	EVDS_REAL s = sin(angle*0.5);
 
 	target->q[0] = c;
-	target->q[1] = -s * axis->x;
-	target->q[2] = -s * axis->y;
-	target->q[3] = -s * axis->z;
+	target->q[1] = s * axis->x;
+	target->q[2] = s * axis->y;
+	target->q[3] = s * axis->z;
 	target->coordinate_system = axis->coordinate_system;	
 }
 
@@ -1151,7 +1151,7 @@ void EVDS_Quaternion_ToVectorAngle(EVDS_QUATERNION* q, EVDS_VECTOR* axis, EVDS_R
 	//Find arccos of real component of a corresponding normalized quaternion
 	mag = sqrt(q0*q0 + q1*q1 + q2*q2 + q3*q3);
 	if (mag != 0.0) {
-		*angle = 2.0*acos(q1/mag);
+		*angle = 2.0*acos(q0/mag);
 	} else {
 		*angle = 0.0;
 	}
