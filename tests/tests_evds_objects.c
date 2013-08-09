@@ -610,23 +610,48 @@ void Test_EVDS_ROCKET_ENGINE() {
 		REAL_EQUAL_TO(real,10.0);
 		ERROR_CHECK(EVDS_Object_GetRealVariable(object,"vacuum.isp",&real,&variable));
 		REAL_EQUAL_TO(real,100.0);
+	} END_TEST
+
+
+	START_TEST("Rocket engine (mass flow parameters for monopropellant engine)") {
+		////////////////////////////////////////////////////////////////////////
+		ERROR_CHECK(EVDS_Object_LoadFromString(root,
+"<EVDS version=\"31\">"
+"    <object name=\"Rocket engine\" type=\"rocket_engine\">"
+"        <parameter name=\"mass\">1000</parameter>"
+"        <parameter name=\"vacuum.isp\">200.0</parameter>"
+"        <parameter name=\"vacuum.thrust\">200.0</parameter>"
+"        <parameter name=\"atmospheric.isp\">100.0</parameter>"
+"        <parameter name=\"atmospheric.thrust\">200.0</parameter>"
+"    </object>"
+"</EVDS>",&object));
+		ERROR_CHECK(EVDS_Object_Initialize(object,1));
+		ERROR_CHECK(EVDS_Object_GetRealVariable(object,"vacuum.mass_flow",&real,&variable));
+		REAL_EQUAL_TO(real,1.0/EVDS_G0);
+		ERROR_CHECK(EVDS_Object_GetRealVariable(object,"vacuum.fuel_flow",&real,&variable));
+		REAL_EQUAL_TO(real,1.0/EVDS_G0);
+
+		ERROR_CHECK(EVDS_Object_GetRealVariable(object,"atmospheric.mass_flow",&real,&variable));
+		REAL_EQUAL_TO(real,2.0/EVDS_G0);
+		ERROR_CHECK(EVDS_Object_GetRealVariable(object,"atmospheric.fuel_flow",&real,&variable));
+		REAL_EQUAL_TO(real,2.0/EVDS_G0);
 	} END_TEST*/
 
 
 
-	START_TEST("Rocket engine (general tests)") {
+	START_TEST("Rocket engine (basic tests)") {
 		////////////////////////////////////////////////////////////////////////
 		EVDS_OBJECT* engine;
 		ERROR_CHECK(EVDS_Object_LoadFromString(root,
-"<EVDS version=\"31\">"
+"<EVDS version=\"34\">"
 "    <object name=\"Vessel\" type=\"vessel\">"
 "        <object name=\"Fuel\" type=\"fuel_tank\">"
-"            <parameter name=\"fuel_type\">O2</parameter>"
-"            <parameter name=\"fuel_mass\">3000</parameter>"
+"            <parameter name=\"fuel.type\">O2</parameter>"
+"            <parameter name=\"fuel.mass\">4000</parameter>"
 "        </object>"
 "        <object name=\"Fuel\" type=\"fuel_tank\">"
-"            <parameter name=\"fuel_type\">H2</parameter>"
-"            <parameter name=\"fuel_mass\">1000</parameter>"
+"            <parameter name=\"fuel.type\">H2</parameter>"
+"            <parameter name=\"fuel.mass\">1000</parameter>"
 "        </object>"
 "        <object name=\"Rocket engine\" type=\"rocket_engine\">"
 "            <parameter name=\"mass\">1000</parameter>"
@@ -646,6 +671,11 @@ void Test_EVDS_ROCKET_ENGINE() {
 		ERROR_CHECK(EVDS_Object_GetVariable(engine,"combustion.oxidizer",&variable));
 		ERROR_CHECK(EVDS_Variable_GetString(variable,string,8192,0));
 		STRING_EQUAL_TO(string,"O2");
+
+		//Automatically detected O:F ratio
+		ERROR_CHECK(EVDS_Object_GetRealVariable(engine,"combustion.of_ratio",&real,&variable));
+		REAL_EQUAL_TO(real,4.0);
+		
 
 	} END_TEST
 }

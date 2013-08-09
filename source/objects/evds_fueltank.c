@@ -217,7 +217,7 @@ int EVDS_InternalFuelTank_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, E
 	}
 
 	//Calculate total mass
-	if (EVDS_Object_GetVariable(object,"fuel_mass",&variable) == EVDS_OK) {
+	if (EVDS_Object_GetVariable(object,"fuel.mass",&variable) == EVDS_OK) {
 		EVDS_Variable_GetReal(variable,&fuel_mass);
 	} else {
 		//Specifying fuel capacity works just fine as specifying mass directly
@@ -251,7 +251,7 @@ int EVDS_InternalFuelTank_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, E
 					is_cryogenic = 1; //Force cryogenic fuel
 					fuel_temperature = boiling_point - 0.1;
 
-					EVDS_Object_GetVariable(object,"is_cryogenic",&variable);
+					EVDS_Object_GetVariable(object,"fuel.is_cryogenic",&variable);
 					EVDS_Variable_SetReal(variable,1);
 				}
 

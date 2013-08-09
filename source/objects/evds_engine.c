@@ -46,7 +46,11 @@ typedef struct EVDS_SOLVER_ENGINE_USERDATA_TAG {
 	SIMC_LIST* fuel_tanks;
 	SIMC_LIST* oxidizer_tanks;
 
-	EVDS_VARIABLE *key;
+	EVDS_VARIABLE *atmospheric_exhaust_velocity;
+	EVDS_VARIABLE *atmospheric_thrust;
+	EVDS_VARIABLE *atmospheric_fuel_flow;
+	EVDS_VARIABLE *atmospheric_oxidizer_flow;
+
 	EVDS_VARIABLE *force;
 } EVDS_SOLVER_ENGINE_USERDATA;
 #endif
@@ -154,9 +158,9 @@ int EVDS_InternalRocketEngine_DetermineFuelTanks(EVDS_SOLVER_ENGINE_USERDATA* us
 	char fuel_type[257] = { 0 };
 	char oxidizer_type[257] = { 0 };
 
-	//No tanks are used by default
-	userdata->fuel_tanks = 0;
-	userdata->oxidizer_tanks = 0;
+	//Create list of fuel tanks
+	SIMC_List_Create(&userdata->fuel_tanks,0);
+	SIMC_List_Create(&userdata->oxidizer_tanks,0);
 
 	//Find parent vessel
 	if (EVDS_Object_GetParentObjectByType(object,"vessel",&vessel) != EVDS_OK) {
@@ -171,10 +175,6 @@ int EVDS_InternalRocketEngine_DetermineFuelTanks(EVDS_SOLVER_ENGINE_USERDATA* us
 	if (EVDS_Object_GetVariable(object,"combustion.oxidizer",&variable) == EVDS_OK) {
 		EVDS_Variable_GetString(variable,oxidizer_type,256,0);
 	}
-
-	//Making use of fuel tanks
-	SIMC_List_Create(&userdata->fuel_tanks,0);
-	SIMC_List_Create(&userdata->oxidizer_tanks,0);
 
 	//Find fuel tanks that are direct children of the vessel
 	EVDS_Object_GetChildren(vessel,&list);
@@ -235,7 +235,8 @@ int EVDS_InternalRocketEngine_DetermineFuelTanks(EVDS_SOLVER_ENGINE_USERDATA* us
 /// Returns EVDS_OK if one or more variables could be determined - the rocket engine initializer
 /// stops working when all possible variables have been determined
 ////////////////////////////////////////////////////////////////////////////////
-int EVDS_InternalRocketEngine_DetermineMore(EVDS_SYSTEM* system, EVDS_OBJECT* object) {
+int EVDS_InternalRocketEngine_DetermineMore(EVDS_SOLVER_ENGINE_USERDATA* userdata, 
+											EVDS_SYSTEM* system, EVDS_OBJECT* object) {
 	EVDS_VARIABLE* variable;
 
 
@@ -400,6 +401,63 @@ int EVDS_InternalRocketEngine_DetermineMore(EVDS_SYSTEM* system, EVDS_OBJECT* ob
 
 
 	////////////////////////////////////////////////////////////////////////////////
+	// Combustion oxidizer/fuel ratio from fuel tanks
+	////////////////////////////////////////////////////////////////////////////////
+	//Try to determine oxidizer:fuel ratio from fuel tanks
+	if (EVDS_Object_GetVariable(object,"combustion.of_ratio",&variable) != EVDS_OK) {
+		EVDS_REAL total_fuel = 0.0;
+		EVDS_REAL total_oxidizer = 0.0;
+		SIMC_LIST_ENTRY* entry;
+
+		//Fuel tanks
+		entry = SIMC_List_GetFirst(userdata->fuel_tanks);
+		while (entry) {
+			char type[256] = { 0 };
+			EVDS_REAL fuel_mass;
+			EVDS_VARIABLE* variable;
+			EVDS_OBJECT* tank = (EVDS_OBJECT*)SIMC_List_GetData(userdata->fuel_tanks,entry);
+
+			//Check if fuel mass information is present
+			if (EVDS_Object_GetVariable(tank,"fuel.mass",&variable) != EVDS_OK) {
+				entry = SIMC_List_GetNext(userdata->fuel_tanks,entry);
+				continue;
+			}
+			EVDS_Variable_GetReal(variable,&fuel_mass);
+
+			//Add up
+			total_fuel += fuel_mass;
+			entry = SIMC_List_GetNext(userdata->fuel_tanks,entry);
+		}
+
+		//Oxidizer tanks
+		entry = SIMC_List_GetFirst(userdata->oxidizer_tanks);
+		while (entry) {
+			char type[256] = { 0 };
+			EVDS_REAL fuel_mass;
+			EVDS_VARIABLE* variable;
+			EVDS_OBJECT* tank = (EVDS_OBJECT*)SIMC_List_GetData(userdata->oxidizer_tanks,entry);
+
+			//Check if fuel mass information is present
+			if (EVDS_Object_GetVariable(tank,"fuel.mass",&variable) != EVDS_OK) {
+				entry = SIMC_List_GetNext(userdata->oxidizer_tanks,entry);
+				continue;
+			}
+			EVDS_Variable_GetReal(variable,&fuel_mass);
+
+			//Add up
+			total_oxidizer += fuel_mass;
+			entry = SIMC_List_GetNext(userdata->oxidizer_tanks,entry);
+		}
+
+		//Add O/F ratio if possible
+		if ((total_oxidizer > 0.0) && (total_fuel > 0.0)) {
+			EVDS_Object_AddRealVariable(object,"combustion.of_ratio",total_oxidizer/total_fuel,0);
+			return EVDS_OK;
+		}
+	}
+
+
+	////////////////////////////////////////////////////////////////////////////////
 	// Fall-back hacks (must be last in list)
 	////////////////////////////////////////////////////////////////////////////////
 	//Determine atmospheric F from vacuum F, in a hacky way
@@ -434,69 +492,26 @@ int EVDS_InternalRocketEngine_DetermineMore(EVDS_SYSTEM* system, EVDS_OBJECT* ob
 			return EVDS_OK;
 		}
 	}
-
-
-	////////////////////////////////////////////////////////////////////////////////
-	// ...
-	////////////////////////////////////////////////////////////////////////////////
-	//Try to determine oxidizer:fuel ratio from fuel tanks
-	/*if (EVDS_Object_GetVariable(object,"combustion.of_ratio",&variable) != EVDS_OK) {
-		EVDS_OBJECT* vessel;
-		if (EVDS_Object_GetParentObjectByType(object,"vessel",&vessel) == EVDS_OK) {
-			//Total mass of fuel and oxidizer
-			EVDS_REAL total_fuel = 0.0;
-			EVDS_REAL total_oxidizer = 0.0;
-
-			//Method 1: find all fuel/oxidizer tanks in vessel, divide total oxy by total mass
-			SIMC_LIST* list;
-			SIMC_LIST_ENTRY* entry;
-			EVDS_Object_GetChildren(vessel,&list);
-
-			entry = SIMC_List_GetFirst(list);
-			while (entry) {
-				char fuel_type_str[256] = { 0 };
-				EVDS_REAL fuel_mass_value;
-				EVDS_VARIABLE* fuel_type;
-				EVDS_VARIABLE* fuel_mass;
-				EVDS_OBJECT* fuel_tank = (EVDS_OBJECT*)SIMC_List_GetData(list,entry);
-
-				//Check if object is really a fuel tank
-				if (EVDS_Object_CheckType(fuel_tank,"fuel_tank") != EVDS_OK) {
-					entry = SIMC_List_GetNext(list,entry);
-					continue;
-				}
-
-				//Check if fuel type is explicitly defined
-				if (EVDS_Object_GetVariable(fuel_tank,"fuel_type",&fuel_type) != EVDS_OK) {
-					entry = SIMC_List_GetNext(list,entry);
-					continue;
-				}
-				EVDS_Variable_GetString(fuel_type,fuel_type_str,255,0);
-
-				//Check if fuel mass information is present
-				if (EVDS_Object_GetVariable(fuel_tank,"fuel_mass",&fuel_mass) != EVDS_OK) {
-					entry = SIMC_List_GetNext(list,entry);
-					continue;
-				}
-				EVDS_Variable_GetReal(fuel_mass,&fuel_mass_value);
-
-				//Add up
-				if (EVDS_Material_IsOxidizer(system,fuel_type_str) == EVDS_OK) {
-					total_oxidizer += fuel_mass_value;
-				}
-				if (EVDS_Material_IsFuel(system,fuel_type_str) == EVDS_OK) {
-					total_fuel += fuel_mass_value;
-				}
-				entry = SIMC_List_GetNext(list,entry);
-			}
-
-			//Add O/F ratio if possible
-			if ((total_oxidizer > 0.0) && (total_fuel > 0.0)) {
-				EVDS_Object_AddRealVariable(object,"combustion.of_ratio",total_oxidizer/total_fuel,0);
-				return EVDS_OK;
-			}
-		}		
-	}*/
+	//Determine fuel flow from mass flow for monopropellant engine
+	if ((EVDS_Object_GetVariable(object,"vacuum.fuel_flow",&variable) != EVDS_OK) &&
+		(EVDS_Object_GetVariable(object,"vacuum.oxidizer_flow",&variable) != EVDS_OK)) {
+		EVDS_REAL mass_flow;
+		if (EVDS_Object_GetRealVariable(object,"vacuum.mass_flow",&mass_flow,0) == EVDS_OK) {
+			EVDS_Object_AddRealVariable(object,"vacuum.fuel_flow",mass_flow,0);
+			EVDS_Object_AddRealVariable(object,"vacuum.oxidizer_flow",0.0,0);
+			return EVDS_OK;
+		}
+	}
+	//Determine fuel flow from mass flow for monopropellant engine (atmospheric)
+	if ((EVDS_Object_GetVariable(object,"atmospheric.fuel_flow",&variable) != EVDS_OK) &&
+		(EVDS_Object_GetVariable(object,"atmospheric.oxidizer_flow",&variable) != EVDS_OK)) {
+		EVDS_REAL mass_flow;
+		if (EVDS_Object_GetRealVariable(object,"atmospheric.mass_flow",&mass_flow,0) == EVDS_OK) {
+			EVDS_Object_AddRealVariable(object,"atmospheric.fuel_flow",mass_flow,0);
+			EVDS_Object_AddRealVariable(object,"atmospheric.oxidizer_flow",0.0,0);
+			return EVDS_OK;
+		}
+	}
 	return EVDS_ERROR_INTERNAL;
 }
 
@@ -518,11 +533,11 @@ int EVDS_InternalRocketEngine_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solve
 	//Determine fuel tanks
 	EVDS_InternalRocketEngine_DetermineFuelTanks(userdata,system,object);
 	//Add all possible rocket engine variables
-	while (EVDS_InternalRocketEngine_DetermineMore(system,object) == EVDS_OK) ;
+	while (EVDS_InternalRocketEngine_DetermineMore(userdata,system,object) == EVDS_OK) ;
 
 	//Remember some of the variables for userdata
-	EVDS_Object_AddVariable(object,"key",EVDS_VARIABLE_TYPE_STRING,&userdata->key);
-	EVDS_Object_AddVariable(object,"vacuum.thrust",EVDS_VARIABLE_TYPE_FLOAT,&userdata->force);
+	//EVDS_Object_AddVariable(object,"key",EVDS_VARIABLE_TYPE_STRING,&userdata->key);
+	//EVDS_Object_AddVariable(object,"vacuum.thrust",EVDS_VARIABLE_TYPE_FLOAT,&userdata->force);
 
 	//Generate geometry for the rocket engine
 	EVDS_InternalRocketEngine_GenerateGeometry(object);
@@ -534,11 +549,25 @@ int EVDS_InternalRocketEngine_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solve
 /// @brief Deinitialize engine solver
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_InternalRocketEngine_Deinitialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVDS_OBJECT* object) {
+	SIMC_LIST_ENTRY* entry;
 	EVDS_SOLVER_ENGINE_USERDATA* userdata;
 	EVDS_ERRCHECK(EVDS_Object_GetSolverdata(object,(void**)&userdata));
 
-	if (userdata->fuel_tanks) SIMC_List_Destroy(userdata->fuel_tanks);
-	if (userdata->oxidizer_tanks) SIMC_List_Destroy(userdata->oxidizer_tanks);
+	//Release fuel tanks
+	entry = SIMC_List_GetFirst(userdata->fuel_tanks);
+	while (entry) {
+		EVDS_Object_Release((EVDS_OBJECT*)SIMC_List_GetData(userdata->fuel_tanks,entry));
+		entry = SIMC_List_GetNext(userdata->fuel_tanks,entry);
+	}
+	SIMC_List_Destroy(userdata->fuel_tanks);
+
+	//Release oxidizer tanks
+	entry = SIMC_List_GetFirst(userdata->oxidizer_tanks);
+	while (entry) {
+		EVDS_Object_Release((EVDS_OBJECT*)SIMC_List_GetData(userdata->oxidizer_tanks,entry));
+		entry = SIMC_List_GetNext(userdata->oxidizer_tanks,entry);
+	}
+	SIMC_List_Destroy(userdata->oxidizer_tanks);
 
 	free(userdata);
 	return EVDS_OK;
