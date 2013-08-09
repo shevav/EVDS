@@ -219,7 +219,12 @@ int EVDS_InternalFuelTank_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, E
 	//Calculate total mass
 	if (EVDS_Object_GetVariable(object,"fuel_mass",&variable) == EVDS_OK) {
 		EVDS_Variable_GetReal(variable,&fuel_mass);
-	} 
+	} else {
+		//Specifying fuel capacity works just fine as specifying mass directly
+		if (EVDS_Object_GetVariable(object,"fuel_capacity",&variable) == EVDS_OK) {
+			EVDS_Variable_GetReal(variable,&fuel_mass);
+		}
+	}
 	if (fuel_mass < EVDS_EPS) {
 		EVDS_VARIABLE* material_database;
 		EVDS_VARIABLE* material;

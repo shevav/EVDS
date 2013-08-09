@@ -40,12 +40,12 @@
 #include <math.h>
 #include "evds.h"
 
-//Temporary definition of standard gravity
-#define EVDS_G0	9.80665
-
 
 #ifndef DOXYGEN_INTERNAL_STRUCTS
 typedef struct EVDS_SOLVER_ENGINE_USERDATA_TAG {
+	SIMC_LIST* fuel_tanks;
+	SIMC_LIST* oxidizer_tanks;
+
 	EVDS_VARIABLE *key;
 	EVDS_VARIABLE *force;
 } EVDS_SOLVER_ENGINE_USERDATA;
@@ -135,6 +135,98 @@ int EVDS_InternalRocketEngine_GenerateGeometry(EVDS_OBJECT* object) {
 	}
 	return EVDS_OK;
 }
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// @brief Try to determine fuel tanks which feed this engine.
+///
+/// The fuel tanks will be marked as stored until next engine solver run detects
+/// either of the tanks data was deleted.
+////////////////////////////////////////////////////////////////////////////////
+int EVDS_InternalRocketEngine_DetermineFuelTanks(EVDS_SOLVER_ENGINE_USERDATA* userdata, 
+												 EVDS_SYSTEM* system, EVDS_OBJECT* object) {
+	EVDS_OBJECT* vessel;
+	EVDS_VARIABLE* variable;
+	SIMC_LIST* list;
+	SIMC_LIST_ENTRY* entry;
+	char fuel_type[257] = { 0 };
+	char oxidizer_type[257] = { 0 };
+
+	//No tanks are used by default
+	userdata->fuel_tanks = 0;
+	userdata->oxidizer_tanks = 0;
+
+	//Find parent vessel
+	if (EVDS_Object_GetParentObjectByType(object,"vessel",&vessel) != EVDS_OK) {
+		//No parent vessel: no fuel tanks are used
+		return EVDS_OK;
+	}
+
+	//Try to determine rocket oxidizer/fuel type
+	if (EVDS_Object_GetVariable(object,"combustion.fuel",&variable) == EVDS_OK) {
+		EVDS_Variable_GetString(variable,fuel_type,256,0);
+	}
+	if (EVDS_Object_GetVariable(object,"combustion.oxidizer",&variable) == EVDS_OK) {
+		EVDS_Variable_GetString(variable,oxidizer_type,256,0);
+	}
+
+	//Making use of fuel tanks
+	SIMC_List_Create(&userdata->fuel_tanks,0);
+	SIMC_List_Create(&userdata->oxidizer_tanks,0);
+
+	//Find fuel tanks that are direct children of the vessel
+	EVDS_Object_GetChildren(vessel,&list);
+	entry = SIMC_List_GetFirst(list);
+	while (entry) {
+		int is_oxidizer = 0;
+		char tank_type[256] = { 0 };
+		EVDS_OBJECT* tank = (EVDS_OBJECT*)SIMC_List_GetData(list,entry);
+
+		//Check if object is really a fuel tank
+		if (EVDS_Object_CheckType(tank,"fuel_tank") != EVDS_OK) {
+			entry = SIMC_List_GetNext(list,entry);
+			continue;
+		}
+
+		//Check if fuel type is explicitly defined
+		if (EVDS_Object_GetVariable(tank,"fuel.type",&variable) != EVDS_OK) {
+			entry = SIMC_List_GetNext(list,entry);
+			continue;
+		}
+		EVDS_Variable_GetString(variable,tank_type,255,0);
+
+		//Define fuel used by rocket engine (if not already defined)
+		if (EVDS_Material_IsOxidizer(system,tank_type) == EVDS_OK) is_oxidizer = 1;
+		if ((!fuel_type[0]) && (!is_oxidizer)) {
+			strncpy(fuel_type,tank_type,256);
+			EVDS_ERRCHECK(EVDS_Object_AddVariable(object,"combustion.fuel",EVDS_VARIABLE_TYPE_STRING,&variable));
+			EVDS_Variable_SetString(variable,fuel_type,strlen(fuel_type));
+		}
+		if ((!oxidizer_type[0]) && (is_oxidizer)) {
+			strncpy(oxidizer_type,tank_type,256);
+			EVDS_ERRCHECK(EVDS_Object_AddVariable(object,"combustion.oxidizer",EVDS_VARIABLE_TYPE_STRING,&variable));
+			EVDS_Variable_SetString(variable,oxidizer_type,strlen(oxidizer_type));
+		}
+
+		//If this fuel tank matches required types, add it to lists
+		if (strncmp(fuel_type,tank_type,256) == 0) { //Fuel
+			EVDS_Object_Store(tank);
+			SIMC_List_Append(userdata->fuel_tanks,tank);
+		}
+		if (strncmp(oxidizer_type,tank_type,256) == 0) { //Oxidizer
+			EVDS_Object_Store(tank);
+			SIMC_List_Append(userdata->oxidizer_tanks,tank);
+		}		
+
+		//Check next object
+		entry = SIMC_List_GetNext(list,entry);
+	}
+	return EVDS_OK;
+}
+
+
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -343,6 +435,10 @@ int EVDS_InternalRocketEngine_DetermineMore(EVDS_SYSTEM* system, EVDS_OBJECT* ob
 		}
 	}
 
+
+	////////////////////////////////////////////////////////////////////////////////
+	// ...
+	////////////////////////////////////////////////////////////////////////////////
 	//Try to determine oxidizer:fuel ratio from fuel tanks
 	/*if (EVDS_Object_GetVariable(object,"combustion.of_ratio",&variable) != EVDS_OK) {
 		EVDS_OBJECT* vessel;
@@ -405,11 +501,12 @@ int EVDS_InternalRocketEngine_DetermineMore(EVDS_SYSTEM* system, EVDS_OBJECT* ob
 }
 
 
+
+
 ////////////////////////////////////////////////////////////////////////////////
 /// @brief Initialize solver
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_InternalRocketEngine_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVDS_OBJECT* object) {
-	EVDS_REAL mass = 1.0;
 	EVDS_SOLVER_ENGINE_USERDATA* userdata;
 	if (EVDS_Object_CheckType(object,"rocket_engine") != EVDS_OK) return EVDS_IGNORE_OBJECT; 
 
@@ -418,6 +515,8 @@ int EVDS_InternalRocketEngine_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solve
 	memset(userdata,0,sizeof(EVDS_SOLVER_ENGINE_USERDATA));
 	EVDS_ERRCHECK(EVDS_Object_SetSolverdata(object,userdata));
 
+	//Determine fuel tanks
+	EVDS_InternalRocketEngine_DetermineFuelTanks(userdata,system,object);
 	//Add all possible rocket engine variables
 	while (EVDS_InternalRocketEngine_DetermineMore(system,object) == EVDS_OK) ;
 
@@ -437,6 +536,10 @@ int EVDS_InternalRocketEngine_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solve
 int EVDS_InternalRocketEngine_Deinitialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVDS_OBJECT* object) {
 	EVDS_SOLVER_ENGINE_USERDATA* userdata;
 	EVDS_ERRCHECK(EVDS_Object_GetSolverdata(object,(void**)&userdata));
+
+	if (userdata->fuel_tanks) SIMC_List_Destroy(userdata->fuel_tanks);
+	if (userdata->oxidizer_tanks) SIMC_List_Destroy(userdata->oxidizer_tanks);
+
 	free(userdata);
 	return EVDS_OK;
 }
