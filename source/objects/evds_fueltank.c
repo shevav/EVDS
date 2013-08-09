@@ -41,11 +41,11 @@ int EVDS_InternalFuelTank_GenerateGeometry(EVDS_OBJECT* object) {
 	EVDS_REAL inner_radius = 0.0;
 	EVDS_REAL middle_length = 0.0;
 	
-	EVDS_Object_GetRealVariable(object,"upper_radius",&upper_radius,0);
-	EVDS_Object_GetRealVariable(object,"lower_radius",&lower_radius,0);
-	EVDS_Object_GetRealVariable(object,"outer_radius",&outer_radius,0);
-	EVDS_Object_GetRealVariable(object,"inner_radius",&inner_radius,0);
-	EVDS_Object_GetRealVariable(object,"middle_length",&middle_length,0);
+	EVDS_Object_GetRealVariable(object,"geometry.upper_radius",&upper_radius,0);
+	EVDS_Object_GetRealVariable(object,"geometry.lower_radius",&lower_radius,0);
+	EVDS_Object_GetRealVariable(object,"geometry.outer_radius",&outer_radius,0);
+	EVDS_Object_GetRealVariable(object,"geometry.inner_radius",&inner_radius,0);
+	EVDS_Object_GetRealVariable(object,"geometry.middle_length",&middle_length,0);
 
 	if ((upper_radius == 0.0) &&
 		(lower_radius == 0.0) &&
@@ -161,7 +161,7 @@ int EVDS_InternalFuelTank_Solve(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVDS_O
 
 	//Calculate total mass of the tank
 	EVDS_ERRCHECK(EVDS_Object_GetVariable(object,"mass",&v_mass));
-	EVDS_ERRCHECK(EVDS_Object_GetVariable(object,"fuel_mass",&v_fuel_mass));
+	EVDS_ERRCHECK(EVDS_Object_GetVariable(object,"fuel.mass",&v_fuel_mass));
 	EVDS_ERRCHECK(EVDS_Object_GetVariable(object,"total_mass",&v_total_mass));
 
 	//Set total mass
@@ -187,31 +187,31 @@ int EVDS_InternalFuelTank_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, E
 	EVDS_InternalFuelTank_GenerateGeometry(object);
 
 	//Get total fuel load in percent
-	if (EVDS_Object_GetVariable(object,"load_ratio",&variable) == EVDS_OK) {
+	if (EVDS_Object_GetVariable(object,"fuel.load_ratio",&variable) == EVDS_OK) {
 		EVDS_Variable_GetReal(variable,&load_ratio);
 	}
-	if (EVDS_Object_GetVariable(object,"load_ratio_percent",&variable) == EVDS_OK) {
+	if (EVDS_Object_GetVariable(object,"fuel.load_ratio_percent",&variable) == EVDS_OK) {
 		EVDS_Variable_GetReal(variable,&load_ratio);
 		load_ratio *= 0.01;
 	}
 
 	//Is fuel cryogenic
-	if (EVDS_Object_GetVariable(object,"is_cryogenic",&variable) == EVDS_OK) {
+	if (EVDS_Object_GetVariable(object,"fuel.is_cryogenic",&variable) == EVDS_OK) {
 		EVDS_Variable_GetReal(variable,&is_cryogenic);
 	} else {
 		is_cryogenic = 0;
-		EVDS_Object_AddRealVariable(object,"is_cryogenic",0,0);
+		EVDS_Object_AddRealVariable(object,"fuel.is_cryogenic",0,0);
 	}
 	
 	//Calculate total volume
-	if (EVDS_Object_GetVariable(object,"fuel_volume",&variable) == EVDS_OK) {
+	if (EVDS_Object_GetVariable(object,"fuel.volume",&variable) == EVDS_OK) {
 		EVDS_Variable_GetReal(variable,&fuel_volume);
 	} 
 	if (fuel_volume < EVDS_EPS) {
 		EVDS_MESH* mesh;
 		EVDS_Mesh_Generate(object,&mesh,50.0f,EVDS_MESH_USE_DIVISIONS);
 			fuel_volume = mesh->total_volume;
-			EVDS_Object_AddRealVariable(object,"fuel_volume",0,&variable);
+			EVDS_Object_AddRealVariable(object,"fuel.volume",0,&variable);
 			EVDS_Variable_SetReal(variable,fuel_volume);
 		EVDS_Mesh_Destroy(mesh);
 	}
@@ -221,7 +221,7 @@ int EVDS_InternalFuelTank_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, E
 		EVDS_Variable_GetReal(variable,&fuel_mass);
 	} else {
 		//Specifying fuel capacity works just fine as specifying mass directly
-		if (EVDS_Object_GetVariable(object,"fuel_capacity",&variable) == EVDS_OK) {
+		if (EVDS_Object_GetVariable(object,"fuel.capacity",&variable) == EVDS_OK) {
 			EVDS_Variable_GetReal(variable,&fuel_mass);
 		}
 	}
@@ -231,7 +231,7 @@ int EVDS_InternalFuelTank_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, E
 		EVDS_REAL fuel_density = 1000.0;
 
 		//Check if material is defined
-		if ((EVDS_Object_GetVariable(object,"fuel_type",&variable) == EVDS_OK) &&
+		if ((EVDS_Object_GetVariable(object,"fuel.type",&variable) == EVDS_OK) &&
 			(EVDS_System_GetDatabaseByName(system,"material",&material_database) == EVDS_OK)) {
 			char material_name[1024] = { 0 };
 			EVDS_Variable_GetString(variable,material_name,1023,0);
@@ -264,19 +264,19 @@ int EVDS_InternalFuelTank_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, E
 			//Calculate fuel mass
 			fuel_mass = fuel_volume * fuel_density;
 		}
-		EVDS_Object_AddRealVariable(object,"fuel_mass",0,&variable);
+		EVDS_Object_AddRealVariable(object,"fuel.mass",0,&variable);
 		EVDS_Variable_SetReal(variable,fuel_mass);
 	}
 
 	//Remember the tank capacity
-	EVDS_Object_AddRealVariable(object,"fuel_capacity",0,&variable);
+	EVDS_Object_AddRealVariable(object,"fuel.capacity",0,&variable);
 	EVDS_Variable_SetReal(variable,fuel_mass);
 
 	//Apply fuel load ratio
 	if (load_ratio == 0.0) load_ratio = 1.0;
 	if (load_ratio > 1.0) load_ratio = 1.0;
 	if (load_ratio < 0.0) load_ratio = 0.0;
-	EVDS_Object_GetVariable(object,"fuel_mass",&variable);
+	EVDS_Object_GetVariable(object,"fuel.mass",&variable);
 	EVDS_Variable_SetReal(variable,fuel_mass*load_ratio);
 
 	//Fuel tanks have mass

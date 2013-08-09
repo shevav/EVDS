@@ -38,8 +38,18 @@ struct {
 	char* old_name;			/// Old variable name
 	char* new_name;			/// New variable name (in most new EVDS version)
 } EVDS_Internal_ParameterRemappingTable[] = {
-	{ 31, "fuel_tank", "fuel_type", "fuel.type" },
-	{ 31, "fuel_tank", "fuel_mass", "fuel.mass" },
+	{ 31, "fuel_tank",		"fuel_type",			"fuel.type" },
+	{ 31, "fuel_tank",		"fuel_mass",			"fuel.mass" },
+	{ 31, "fuel_tank",		"fuel_volume",			"fuel.volume" },
+	{ 31, "fuel_tank",		"fuel_capacity",		"fuel.capacity" },
+	{ 31, "fuel_tank",		"is_cryogenic",			"fuel.is_cryogenic" },
+	{ 31, "fuel_tank",		"load_ratio",			"fuel.mass" },
+	{ 31, "fuel_tank",		"load_ratio_percent",	"fuel.load_ratio_percent" },
+	{ 31, "fuel_tank",		"upper_radius",			"geometry.upper_radius" },
+	{ 31, "fuel_tank",		"lower_radius",			"geometry.lower_radius" },
+	{ 31, "fuel_tank",		"outer_radius",			"geometry.outer_radius" },
+	{ 31, "fuel_tank",		"inner_radius",			"geometry.inner_radius" },
+	{ 31, "fuel_tank",		"middle_length",		"geometry.middle_length" },
 };
 const int EVDS_Internal_ParameterRemappingTableCount = 
 	sizeof(EVDS_Internal_ParameterRemappingTable) / sizeof(EVDS_Internal_ParameterRemappingTable[0]);
