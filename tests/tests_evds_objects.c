@@ -642,6 +642,7 @@ void Test_EVDS_ROCKET_ENGINE() {
 	START_TEST("Rocket engine (basic tests)") {
 		////////////////////////////////////////////////////////////////////////
 		EVDS_OBJECT* engine;
+		EVDS_VARIABLE* command_throttle;
 		ERROR_CHECK(EVDS_Object_LoadFromString(root,
 "<EVDS version=\"34\">"
 "    <object name=\"Vessel\" type=\"vessel\">"
@@ -662,6 +663,7 @@ void Test_EVDS_ROCKET_ENGINE() {
 "</EVDS>",&object));
 		ERROR_CHECK(EVDS_Object_Initialize(object,1));
 		ERROR_CHECK(EVDS_System_GetObjectByName(system,"Rocket engine",0,&engine));
+		ERROR_CHECK(EVDS_Object_GetVariable(engine,"command.throttle",&command_throttle));
 
 		//Check automatically detected fuel type
 		ERROR_CHECK(EVDS_Object_GetVariable(engine,"combustion.fuel",&variable));
@@ -675,7 +677,52 @@ void Test_EVDS_ROCKET_ENGINE() {
 		//Automatically detected O:F ratio
 		ERROR_CHECK(EVDS_Object_GetRealVariable(engine,"combustion.of_ratio",&real,&variable));
 		REAL_EQUAL_TO(real,4.0);
-		
 
+
+		//Command throttle to 100% and check current parameters
+		ERROR_CHECK(EVDS_Variable_SetReal(command_throttle,1.0));
+		ERROR_CHECK(EVDS_Object_Solve(object,0.0));
+
+		ERROR_CHECK(EVDS_Object_GetRealVariable(engine,"current.thrust",&real,&variable));
+		REAL_EQUAL_TO(real,100.0);
+		ERROR_CHECK(EVDS_Object_GetRealVariable(engine,"current.isp",&real,&variable));
+		REAL_EQUAL_TO(real,400.0);
+		ERROR_CHECK(EVDS_Object_GetRealVariable(engine,"current.throttle",&real,&variable));
+		REAL_EQUAL_TO(real,1.0);
+
+		ERROR_CHECK(EVDS_Object_GetRealVariable(engine,"current.mass_flow",&real,&variable));
+		REAL_EQUAL_TO(real,100.0/(EVDS_G0*400.0));
+		ERROR_CHECK(EVDS_Object_GetRealVariable(engine,"current.fuel_flow",&real,&variable));
+		REAL_EQUAL_TO(real,0.20*100.0/(EVDS_G0*400.0));
+		ERROR_CHECK(EVDS_Object_GetRealVariable(engine,"current.oxidizer_flow",&real,&variable));
+		REAL_EQUAL_TO(real,0.80*100.0/(EVDS_G0*400.0));
+
+
+		//Command throttle to 50% and check current parameters
+		ERROR_CHECK(EVDS_Variable_SetReal(command_throttle,0.5));
+		ERROR_CHECK(EVDS_Object_Solve(object,0.0));
+
+		ERROR_CHECK(EVDS_Object_GetRealVariable(engine,"current.thrust",&real,&variable));
+		REAL_EQUAL_TO(real,50.0);
+		ERROR_CHECK(EVDS_Object_GetRealVariable(engine,"current.isp",&real,&variable));
+		REAL_EQUAL_TO(real,400.0);
+		ERROR_CHECK(EVDS_Object_GetRealVariable(engine,"current.throttle",&real,&variable));
+		REAL_EQUAL_TO(real,0.5);
+
+		ERROR_CHECK(EVDS_Object_GetRealVariable(engine,"current.mass_flow",&real,&variable));
+		REAL_EQUAL_TO(real,50.0/(EVDS_G0*400.0));
+		ERROR_CHECK(EVDS_Object_GetRealVariable(engine,"current.fuel_flow",&real,&variable));
+		REAL_EQUAL_TO(real,0.20*50.0/(EVDS_G0*400.0));
+		ERROR_CHECK(EVDS_Object_GetRealVariable(engine,"current.oxidizer_flow",&real,&variable));
+		REAL_EQUAL_TO(real,0.80*50.0/(EVDS_G0*400.0));
+
+
+		//Check actual returned thrust
+		ERROR_CHECK(EVDS_Object_Integrate(object,0.0,0,&derivative));
+		VECTOR_EQUAL_TO(&derivative.force,-50.0,0.0,0.0); //Half thrust
+
+		EVDS_Vector_GetPositionVector(&derivative.force,&vector); //Must be located in reference point
+		EQUAL_TO(vector.coordinate_system,object);
+		VECTOR_EQUAL_TO(&vector,0.0,0.0,0.0);
 	} END_TEST
 }

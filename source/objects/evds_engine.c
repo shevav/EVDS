@@ -46,10 +46,41 @@ typedef struct EVDS_SOLVER_ENGINE_USERDATA_TAG {
 	SIMC_LIST* fuel_tanks;
 	SIMC_LIST* oxidizer_tanks;
 
-	EVDS_VARIABLE *atmospheric_exhaust_velocity;
+	//Physics-related variables
+	EVDS_VARIABLE *vacuum_thrust;
+	EVDS_VARIABLE *vacuum_fuel_flow;
+	EVDS_VARIABLE *vacuum_oxidizer_flow;
+	EVDS_VARIABLE *vacuum_isp;
+
 	EVDS_VARIABLE *atmospheric_thrust;
 	EVDS_VARIABLE *atmospheric_fuel_flow;
 	EVDS_VARIABLE *atmospheric_oxidizer_flow;
+	EVDS_VARIABLE *atmospheric_isp;
+
+	EVDS_VARIABLE *combustion_of_ratio;
+
+	//Current engine state
+	EVDS_VARIABLE *current_mass_flow;
+	EVDS_VARIABLE *current_fuel_flow;
+	EVDS_VARIABLE *current_oxidizer_flow;
+	EVDS_VARIABLE *current_thrust;
+	EVDS_VARIABLE *current_isp;
+	EVDS_VARIABLE *current_exhaust_velocity;
+	EVDS_VARIABLE *current_throttle;
+
+	//Control variables
+	EVDS_VARIABLE *control_min_throttle;
+	EVDS_VARIABLE *control_max_throttle;
+	EVDS_VARIABLE *control_throttle_speed;
+	EVDS_VARIABLE *control_startup_time;
+	EVDS_VARIABLE *control_shutdown_time;
+
+	//Engine command lines
+	EVDS_VARIABLE *command_throttle;
+
+	//Overrides (for enforcing certain engine parameters)
+	EVDS_VARIABLE *override_throttle;
+
 
 	EVDS_VARIABLE *force;
 } EVDS_SOLVER_ENGINE_USERDATA;
@@ -401,6 +432,22 @@ int EVDS_InternalRocketEngine_DetermineMore(EVDS_SOLVER_ENGINE_USERDATA* userdat
 
 
 	////////////////////////////////////////////////////////////////////////////////
+	// Nozzle physics parameters
+	////////////////////////////////////////////////////////////////////////////////
+	//Nozzle exit pressure based on atmospheric & vaccum thrust
+	/*if (EVDS_Object_GetVariable(object,"nozzle.exit_pressure",&variable) != EVDS_OK) {
+		EVDS_REAL vacuum_thrust,atmospheric_thrust;
+		if ((EVDS_Object_GetRealVariable(object,"vacuum.thrust",&vacuum_thrust,0) == EVDS_OK) &&
+			(EVDS_Object_GetRealVariable(object,"atmospheric.thrust",&atmospheric_thrust,0) == EVDS_OK)){
+
+			EVDS_Object_AddRealVariable(object,"nozzle.exit_pressure",
+				(atmospheric_thrust - vacuum_thrust)/nozzle_area,0);
+			return EVDS_OK;
+		}
+	}*/
+
+
+	////////////////////////////////////////////////////////////////////////////////
 	// Combustion oxidizer/fuel ratio from fuel tanks
 	////////////////////////////////////////////////////////////////////////////////
 	//Try to determine oxidizer:fuel ratio from fuel tanks
@@ -536,8 +583,36 @@ int EVDS_InternalRocketEngine_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solve
 	while (EVDS_InternalRocketEngine_DetermineMore(userdata,system,object) == EVDS_OK) ;
 
 	//Remember some of the variables for userdata
-	//EVDS_Object_AddVariable(object,"key",EVDS_VARIABLE_TYPE_STRING,&userdata->key);
-	//EVDS_Object_AddVariable(object,"vacuum.thrust",EVDS_VARIABLE_TYPE_FLOAT,&userdata->force);
+	EVDS_Object_AddRealVariable(object,"vacuum.thrust",0,				&userdata->vacuum_thrust);
+	EVDS_Object_AddRealVariable(object,"vacuum.fuel_flow",0,			&userdata->vacuum_fuel_flow);
+	EVDS_Object_AddRealVariable(object,"vacuum.oxidizer_flow",0,		&userdata->vacuum_oxidizer_flow);
+	EVDS_Object_AddRealVariable(object,"vacuum.isp",0,					&userdata->vacuum_isp);
+																		
+	EVDS_Object_AddRealVariable(object,"atmospheric.thrust",0,			&userdata->atmospheric_thrust);
+	EVDS_Object_AddRealVariable(object,"atmospheric.fuel_flow",0,		&userdata->atmospheric_fuel_flow);
+	EVDS_Object_AddRealVariable(object,"atmospheric.oxidizer_flow",0,	&userdata->atmospheric_oxidizer_flow);
+	EVDS_Object_AddRealVariable(object,"atmospheric.isp",0,				&userdata->atmospheric_isp);
+
+	EVDS_Object_GetVariable(object,"combustion.of_ratio",				&userdata->combustion_of_ratio);
+																		
+	EVDS_Object_AddRealVariable(object,"current.mass_flow",0,			&userdata->current_mass_flow);
+	EVDS_Object_AddRealVariable(object,"current.fuel_flow",0,			&userdata->current_fuel_flow);
+	EVDS_Object_AddRealVariable(object,"current.oxidizer_flow",0,		&userdata->current_oxidizer_flow);
+	EVDS_Object_AddRealVariable(object,"current.thrust",0,				&userdata->current_thrust);
+	EVDS_Object_AddRealVariable(object,"current.isp",0,					&userdata->current_isp);
+	EVDS_Object_AddRealVariable(object,"current.exhaust_velocity",0,	&userdata->current_exhaust_velocity);
+	EVDS_Object_AddRealVariable(object,"current.throttle",0,			&userdata->current_throttle);
+																		
+	EVDS_Object_AddRealVariable(object,"control.min_throttle",0,		&userdata->control_min_throttle);
+	EVDS_Object_AddRealVariable(object,"control.max_throttle",0,		&userdata->control_max_throttle);
+	EVDS_Object_AddRealVariable(object,"control.throttle_speed",0,		&userdata->control_throttle_speed);
+	EVDS_Object_AddRealVariable(object,"control.startup_time",0,		&userdata->control_startup_time);
+	EVDS_Object_AddRealVariable(object,"control.shutdown_time",0,		&userdata->control_shutdown_time);
+																		
+	EVDS_Object_AddRealVariable(object,"command.throttle",0,			&userdata->command_throttle);
+	
+	//Add overrides
+	EVDS_Object_GetVariable(object,"override.throttle",					&userdata->override_throttle);
 
 	//Generate geometry for the rocket engine
 	EVDS_InternalRocketEngine_GenerateGeometry(object);
@@ -575,10 +650,93 @@ int EVDS_InternalRocketEngine_Deinitialize(EVDS_SYSTEM* system, EVDS_SOLVER* sol
 
 
 ////////////////////////////////////////////////////////////////////////////////
+/// @brief Very basic engine model.
+///
+/// This model takes linear interpolation of engine Isp, engine thrust between
+/// sea level (1 bar) and vacuum and calculates resulting thrust based on that.
+////////////////////////////////////////////////////////////////////////////////
+int EVDS_InternalRocketEngine_Solve_Basic(EVDS_SOLVER_ENGINE_USERDATA* userdata, 
+										  EVDS_OBJECT* object, EVDS_REAL delta_time) {
+	EVDS_REAL atmospheric_pressure_bar = 0.0; //Atmospheric pressure in bar
+	EVDS_REAL vacuum_thrust,atmospheric_thrust,current_thrust;
+	EVDS_REAL vacuum_isp,atmospheric_isp,current_isp;
+	EVDS_REAL current_throttle;
+	EVDS_REAL current_mass_flow;
+
+	//Determine atmospheric pressure
+	atmospheric_pressure_bar = 0.0;
+	if (atmospheric_pressure_bar < 0.0) atmospheric_pressure_bar = 0.0;
+	if (atmospheric_pressure_bar > 1.0) atmospheric_pressure_bar = 1.0;
+
+	//Calculate current engine Isp
+	EVDS_Variable_GetReal(userdata->vacuum_isp,&vacuum_isp);
+	EVDS_Variable_GetReal(userdata->atmospheric_isp,&atmospheric_isp);
+	current_isp = 
+		vacuum_isp*(1.0 - atmospheric_pressure_bar) + atmospheric_isp*(atmospheric_pressure_bar);
+	EVDS_Variable_SetReal(userdata->current_isp,current_isp);
+
+	//Calculate current engine Ve
+	EVDS_Variable_SetReal(userdata->current_exhaust_velocity,current_isp*EVDS_G0);
+
+	//Calculate current thrust based on current throttle and vacuum thrust
+	EVDS_Variable_GetReal(userdata->vacuum_thrust,&vacuum_thrust);
+	EVDS_Variable_GetReal(userdata->atmospheric_thrust,&atmospheric_thrust);
+	EVDS_Variable_GetReal(userdata->current_throttle,&current_throttle);
+	current_thrust = 
+		(vacuum_thrust*(1.0-atmospheric_pressure_bar)+atmospheric_thrust*(atmospheric_pressure_bar))*current_throttle;
+	EVDS_Variable_SetReal(userdata->current_thrust,current_thrust);
+
+	//Calculate mass flow
+	current_mass_flow = current_thrust / (EVDS_G0 * current_isp);
+	EVDS_Variable_SetReal(userdata->current_mass_flow, current_mass_flow);
+	if (userdata->combustion_of_ratio) { //Bi-propellant engine
+		EVDS_REAL of_ratio;
+		EVDS_Variable_GetReal(userdata->combustion_of_ratio,&of_ratio);
+
+		EVDS_Variable_SetReal(userdata->current_fuel_flow,              current_mass_flow/(1.0+of_ratio));
+		EVDS_Variable_SetReal(userdata->current_oxidizer_flow, of_ratio*current_mass_flow/(1.0+of_ratio));
+	} else { //Mono-propellant engine
+		EVDS_Variable_SetReal(userdata->current_fuel_flow,    current_mass_flow);
+		EVDS_Variable_SetReal(userdata->current_oxidizer_flow,0.0);
+	}
+	return EVDS_OK;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
 /// @brief Update engine internal state
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_InternalRocketEngine_Solve(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVDS_OBJECT* object, EVDS_REAL delta_time) {
-	return EVDS_OK;
+	EVDS_REAL command_throttle,current_throttle;
+	EVDS_REAL control_min_throttle,control_max_throttle;
+	EVDS_REAL control_startup_time,control_shutdown_time;
+	EVDS_REAL control_throttle_speed;
+
+	EVDS_SOLVER_ENGINE_USERDATA* userdata;
+	EVDS_ERRCHECK(EVDS_Object_GetSolverdata(object,(void**)&userdata));
+
+	//Get control parameters
+	EVDS_Variable_GetReal(userdata->control_min_throttle,	&control_min_throttle);
+	EVDS_Variable_GetReal(userdata->control_max_throttle,	&control_max_throttle);
+	EVDS_Variable_GetReal(userdata->control_throttle_speed,	&control_throttle_speed);
+	EVDS_Variable_GetReal(userdata->control_startup_time,	&control_startup_time);
+	EVDS_Variable_GetReal(userdata->control_shutdown_time,	&control_shutdown_time);
+
+	//Calculate current throttle based on commanded throttle
+	EVDS_Variable_GetReal(userdata->command_throttle,&command_throttle);
+	current_throttle = command_throttle;
+	EVDS_Variable_SetReal(userdata->current_throttle,current_throttle);
+
+	//Apply throttling limits
+	if ((control_min_throttle != 0.0) && (current_throttle < control_min_throttle)) {
+		current_throttle = control_min_throttle;
+	}
+	if ((control_max_throttle != 0.0) && (current_throttle > control_max_throttle)) {
+		current_throttle = control_max_throttle;
+	}
+
+	//Use basic model for engine perfomance
+	return EVDS_InternalRocketEngine_Solve_Basic(userdata,object,delta_time);
 }
 
 
@@ -587,48 +745,16 @@ int EVDS_InternalRocketEngine_Solve(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EV
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_InternalRocketEngine_Integrate(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVDS_OBJECT* object,
 								  EVDS_REAL delta_time, EVDS_STATE_VECTOR* state, EVDS_STATE_VECTOR_DERIVATIVE* derivative) {
-	char key = 0;
-	EVDS_REAL force;
+	EVDS_REAL current_thrust;
 	EVDS_SOLVER_ENGINE_USERDATA* userdata;
 	EVDS_ERRCHECK(EVDS_Object_GetSolverdata(object,(void**)&userdata));
 
-	//Get variables
-	{
-		/*static shut = 0;
-		EVDS_OBJECT* inertial;
-		EVDS_STATE_VECTOR vector;
-		EVDS_VECTOR vel;
-		EVDS_REAL mag2;
-		EVDS_System_GetRootInertialSpace(system,&inertial);
-		EVDS_Object_GetStateVector(object,&vector);
-		EVDS_Vector_Convert(&vel,&vector.velocity,inertial);
-		EVDS_Vector_Dot(&mag2,&vel,&vel);
-		mag2 = sqrt(mag2);
-		if (mag2 > 3500.0) shut = 1;
-		if (shut) return EVDS_OK;*/
-		return EVDS_OK;
-	}
+	//Get current thrust
+	EVDS_Variable_GetReal(userdata->current_thrust,&current_thrust);
 
-
-	//EVDS_Variable_GetReal(userdata->force,&force);
-	//EVDS_Variable_GetString(userdata->key,&key,1,0);
-	//EVDS_Vector_Set(&derivative->force,EVDS_VECTOR_FORCE,object,-force,0.0,0.0);
-	//EVDS_Vector_SetPosition(&derivative->force,object,0.0,0.0,0.0);
-
-	//Calculate force
-	//if (key) {
-		/*extern int glfwGetKey( int key );
-
-		if (glfwGetKey(key)) {
-			EVDS_Vector_Set(&derivative->force,EVDS_VECTOR_FORCE,object,force,0.0,0.0);
-		} else {
-			EVDS_Vector_Set(&derivative->force,EVDS_VECTOR_FORCE,object,0.0,0.0,0.0);
-		}*/
-	//} else {
-		//EVDS_Vector_Set(&derivative->force,EVDS_VECTOR_FORCE,object,0.0,0.0,0.0);
-	//}
-	//EVDS_Vector_Set(&derivative->force,EVDS_VECTOR_FORCE,object,-100.0,0.0,0.0);
-	//EVDS_Vector_SetPosition(&derivative->force,object,0.0,0.0,0.0);
+	//Apply current thrust at engines reference point
+	EVDS_Vector_Set(&derivative->force,EVDS_VECTOR_FORCE,object,-current_thrust,0.0,0.0);
+	EVDS_Vector_SetPosition(&derivative->force,object,0.0,0.0,0.0);
 	return EVDS_OK;
 }
 

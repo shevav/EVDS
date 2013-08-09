@@ -116,6 +116,8 @@ int Test_InList(void* ptr, SIMC_LIST* list);
 	EVDS_QUATERNION quaternion = { 0 }; \
 	EVDS_QUATERNION quaternion1 = { 0 }; \
 	EVDS_QUATERNION quaternion2 = { 0 }; \
+	EVDS_STATE_VECTOR state; \
+	EVDS_STATE_VECTOR_DERIVATIVE derivative; \
 	EVDS_SYSTEM* system; \
 	EVDS_OBJECT* object; \
 	EVDS_VARIABLE* variable; \
