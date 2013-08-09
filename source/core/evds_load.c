@@ -30,6 +30,38 @@
 
 
 ////////////////////////////////////////////////////////////////////////////////
+/// Table of variables that must be renamed (for backwards compatibility)
+////////////////////////////////////////////////////////////////////////////////
+struct {
+	int last_version;		/// Remapping only for files older or matching this version
+	char* object_type;		/// Object type
+	char* old_name;			/// Old variable name
+	char* new_name;			/// New variable name (in most new EVDS version)
+} EVDS_Internal_ParameterRemappingTable[] = {
+	{ 31, "fuel_tank", "fuel_type", "fuel.type" },
+	{ 31, "fuel_tank", "fuel_mass", "fuel.mass" },
+};
+const int EVDS_Internal_ParameterRemappingTableCount = 
+	sizeof(EVDS_Internal_ParameterRemappingTable) / sizeof(EVDS_Internal_ParameterRemappingTable[0]);
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// Table of object names that must be renamed (for backwards compatibility)
+////////////////////////////////////////////////////////////////////////////////
+struct {
+	int last_version;		/// Remapping only for files older or matching this version
+	char* old_name;			/// Old object name
+	char* new_name;			/// New object name (in most new EVDS version)
+} EVDS_Internal_ObjectRemappingTable[] = {
+	{ 0, "test", "misc.test" },
+};
+const int EVDS_Internal_ObjectRemappingTableCount = 
+	sizeof(EVDS_Internal_ObjectRemappingTable) / sizeof(EVDS_Internal_ObjectRemappingTable[0]);
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////
 /// @brief Compare two 1D table entries
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_Internal_CompareTableEntries(const EVDS_VARIABLE_TVALUE_ENTRY* v1, const EVDS_VARIABLE_TVALUE_ENTRY* v2) {
@@ -43,7 +75,9 @@ int EVDS_Internal_CompareTableEntries(const EVDS_VARIABLE_TVALUE_ENTRY* v1, cons
 /// @brief Load parameter from the XML file
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_Internal_LoadParameter(EVDS_OBJECT* object, EVDS_VARIABLE* parent_variable, 
-								SIMC_XML_DOCUMENT* doc, SIMC_XML_ELEMENT* element, SIMC_XML_ATTRIBUTE* attribute) {
+								SIMC_XML_DOCUMENT* doc, SIMC_XML_ELEMENT* element, SIMC_XML_ATTRIBUTE* attribute,
+								EVDS_OBJECT_LOADEX* info) {
+	int i;
 	char* value;
 	char* name;
 	char* vtype;
@@ -71,6 +105,24 @@ int EVDS_Internal_LoadParameter(EVDS_OBJECT* object, EVDS_VARIABLE* parent_varia
 		vtype = "";
 	}
 	if (!name) name = "";
+
+	//Remap parameter name (to provide compatibility with old file versions)
+	for (i = 0; i < EVDS_Internal_ParameterRemappingTableCount; i++) {
+		//Find object relevant to the variable
+		EVDS_OBJECT* related_object = object;
+		if ((!related_object) && (parent_variable)) related_object = parent_variable->object;
+
+		//Check if remapping criteria are satisfied
+		if ((related_object) &&
+			((info->version <= EVDS_Internal_ParameterRemappingTable[i].last_version) ||
+			 (EVDS_Internal_ParameterRemappingTable[i].last_version == 0)) &&
+			(strncmp(related_object->type,EVDS_Internal_ParameterRemappingTable[i].object_type,256) == 0) &&
+			(strcmp(name,EVDS_Internal_ParameterRemappingTable[i].old_name) == 0)) {
+			//Use new name if object type matches, and old parameter name is used
+			name = EVDS_Internal_ParameterRemappingTable[i].new_name;
+			break;
+		}
+	}
 
 	//Try to guess data type based on value (FIXME: do not ignore "type" attribute)
 	if (value) {
@@ -221,14 +273,14 @@ int EVDS_Internal_LoadParameter(EVDS_OBJECT* object, EVDS_VARIABLE* parent_varia
 		//Load all nested parameters
 		EVDS_ERRCHECK(SIMC_XML_GetElement(doc,element,&nested_element,0));
 		while (nested_element) {
-			EVDS_ERRCHECK(EVDS_Internal_LoadParameter(0,variable,doc,nested_element,0));
+			EVDS_ERRCHECK(EVDS_Internal_LoadParameter(0,variable,doc,nested_element,0,info));
 			EVDS_ERRCHECK(SIMC_XML_Iterate(doc,element,&nested_element,0));
 		}
 
 		//Load all nested attributes
 		EVDS_ERRCHECK(SIMC_XML_GetFirstAttribute(doc,element,&nested_attribute));
 		while (nested_attribute) {
-			EVDS_ERRCHECK(EVDS_Internal_LoadParameter(0,variable,doc,0,nested_attribute));
+			EVDS_ERRCHECK(EVDS_Internal_LoadParameter(0,variable,doc,0,nested_attribute,info));
 			EVDS_ERRCHECK(SIMC_XML_IterateAttributes(doc,nested_attribute,&nested_attribute));
 		}
 	}
@@ -239,7 +291,8 @@ int EVDS_Internal_LoadParameter(EVDS_OBJECT* object, EVDS_VARIABLE* parent_varia
 ////////////////////////////////////////////////////////////////////////////////
 /// @brief Load object from the XML file
 ////////////////////////////////////////////////////////////////////////////////
-int EVDS_Internal_LoadObject(EVDS_OBJECT* parent, SIMC_XML_DOCUMENT* doc, SIMC_XML_ELEMENT* root, EVDS_OBJECT** p_object) {
+int EVDS_Internal_LoadObject(EVDS_OBJECT* parent, SIMC_XML_DOCUMENT* doc, SIMC_XML_ELEMENT* root, EVDS_OBJECT** p_object,
+							 EVDS_OBJECT_LOADEX* info) {
 	EVDS_OBJECT* object;
 	SIMC_XML_ELEMENT* element;
 	char *name, *type;
@@ -314,14 +367,14 @@ int EVDS_Internal_LoadObject(EVDS_OBJECT* parent, SIMC_XML_DOCUMENT* doc, SIMC_X
 	//Read parameters
 	EVDS_ERRCHECK(SIMC_XML_GetElement(doc,root,&element,"parameter"));
 	while (element) {
-		EVDS_ERRCHECK(EVDS_Internal_LoadParameter(object,0,doc,element,0));
+		EVDS_ERRCHECK(EVDS_Internal_LoadParameter(object,0,doc,element,0,info));
 		EVDS_ERRCHECK(SIMC_XML_Iterate(doc,root,&element,"parameter"));
 	}
 
 	//Read all children
 	EVDS_ERRCHECK(SIMC_XML_GetElement(doc,root,&element,"object"));
 	while (element) {
-		EVDS_ERRCHECK(EVDS_Internal_LoadObject(object,doc,element,0));
+		EVDS_ERRCHECK(EVDS_Internal_LoadObject(object,doc,element,0,info));
 		EVDS_ERRCHECK(SIMC_XML_Iterate(doc,root,&element,"object"));
 	}
 
@@ -347,14 +400,14 @@ int EVDS_Internal_LoadFile(EVDS_OBJECT* parent, SIMC_XML_DOCUMENT* doc, SIMC_XML
 	SIMC_XML_ELEMENT* element;
 	
 	//Load all objects inside the file
-	if ((!info) || (!(info->flags & EVDS_OBJECT_LOADEX_NO_OBJECTS))) {
+	if ((info->flags == 0xFFFFFFFF) || (!(info->flags & EVDS_OBJECT_LOADEX_NO_OBJECTS))) {
 		EVDS_ERRCHECK(SIMC_XML_GetElement(doc,root,&element,"object"));
 		while (element) {
 			EVDS_OBJECT* object;
-			EVDS_ERRCHECK(EVDS_Internal_LoadObject(parent,doc,element,&object));
+			EVDS_ERRCHECK(EVDS_Internal_LoadObject(parent,doc,element,&object,info));
 			if (p_object && (*p_object == 0)) {
 				*p_object = object;
-			} else if (info) {
+			} else if (info->flags != 0xFFFFFFFF) {
 				if (!info->firstObject) {
 					info->firstObject = object;
 					if (info->flags & EVDS_OBJECT_LOADEX_ONLY_FIRST) {
@@ -373,7 +426,7 @@ int EVDS_Internal_LoadFile(EVDS_OBJECT* parent, SIMC_XML_DOCUMENT* doc, SIMC_XML
 	}
 
 	//Load all databases
-	if ((!info) || (!(info->flags & EVDS_OBJECT_LOADEX_NO_DATABASES))) {
+	if ((info->flags == 0xFFFFFFFF) || (!(info->flags & EVDS_OBJECT_LOADEX_NO_DATABASES))) {
 		EVDS_ERRCHECK(SIMC_XML_GetElement(doc,root,&element,"database"));
 		while (element) {
 			char* name;
@@ -390,7 +443,7 @@ int EVDS_Internal_LoadFile(EVDS_OBJECT* parent, SIMC_XML_DOCUMENT* doc, SIMC_XML
 			//Load all entries
 			EVDS_ERRCHECK(SIMC_XML_GetElement(doc,element,&nested,"entry"));
 			while (nested) {
-				EVDS_ERRCHECK(EVDS_Internal_LoadParameter(0,database,doc,nested,0));
+				EVDS_ERRCHECK(EVDS_Internal_LoadParameter(0,database,doc,nested,0,info));
 				EVDS_ERRCHECK(SIMC_XML_Iterate(doc,element,&nested,"entry"));
 			}
 
@@ -407,13 +460,21 @@ int EVDS_Internal_LoadFile(EVDS_OBJECT* parent, SIMC_XML_DOCUMENT* doc, SIMC_XML
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_Internal_ParseFile(EVDS_OBJECT* parent, SIMC_XML_DOCUMENT* doc, 
 							EVDS_OBJECT** p_object, EVDS_OBJECT_LOADEX* info) {
+	EVDS_OBJECT_LOADEX default_info = { 0 };
 	SIMC_XML_ELEMENT* root;
 	SIMC_XML_ELEMENT* element;
 	int version;
 
+	//Use default information structure
+	if (!info) info = &default_info;
+	default_info.flags = 0xFFFFFFFF;
+
+	//Read file version
 	EVDS_ERRCHECK(SIMC_XML_GetRootElement(doc,&root,"EVDS"));
 	EVDS_ERRCHECK(SIMC_XML_GetAttributeInt(doc,root,"version",&version));
-	if (info) info->version = version;
+	info->version = version;
+
+	//Load single object or multiple objects
 	if (root) {
 		//Load a single object
 		EVDS_ERRCHECK(EVDS_Internal_LoadFile(parent,doc,root,p_object,info));
@@ -421,6 +482,8 @@ int EVDS_Internal_ParseFile(EVDS_OBJECT* parent, SIMC_XML_DOCUMENT* doc,
 		//Load all objects inside data file
 		EVDS_ERRCHECK(SIMC_XML_GetRootElement(doc,&root,"DATA"));
 		EVDS_ERRCHECK(SIMC_XML_GetElement(doc,root,&element,"EVDS"));
+		EVDS_ERRCHECK(SIMC_XML_GetAttributeInt(doc,root,"version",&version));
+		info->version = version; //Get version anyway
 		while (element) {
 			EVDS_ERRCHECK(EVDS_Internal_LoadFile(parent,doc,element,p_object,info));
 			EVDS_ERRCHECK(SIMC_XML_Iterate(doc,root,&element,"EVDS"));
