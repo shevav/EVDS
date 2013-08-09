@@ -78,6 +78,13 @@ typedef unsigned int EVDS_VARIABLE_TYPE;
 /// Largest meaningful number represented by a single-precision float
 #define EVDS_INFINITYf 1e37f
 
+/// Standard gravity
+#define EVDS_G0	9.80665
+/// Speed of light
+#define EVDS_C 299792458
+/// Boltzman constant
+#define EVDS_K 1.3806488e-23
+
 /// PI constant
 #define EVDS_PI 3.14159265358979323846264338327950288419716939937510
 /// PI constant (floating point)
