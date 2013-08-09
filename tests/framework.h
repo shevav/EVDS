@@ -25,6 +25,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <math.h>
 #include <evds.h>
 
@@ -96,6 +97,13 @@ int Test_InList(void* ptr, SIMC_LIST* list);
 		Test_Failure(#ptr,"NOT IN "#list,__FILE__,__LINE__); \
 	}
 
+#define STRING_EQUAL_TO(string,result) \
+	if (strncmp(string,result,8192) == 0) { \
+		Test_Passed(#string,#result,__FILE__,__LINE__); \
+	} else { \
+		Test_Failure(#string,#result,__FILE__,__LINE__); \
+	}
+
 
 #define ERROR_CHECK(expr) { \
 	int error_code = expr; \
@@ -115,6 +123,7 @@ int Test_InList(void* ptr, SIMC_LIST* list);
 	SIMC_LIST* list; \
 	SIMC_LIST_ENTRY* entry; \
 	EVDS_OBJECT* root; \
+	char string[8192] = { 0 }; \
 	printf("\tTest: "name"\n"); \
 	ERROR_CHECK(EVDS_System_Create(&system)); \
 	ERROR_CHECK(EVDS_System_GetRootInertialSpace(system,&root)); \
@@ -130,9 +139,10 @@ int Test_InList(void* ptr, SIMC_LIST* list);
 void Test_EVDS_SYSTEM();
 void Test_EVDS_VECTOR();
 void Test_EVDS_QUATERNION();
+void Test_EVDS_FRAMES();
 void Test_EVDS_MODIFIER();
 void Test_EVDS_GIMBAL();
-void Test_EVDS_FRAMES();
+void Test_EVDS_ROCKET_ENGINE();
 
 //Disable annoying warnings
 #pragma warning(disable: 4101)
