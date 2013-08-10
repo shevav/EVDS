@@ -72,47 +72,41 @@ const int EVDS_Internal_ObjectRemappingTableCount =
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// @brief Compare two 1D table entries
-////////////////////////////////////////////////////////////////////////////////
-int EVDS_Internal_CompareTableEntries(const EVDS_VARIABLE_TVALUE_ENTRY* v1, const EVDS_VARIABLE_TVALUE_ENTRY* v2) {
-	if (v1->x > v2->x) return 1;
-	if (v1->x < v2->x) return -1;
-    return 0;
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
 /// @brief Load parameter from the XML file
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_Internal_LoadParameter(EVDS_OBJECT* object, EVDS_VARIABLE* parent_variable, 
 								SIMC_XML_DOCUMENT* doc, SIMC_XML_ELEMENT* element, SIMC_XML_ATTRIBUTE* attribute,
-								EVDS_OBJECT_LOADEX* info) {
+								EVDS_OBJECT_LOADEX* info, int nested_in_function) {
 	int i;
 	char* value;
 	char* name;
-	char* vtype;
+	char* vector_type;
 	double real_value;
 	double x,y,z,w;
 	EVDS_VARIABLE* variable;
-	EVDS_VARIABLE_TYPE type = EVDS_VARIABLE_TYPE_NESTED;
+	EVDS_VARIABLE_TYPE type = EVDS_VARIABLE_TYPE_NESTED; //Nested unless specified otherwise
 	SIMC_XML_ELEMENT* nested_element;
 	SIMC_XML_ATTRIBUTE* nested_attribute;
 
-	//Get name and value
+	//Get name and text (value) of the parameter (variable, attribute)
 	if (element) {
+		//Parameter/variable
 		EVDS_ERRCHECK(SIMC_XML_GetAttribute(doc,element,"name",&name));
 		EVDS_ERRCHECK(SIMC_XML_GetText(doc,element,&value));
+
+		//If variable is nested, use element name for variable name
 		if ((name[0] == '\0') && (parent_variable)) {
 			EVDS_ERRCHECK(SIMC_XML_GetName(doc,element,&name));
 		}
 
 		//Get vector type
-		EVDS_ERRCHECK(SIMC_XML_GetAttribute(doc,element,"vtype",&vtype));
-		if (!vtype) vtype = "";
+		EVDS_ERRCHECK(SIMC_XML_GetAttribute(doc,element,"vector_type",&vector_type));
+		if (!vector_type) vector_type = "";
 	} else {
+		//Attribute
 		EVDS_ERRCHECK(SIMC_XML_GetAttributeName(doc,attribute,&name));
 		EVDS_ERRCHECK(SIMC_XML_GetAttributeText(doc,attribute,&value));
-		vtype = "";
+		vector_type = "";
 	}
 	if (!name) name = "";
 
@@ -135,12 +129,12 @@ int EVDS_Internal_LoadParameter(EVDS_OBJECT* object, EVDS_VARIABLE* parent_varia
 	}
 
 	//Try to guess data type based on value (FIXME: do not ignore "type" attribute)
-	if (value) {
+	if (value && (!nested_in_function)) {
 		char *end_ptr, *end_value;
-		EVDS_StringToReal(value,&end_ptr,&real_value);
+		EVDS_StringToReal(value,&end_ptr,&real_value); //Convert string to a real value
 		end_value = value + strlen(value);
 
-		if (end_ptr == end_value) { //Single variable
+		if (end_ptr == end_value) { //All string consumed: single variable
 			type = EVDS_VARIABLE_TYPE_FLOAT;
 		} else { //Multiple variables, possibly a vector
 			char *end_x, *end_y, *end_z, *end_w;
@@ -152,28 +146,36 @@ int EVDS_Internal_LoadParameter(EVDS_OBJECT* object, EVDS_VARIABLE* parent_varia
 			if ((end_x != end_value) &&
 				(end_y != end_value) &&
 				(end_z == end_value) &&
-				(end_w == end_value)) {
+				(end_w == end_value)) { //Three floats make up a vector
 				type = EVDS_VARIABLE_TYPE_VECTOR;
 			} else if ((end_x != end_value) &&
 				(end_y != end_value) &&
 				(end_z != end_value) &&
-				(end_w == end_value)) {
+				(end_w == end_value)) { //Four floats make up a quaternion
 				type = EVDS_VARIABLE_TYPE_QUATERNION;
 			} else if (value[0]) { //Not null and does not look like a vector
-				type = EVDS_VARIABLE_TYPE_STRING;
+				type = EVDS_VARIABLE_TYPE_STRING; //May be string or a nested variable
 			}
 		}
 	}
 	
-	//Try to guess if it's a table of values (especially if it looks like a float)
-	if (element) {
+	//Check if the variable is a nested one anyway, or a function
+	if (element && (!nested_in_function)) {
+		//If any nested tag is present, it's a nested variable (possibly with text)
+		EVDS_ERRCHECK(SIMC_XML_GetElement(doc,element,&nested_element,0));
+		if (nested_element) type = EVDS_VARIABLE_TYPE_NESTED;
+
+		//If 'data' nested tag present, it's a function
 		EVDS_ERRCHECK(SIMC_XML_GetElement(doc,element,&nested_element,"data"));
-		if (nested_element) {
-			type = EVDS_VARIABLE_TYPE_FUNCTION;
-		}
+		if (nested_element) type = EVDS_VARIABLE_TYPE_FUNCTION;
 	}
 
-	//Add variable
+	//If this variable is nested inside a function variable, it has always "nested" type
+	if (nested_in_function) {
+		type = EVDS_VARIABLE_TYPE_NESTED;
+	}
+
+	//Add variable to object or to parent variable
 	if (object) {
 		EVDS_ERRCHECK(EVDS_Object_AddVariable(object,name,type,&variable));
 	} else {
@@ -184,11 +186,17 @@ int EVDS_Internal_LoadParameter(EVDS_OBJECT* object, EVDS_VARIABLE* parent_varia
 		}
 	}
 
-	//Fill it with data
-	if (type == EVDS_VARIABLE_TYPE_STRING) {
-		EVDS_Variable_SetString(variable,value,strlen(value));
-	} else if (type == EVDS_VARIABLE_TYPE_FLOAT) {
-		EVDS_Variable_SetReal(variable,real_value);
+	//Store string into variable (if applies)
+	if ((type == EVDS_VARIABLE_TYPE_STRING) ||
+		(type == EVDS_VARIABLE_TYPE_NESTED)) {
+		if (value) {
+			EVDS_ERRCHECK(EVDS_Variable_SetString(variable,value,strlen(value)));
+		}
+	}
+	
+	//Store other data
+	if (type == EVDS_VARIABLE_TYPE_FLOAT) {
+		EVDS_ERRCHECK(EVDS_Variable_SetReal(variable,real_value));
 	} else if (type == EVDS_VARIABLE_TYPE_VECTOR) {
 		EVDS_VECTOR vector;
 		vector.x = x;
@@ -199,14 +207,14 @@ int EVDS_Internal_LoadParameter(EVDS_OBJECT* object, EVDS_VARIABLE* parent_varia
 		vector.vcoordinate_system = 0;
 		vector.derivative_level = EVDS_VECTOR_POSITION;
 
-		if (strcmp(vtype,"velocity") == 0)				vector.derivative_level = EVDS_VECTOR_VELOCITY;
-		if (strcmp(vtype,"acceleration") == 0)			vector.derivative_level = EVDS_VECTOR_ACCELERATION;
-		if (strcmp(vtype,"angular_velocity") == 0)		vector.derivative_level = EVDS_VECTOR_ANGULAR_VELOCITY;
-		if (strcmp(vtype,"angular_acceleration") == 0)	vector.derivative_level = EVDS_VECTOR_ANGULAR_ACCELERATION;
-		if (strcmp(vtype,"force") == 0)					vector.derivative_level = EVDS_VECTOR_FORCE;
-		if (strcmp(vtype,"torque") == 0)				vector.derivative_level = EVDS_VECTOR_TORQUE;
+		if (strcmp(vector_type,"velocity") == 0)				vector.derivative_level = EVDS_VECTOR_VELOCITY;
+		if (strcmp(vector_type,"acceleration") == 0)			vector.derivative_level = EVDS_VECTOR_ACCELERATION;
+		if (strcmp(vector_type,"angular_velocity") == 0)		vector.derivative_level = EVDS_VECTOR_ANGULAR_VELOCITY;
+		if (strcmp(vector_type,"angular_acceleration") == 0)	vector.derivative_level = EVDS_VECTOR_ANGULAR_ACCELERATION;
+		if (strcmp(vector_type,"force") == 0)					vector.derivative_level = EVDS_VECTOR_FORCE;
+		if (strcmp(vector_type,"torque") == 0)					vector.derivative_level = EVDS_VECTOR_TORQUE;
 		
-		EVDS_Variable_SetVector(variable,&vector);
+		EVDS_ERRCHECK(EVDS_Variable_SetVector(variable,&vector));
 	} else if (type == EVDS_VARIABLE_TYPE_QUATERNION) {
 		EVDS_QUATERNION q;
 		q.q[0] = x;
@@ -214,83 +222,38 @@ int EVDS_Internal_LoadParameter(EVDS_OBJECT* object, EVDS_VARIABLE* parent_varia
 		q.q[2] = z;
 		q.q[3] = w;
 		q.coordinate_system = object;
-		EVDS_Variable_SetQuaternion(variable,&q);
-	} else if (type == EVDS_VARIABLE_TYPE_FUNCTION) { //FIXME: requires total rewrite
-		int i;
-		EVDS_VARIABLE_FUNCTION* table = (EVDS_VARIABLE_FUNCTION*)variable->value;
-
-		//Get count of items in 1D table
-		table->data1d_count = 0;
-		EVDS_ERRCHECK(SIMC_XML_GetElement(doc,element,&nested_element,"data"));
-		while (nested_element) {
-			table->data1d_count++;
-			EVDS_ERRCHECK(SIMC_XML_Iterate(doc,element,&nested_element,"data"));
-		}
-
-		//Allocate 1D table
-		table->data1d = (EVDS_VARIABLE_TVALUE_ENTRY*)malloc(sizeof(EVDS_VARIABLE_TVALUE_ENTRY)*table->data1d_count);
-
-		//Read items in 1D table
-		i = 0;
-		EVDS_ERRCHECK(SIMC_XML_GetElement(doc,element,&nested_element,"data"));
-		while (nested_element) {
-			char *xvar,*fvar;
-			table->data1d[i].x = 0.0;
-			table->data1d[i].f = 0.0;
-
-			EVDS_ERRCHECK(SIMC_XML_GetAttribute(doc,nested_element,"x",&xvar));
-			EVDS_ERRCHECK(SIMC_XML_GetText(doc,nested_element,&fvar));
-			EVDS_StringToReal(xvar,0,&table->data1d[i].x);
-			EVDS_StringToReal(fvar,0,&table->data1d[i].f);
-
-			i++;
-			EVDS_ERRCHECK(SIMC_XML_Iterate(doc,element,&nested_element,"data"));
-		}
+		EVDS_ERRCHECK(EVDS_Variable_SetQuaternion(variable,&q));
+	} else if (type == EVDS_VARIABLE_TYPE_FUNCTION) {
+		EVDS_VARIABLE_FUNCTION* function = (EVDS_VARIABLE_FUNCTION*)variable->value;
 
 		//Set constant value
 		if (value) {
-			table->data0d = real_value;
+			function->constant_value = real_value;
 		} else {
-			if (table->data1d_count > 0) {
-				table->data0d = table->data1d[0].f;
-			} else {
-				table->data0d = 0.0;
-			}
+			function->constant_value = 0.0;
 		}
 
-		//Sort 1D table
-		qsort(table->data1d,table->data1d_count,sizeof(EVDS_VARIABLE_TVALUE_ENTRY),EVDS_Internal_CompareTableEntries);
+		//Read all nested data entries
+		EVDS_ERRCHECK(SIMC_XML_GetElement(doc,element,&nested_element,0));
+		while (nested_element) {
+			EVDS_ERRCHECK(EVDS_Internal_LoadParameter(0,variable,doc,nested_element,0,info,1));
+			EVDS_ERRCHECK(SIMC_XML_Iterate(doc,element,&nested_element,0));
+		}
 
-		//Set min/max
-		/*if (table->count == 0) {
-			table->data_min = 0.0;
-			table->data_max = 0.0;
-			table->data_length = 0.0;
-			table->data_length1 = 1.0;
-		} else if (table->count == 1) {
-			table->data_min = table->data1d[0].x;
-			table->data_max = table->data1d[0].x;
-			table->data_length = EVDS_EPS;
-			table->data_length1 = 1.0;
-		} else {
-			table->data_min = table->data[0].x;
-			table->data_max = table->data[table->count-1].x;
-			table->data_length = table->data_max - table->data_min;
-			if (fabs(table->data_length) < EVDS_EPS) table->data_length = EVDS_EPS;
-			table->data_length1 = 1.0/table->data_length;
-		}*/
+		//Initialize function table
+		EVDS_ERRCHECK(EVDS_InternalVariable_InitializeFunction(variable,function));
 	} else if (element) {
 		//Load all nested parameters
 		EVDS_ERRCHECK(SIMC_XML_GetElement(doc,element,&nested_element,0));
 		while (nested_element) {
-			EVDS_ERRCHECK(EVDS_Internal_LoadParameter(0,variable,doc,nested_element,0,info));
+			EVDS_ERRCHECK(EVDS_Internal_LoadParameter(0,variable,doc,nested_element,0,info,nested_in_function));
 			EVDS_ERRCHECK(SIMC_XML_Iterate(doc,element,&nested_element,0));
 		}
 
 		//Load all nested attributes
 		EVDS_ERRCHECK(SIMC_XML_GetFirstAttribute(doc,element,&nested_attribute));
 		while (nested_attribute) {
-			EVDS_ERRCHECK(EVDS_Internal_LoadParameter(0,variable,doc,0,nested_attribute,info));
+			EVDS_ERRCHECK(EVDS_Internal_LoadParameter(0,variable,doc,0,nested_attribute,info,nested_in_function));
 			EVDS_ERRCHECK(SIMC_XML_IterateAttributes(doc,nested_attribute,&nested_attribute));
 		}
 	}
@@ -377,7 +340,7 @@ int EVDS_Internal_LoadObject(EVDS_OBJECT* parent, SIMC_XML_DOCUMENT* doc, SIMC_X
 	//Read parameters
 	EVDS_ERRCHECK(SIMC_XML_GetElement(doc,root,&element,"parameter"));
 	while (element) {
-		EVDS_ERRCHECK(EVDS_Internal_LoadParameter(object,0,doc,element,0,info));
+		EVDS_ERRCHECK(EVDS_Internal_LoadParameter(object,0,doc,element,0,info,0));
 		EVDS_ERRCHECK(SIMC_XML_Iterate(doc,root,&element,"parameter"));
 	}
 
@@ -453,7 +416,7 @@ int EVDS_Internal_LoadFile(EVDS_OBJECT* parent, SIMC_XML_DOCUMENT* doc, SIMC_XML
 			//Load all entries
 			EVDS_ERRCHECK(SIMC_XML_GetElement(doc,element,&nested,"entry"));
 			while (nested) {
-				EVDS_ERRCHECK(EVDS_Internal_LoadParameter(0,database,doc,nested,0,info));
+				EVDS_ERRCHECK(EVDS_Internal_LoadParameter(0,database,doc,nested,0,info,0));
 				EVDS_ERRCHECK(SIMC_XML_Iterate(doc,element,&nested,"entry"));
 			}
 

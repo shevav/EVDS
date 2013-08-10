@@ -29,7 +29,11 @@ extern "C" {
 #endif
 
 // Internal macro to check functions for errors
+#ifdef _DEBUG
+#define EVDS_ERRCHECK(expr) { int error_code = expr; EVDS_ASSERT(error_code == EVDS_OK); if (error_code != EVDS_OK) return error_code; }
+#else
 #define EVDS_ERRCHECK(expr) { int error_code = expr; if (error_code != EVDS_OK) return error_code; }
+#endif
 
 // Compatibility with Windows systems
 #ifdef _WIN32
@@ -97,10 +101,7 @@ extern "C" {
 ///
 /// Interpolated functions
 /// --------------------------------------------------------------------------------
-/// EVDS provides support for specifying functions as variables. These functions can either be defined
-/// by a table of values (using linear interpolation between them), or as a set of piecewise polynomials.
-///
-/// Tables can be used to define 1D or 2D functions. Polynomials can be used to define 1D, 2D, 3D functions.
+/// @todo Missing documentation
 ///
 /// Nested variables
 /// --------------------------------------------------------------------------------
@@ -149,50 +150,14 @@ extern "C" {
 #ifndef DOXYGEN_INTERNAL_STRUCTS
 typedef struct EVDS_VARIABLE_TVALUE_ENTRY_TAG {
 	EVDS_REAL x;						//X value
-	EVDS_REAL f;						//Variable value
+	EVDS_REAL value;					//Constant value
+	EVDS_VARIABLE* function;			//Nested function
 } EVDS_VARIABLE_TVALUE_ENTRY;
 
-/*typedef struct EVDS_VARIABLE_PVALUE4_ENTRY_TAG {
-	EVDS_REAL x_min;					//X min value
-	EVDS_REAL x_max;					//X max value
-	EVDS_REAL polynomial[4];			//Polynomial coefficients
-} EVDS_VARIABLE_PVALUE4_ENTRY;
-
-typedef struct EVDS_VARIABLE_PVALUE16_ENTRY_TAG {
-	EVDS_REAL x_min;					//X min value
-	EVDS_REAL y_min;					//Y min value
-	EVDS_REAL x_max;					//X max value
-	EVDS_REAL y_max;					//Y max value
-	EVDS_REAL polynomial[16];			//Polynomial coefficients
-} EVDS_VARIABLE_PVALUE16_ENTRY;
-
-typedef struct EVDS_VARIABLE_PVALUE4_ENTRY_TAG {
-	EVDS_REAL x_min;					//X min value
-	EVDS_REAL y_min;					//Y min value
-	EVDS_REAL z_min;					//Z min value
-	EVDS_REAL x_max;					//X max value
-	EVDS_REAL y_max;					//Y max value
-	EVDS_REAL z_max;					//Z max value
-	EVDS_REAL polynomial[64];			//Polynomial coefficients
-} EVDS_VARIABLE_PVALUE64_ENTRY;*/
-
 typedef struct EVDS_VARIABLE_FUNCTION_TAG {
-	//0D functions
-	EVDS_REAL data0d;						//Constant value of the function (default value)
-
-	//1D functions
-	EVDS_VARIABLE_TVALUE_ENTRY* data1d;		//Table of values
-	int data1d_count;						//Size of the values table
-	//EVDS_VARIABLE_PVALUE4_ENTRY* poly1d;	//Table of polynomials and ranges
-	int poly1d_count;						//Size of the polynomials table
-
-	//2D functions
-	//EVDS_VARIABLE_PVALUE4_ENTRY* poly2d;	//Table of polynomials and ranges
-	int poly2d_count;						//Size of the polynomials table
-
-	//3D functions
-	//EVDS_VARIABLE_PVALUE4_ENTRY* poly3d;	//Table of polynomials and ranges
-	int poly3d_count;						//Size of the polynomials table
+	EVDS_REAL constant_value;				//Constant value of the function
+	EVDS_VARIABLE_TVALUE_ENTRY* data;		//Table of values
+	int data_count;							//Size of the values table
 } EVDS_VARIABLE_FUNCTION;
 
 struct EVDS_VARIABLE_TAG {
@@ -468,6 +433,10 @@ int EVDS_InternalVariable_DestroyData(EVDS_VARIABLE* variable);
 int EVDS_Variable_Create(EVDS_SYSTEM* system, const char* name, EVDS_VARIABLE_TYPE type, EVDS_VARIABLE** p_variable);
 // Creates a new variable as a copy of existing one
 int EVDS_Variable_Copy(EVDS_VARIABLE* source, EVDS_VARIABLE* variable);
+// Initialize function data
+int EVDS_InternalVariable_InitializeFunction(EVDS_VARIABLE* variable, EVDS_VARIABLE_FUNCTION* function);
+// Destroy function data
+int EVDS_InternalVariable_DestroyFunction(EVDS_VARIABLE* variable, EVDS_VARIABLE_FUNCTION* function);
 
 #ifndef EVDS_SINGLETHREADED
 // Set private state vector

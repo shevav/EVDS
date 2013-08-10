@@ -67,8 +67,11 @@ int EVDS_Variable_Create(EVDS_SYSTEM* system, const char* name, EVDS_VARIABLE_TY
 			variable->value = (EVDS_QUATERNION*)malloc(sizeof(EVDS_QUATERNION));
 		break;
 		case EVDS_VARIABLE_TYPE_NESTED:
-			variable->value_size = 0;
-			variable->value = 0;
+			variable->value_size = 1;
+			variable->value = (char*)malloc(sizeof(char));
+#ifndef EVDS_SINGLETHREADED
+			variable->lock = SIMC_Lock_Create();
+#endif
 			SIMC_List_Create(&variable->attributes,0);
 			SIMC_List_Create(&variable->list,0);
 		break;
@@ -80,6 +83,7 @@ int EVDS_Variable_Create(EVDS_SYSTEM* system, const char* name, EVDS_VARIABLE_TY
 		case EVDS_VARIABLE_TYPE_FUNCTION:
 			variable->value_size = sizeof(EVDS_VARIABLE_FUNCTION);
 			variable->value = (EVDS_VARIABLE_FUNCTION*)malloc(sizeof(EVDS_VARIABLE_FUNCTION));
+			SIMC_List_Create(&variable->list,0);
 		break;
 	}
 
@@ -129,6 +133,8 @@ int EVDS_Variable_Copy(EVDS_VARIABLE* source, EVDS_VARIABLE* variable) {
 			EVDS_Variable_SetQuaternion(source,&value);
 		} break;
 		case EVDS_VARIABLE_TYPE_NESTED: {
+			size_t length;
+			char* string_value;
 			char name[65];
 			SIMC_LIST_ENTRY* entry;
 			EVDS_VARIABLE* source_value;
@@ -155,6 +161,12 @@ int EVDS_Variable_Copy(EVDS_VARIABLE* source, EVDS_VARIABLE* variable) {
 
 				entry = SIMC_List_GetNext(source->list,entry);
 			}
+
+			//Copy embedded string
+			EVDS_Variable_GetString(source,0,0,&length);
+			string_value = (char*)alloca(length);
+			EVDS_Variable_GetString(source,string_value,length,0);
+			EVDS_Variable_SetString(variable,string_value,length);
 		} break;
 		case EVDS_VARIABLE_TYPE_DATA_PTR:
 		case EVDS_VARIABLE_TYPE_FUNCTION_PTR: {
@@ -226,7 +238,7 @@ int EVDS_InternalVariable_DestroyData(EVDS_VARIABLE* variable) {
 			case EVDS_VARIABLE_TYPE_FUNCTION_PTR:
 			break;
 			case EVDS_VARIABLE_TYPE_FUNCTION:
-				//FIXME
+				EVDS_InternalVariable_DestroyFunction(variable,variable->value);
 				free(variable->value);
 			break;
 		}
@@ -314,6 +326,9 @@ int EVDS_Variable_MoveInList(EVDS_VARIABLE* variable, EVDS_VARIABLE* head) {
 /// Arbitrary typed variables (type is EVDS_VARIABLE_TYPE_NESTED) may have another
 /// variables inside them. This can be used to represent table and matrix data.
 ///
+/// Functions are not nested, but can contain nested entries which represent data
+/// arrays or configuration/information for interpolation routines.
+///
 /// @param[in] parent_variable Variable, to which a new one must be added
 /// @param[in] name Name of a new nested variable
 /// @param[in] type Type of a new nested variable
@@ -336,7 +351,8 @@ int EVDS_Variable_AddNested(EVDS_VARIABLE* parent_variable, const char* name, EV
 	if (!name) return EVDS_ERROR_BAD_PARAMETER;
 	if (!p_variable) return EVDS_ERROR_BAD_PARAMETER;
 	if (!parent_variable) return EVDS_ERROR_BAD_PARAMETER;
-	if (parent_variable->type != EVDS_VARIABLE_TYPE_NESTED) return EVDS_ERROR_BAD_STATE;
+	if ((parent_variable->type != EVDS_VARIABLE_TYPE_NESTED) &&
+		(parent_variable->type != EVDS_VARIABLE_TYPE_FUNCTION)) return EVDS_ERROR_BAD_STATE;
 #ifndef EVDS_SINGLETHREADED
 	if (parent_variable->object) {
 		if (parent_variable->object->destroyed) return EVDS_ERROR_INVALID_OBJECT;
@@ -533,7 +549,8 @@ int EVDS_Variable_GetNested(EVDS_VARIABLE* parent_variable, const char* name, EV
 	if (!name) return EVDS_ERROR_BAD_PARAMETER;
 	if (!p_variable) return EVDS_ERROR_BAD_PARAMETER;
 	if (!parent_variable) return EVDS_ERROR_BAD_PARAMETER;
-	if (parent_variable->type != EVDS_VARIABLE_TYPE_NESTED) return EVDS_ERROR_BAD_STATE;
+	if ((parent_variable->type != EVDS_VARIABLE_TYPE_NESTED) ||
+		(parent_variable->type != EVDS_VARIABLE_TYPE_FUNCTION)) return EVDS_ERROR_BAD_STATE;
 #ifndef EVDS_SINGLETHREADED
 	if (parent_variable->object) {
 		if (parent_variable->object->destroyed) return EVDS_ERROR_INVALID_OBJECT;
@@ -707,7 +724,8 @@ int EVDS_Variable_GetType(EVDS_VARIABLE* variable, EVDS_VARIABLE_TYPE* type) {
 int EVDS_Variable_GetList(EVDS_VARIABLE* variable, SIMC_LIST** p_list) {
 	if (!variable) return EVDS_ERROR_BAD_PARAMETER;
 	if (!p_list) return EVDS_ERROR_BAD_PARAMETER;
-	if (variable->type != EVDS_VARIABLE_TYPE_NESTED) return EVDS_ERROR_BAD_STATE;
+	if ((variable->type != EVDS_VARIABLE_TYPE_NESTED) &&
+		(variable->type != EVDS_VARIABLE_TYPE_FUNCTION)) return EVDS_ERROR_BAD_STATE;
 #ifndef EVDS_SINGLETHREADED
 	if (variable->object) {
 		if (variable->object->destroyed) return EVDS_ERROR_INVALID_OBJECT;
@@ -804,7 +822,7 @@ int EVDS_Variable_GetReal(EVDS_VARIABLE* variable, EVDS_REAL* value) {
 	if (variable->type == EVDS_VARIABLE_TYPE_FLOAT) {
 		*value = *((double*)variable->value);
 	} else {
-		*value = ((EVDS_VARIABLE_FUNCTION*)variable->value)->data0d;
+		*value = ((EVDS_VARIABLE_FUNCTION*)variable->value)->constant_value;
 	}
 	return EVDS_OK;
 }
@@ -812,6 +830,8 @@ int EVDS_Variable_GetReal(EVDS_VARIABLE* variable, EVDS_REAL* value) {
 
 ////////////////////////////////////////////////////////////////////////////////
 /// @brief Set a string value.
+///
+/// For a nested/arbitrary data variable sets the internal embedded text data.
 ///
 /// @param[in] variable Variable
 /// @param[in] value Value to be set
@@ -827,7 +847,8 @@ int EVDS_Variable_GetReal(EVDS_VARIABLE* variable, EVDS_REAL* value) {
 int EVDS_Variable_SetString(EVDS_VARIABLE* variable, char* value, size_t length) {
 	if (!variable) return EVDS_ERROR_BAD_PARAMETER;
 	if (!value) return EVDS_ERROR_BAD_PARAMETER;
-	if (variable->type != EVDS_VARIABLE_TYPE_STRING) return EVDS_ERROR_BAD_STATE;
+	if ((variable->type != EVDS_VARIABLE_TYPE_STRING) &&
+		(variable->type != EVDS_VARIABLE_TYPE_NESTED)) return EVDS_ERROR_BAD_STATE;
 #ifndef EVDS_SINGLETHREADED
 	if (variable->object && variable->object->destroyed) return EVDS_ERROR_INVALID_OBJECT;
 #endif
@@ -849,6 +870,8 @@ int EVDS_Variable_SetString(EVDS_VARIABLE* variable, char* value, size_t length)
 ////////////////////////////////////////////////////////////////////////////////
 /// @brief Get a string value.
 ///
+/// For a nested/arbitrary data variable gets the internal embedded text data.
+///
 /// @param[in] variable Variable
 /// @param[out] value Pointer to value to be set. Can be null (then only length is returned)
 /// @param[in] max_length Size of the destanation buffers
@@ -862,7 +885,8 @@ int EVDS_Variable_SetString(EVDS_VARIABLE* variable, char* value, size_t length)
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_Variable_GetString(EVDS_VARIABLE* variable, char* value, size_t max_length, size_t* length) {
 	if (!variable) return EVDS_ERROR_BAD_PARAMETER;
-	if (variable->type != EVDS_VARIABLE_TYPE_STRING) return EVDS_ERROR_BAD_STATE;
+	if ((variable->type != EVDS_VARIABLE_TYPE_STRING) ||
+		(variable->type != EVDS_VARIABLE_TYPE_NESTED)) return EVDS_ERROR_BAD_STATE;
 #ifndef EVDS_SINGLETHREADED
 	if (variable->object && variable->object->destroyed) return EVDS_ERROR_INVALID_OBJECT;
 #endif
@@ -1111,72 +1135,5 @@ int EVDS_Variable_GetFunctionPointer(EVDS_VARIABLE* variable, void** data) {
 	if (variable->object && variable->object->destroyed) return EVDS_ERROR_INVALID_OBJECT;
 #endif
 	*data = variable->value;
-	return EVDS_OK;
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-/// @brief Get value from a 1D function 
-////////////////////////////////////////////////////////////////////////////////
-int EVDS_Variable_GetFunction1D(EVDS_VARIABLE* variable, EVDS_REAL x, EVDS_REAL* p_value) {
-	int i;
-	EVDS_VARIABLE_FUNCTION* table;
-	if (!variable) return EVDS_ERROR_BAD_PARAMETER;
-	if (!p_value) return EVDS_ERROR_BAD_PARAMETER;
-	if ((variable->type != EVDS_VARIABLE_TYPE_FLOAT) &&
-		(variable->type != EVDS_VARIABLE_TYPE_FUNCTION))return EVDS_ERROR_BAD_STATE;
-#ifndef EVDS_SINGLETHREADED
-	if (variable->object && variable->object->destroyed) return EVDS_ERROR_INVALID_OBJECT;
-#endif
-
-	//Float constants are accepted as zero-size tables
-	if (variable->type == EVDS_VARIABLE_TYPE_FLOAT) {
-		*p_value = *((double*)variable->value);
-		return EVDS_OK;
-	}
-
-	//Get table and check if a lesser dimension function must be used
-	table = (EVDS_VARIABLE_FUNCTION*)variable->value;
-	if (table->data1d_count == 0) {
-		return EVDS_Variable_GetReal(variable,p_value);
-	}
-
-	//Check for edge cases
-	if (table->data1d_count == 1) {
-		*p_value = table->data1d[0].f;
-		return EVDS_OK;
-	}
-	if (x <= table->data1d[0].x) {
-		*p_value = table->data1d[0].f;
-		return EVDS_OK;
-	}
-	if (x >= table->data1d[table->data1d_count-1].x) {
-		*p_value = table->data1d[table->data1d_count-1].f;
-		return EVDS_OK;
-	}
-
-	//Find interpolation segment
-	for (i = table->data1d_count-1; i >= 0; i--) {
-		if (x > table->data1d[i].x) {
-			break;
-		}
-	}
-
-	//Linear interpolation
-#if (defined(_MSC_VER) && (_MSC_VER >= 1500) && (_MSC_VER < 1600))
-	{
-		double A = (table->data1d[i+1].x - table->data1d[i].x);
-		double B = (x - table->data1d[i].x) / A;
-		*p_value = table->data1d[i].f  + (table->data1d[i+1].f - table->data1d[i].f) * B;
-
-		//*p_value = table->data[i].f  + (table->data[i+1].f - table->data[i].f) * 
-			//((x - table->data[i].x) / A);
-		//*p_value = table->data[i].f  + (table->data[i+1].f - table->data[i].f) * 
-			//((x - table->data[i].x) / (table->data[i+1].x - table->data[i].x));
-	}
-#else
-	*p_value = table->data1d[i].f  + (table->data1d[i+1].f - table->data1d[i].f) *
-		((x - table->data1d[i].x) / (table->data1d[i+1].x - table->data1d[i].x));
-#endif
 	return EVDS_OK;
 }
