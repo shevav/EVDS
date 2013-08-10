@@ -704,6 +704,18 @@ int EVDS_InternalRocketEngine_Solve_Basic(EVDS_SOLVER_ENGINE_USERDATA* userdata,
 
 
 ////////////////////////////////////////////////////////////////////////////////
+/// @brief Advanced engine model.
+///
+/// This model calculates engine perfomance parameters based on nozzle geometry,
+/// efficiency values (if available). 
+////////////////////////////////////////////////////////////////////////////////
+int EVDS_InternalRocketEngine_Solve_Advanced(EVDS_SOLVER_ENGINE_USERDATA* userdata, 
+											 EVDS_OBJECT* object, EVDS_REAL delta_time) {
+	return EVDS_OK;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
 /// @brief Update engine internal state
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_InternalRocketEngine_Solve(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVDS_OBJECT* object, EVDS_REAL delta_time) {

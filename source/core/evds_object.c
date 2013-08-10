@@ -316,7 +316,7 @@ int EVDS_InternalObject_ComputeMassParameters(EVDS_OBJECT* object) {
 	EVDS_REAL mass;
 
 	//Check if object has mass defined
-	EVDS_ERRCHECK(EVDS_Object_GetVariable(object,"mass",&v_mass));
+	if (EVDS_Object_GetVariable(object,"mass",&v_mass) != EVDS_OK) return EVDS_OK;
 	EVDS_ERRCHECK(EVDS_Variable_GetReal(v_mass,&mass));
 
 	//Mass cannot be negative
