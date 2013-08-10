@@ -33,7 +33,7 @@ if true then -- (not os.isfile(evds_defmat))
   -- Pad XML with C strings
   local xml_contents = ""
   for line in io.lines(evds_matxml) do
-    local line = string.gsub(line,"\r","")
+    local line = string.gsub(string.gsub(line,"\r",""),"\t","")
     xml_contents = xml_contents.."\t\""..string.gsub(line,"\"","'").."\\n\"\n"
   end
   
