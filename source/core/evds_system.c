@@ -200,7 +200,7 @@ int EVDS_System_Create(EVDS_SYSTEM** p_system)
 	system->inertial_space = inertial_space;
 
 	//Load built-in databases
-	//EVDS_System_DatabaseFromString(system,EVDS_Internal_Database); FIXME
+	EVDS_System_DatabaseFromString(system,EVDS_Internal_Database); //FIXME
 	return EVDS_OK;
 }
 

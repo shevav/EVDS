@@ -549,7 +549,7 @@ int EVDS_Variable_GetNested(EVDS_VARIABLE* parent_variable, const char* name, EV
 	if (!name) return EVDS_ERROR_BAD_PARAMETER;
 	if (!p_variable) return EVDS_ERROR_BAD_PARAMETER;
 	if (!parent_variable) return EVDS_ERROR_BAD_PARAMETER;
-	if ((parent_variable->type != EVDS_VARIABLE_TYPE_NESTED) ||
+	if ((parent_variable->type != EVDS_VARIABLE_TYPE_NESTED) &&
 		(parent_variable->type != EVDS_VARIABLE_TYPE_FUNCTION)) return EVDS_ERROR_BAD_STATE;
 #ifndef EVDS_SINGLETHREADED
 	if (parent_variable->object) {
@@ -885,7 +885,7 @@ int EVDS_Variable_SetString(EVDS_VARIABLE* variable, char* value, size_t length)
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_Variable_GetString(EVDS_VARIABLE* variable, char* value, size_t max_length, size_t* length) {
 	if (!variable) return EVDS_ERROR_BAD_PARAMETER;
-	if ((variable->type != EVDS_VARIABLE_TYPE_STRING) ||
+	if ((variable->type != EVDS_VARIABLE_TYPE_STRING) &&
 		(variable->type != EVDS_VARIABLE_TYPE_NESTED)) return EVDS_ERROR_BAD_STATE;
 #ifndef EVDS_SINGLETHREADED
 	if (variable->object && variable->object->destroyed) return EVDS_ERROR_INVALID_OBJECT;

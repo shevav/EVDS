@@ -185,17 +185,11 @@ int EVDS_Internal_LoadParameter(EVDS_OBJECT* object, EVDS_VARIABLE* parent_varia
 			EVDS_ERRCHECK(EVDS_Variable_AddAttribute(parent_variable,name,type,&variable));
 		}
 	}
-
-	//Store string into variable (if applies)
-	if ((type == EVDS_VARIABLE_TYPE_STRING) ||
-		(type == EVDS_VARIABLE_TYPE_NESTED)) {
-		if (value) {
-			EVDS_ERRCHECK(EVDS_Variable_SetString(variable,value,strlen(value)));
-		}
-	}
 	
-	//Store other data
-	if (type == EVDS_VARIABLE_TYPE_FLOAT) {
+	//Store data into variable
+	if (type == EVDS_VARIABLE_TYPE_STRING) {
+		EVDS_ERRCHECK(EVDS_Variable_SetString(variable,value,strlen(value)));
+	} else if (type == EVDS_VARIABLE_TYPE_FLOAT) {
 		EVDS_ERRCHECK(EVDS_Variable_SetReal(variable,real_value));
 	} else if (type == EVDS_VARIABLE_TYPE_VECTOR) {
 		EVDS_VECTOR vector;
@@ -243,6 +237,11 @@ int EVDS_Internal_LoadParameter(EVDS_OBJECT* object, EVDS_VARIABLE* parent_varia
 		//Initialize function table
 		EVDS_ERRCHECK(EVDS_InternalVariable_InitializeFunction(variable,function));
 	} else if (element) {
+		//Save text value of the nested element
+		if (value) {
+			EVDS_ERRCHECK(EVDS_Variable_SetString(variable,value,strlen(value)));
+		}
+
 		//Load all nested parameters
 		EVDS_ERRCHECK(SIMC_XML_GetElement(doc,element,&nested_element,0));
 		while (nested_element) {
