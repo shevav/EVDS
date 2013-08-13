@@ -635,7 +635,7 @@ void Test_EVDS_ROCKET_ENGINE() {
 		REAL_EQUAL_TO(real,2.0/EVDS_G0);
 		ERROR_CHECK(EVDS_Object_GetRealVariable(object,"atmospheric.fuel_flow",&real,&variable));
 		REAL_EQUAL_TO(real,2.0/EVDS_G0);
-	} END_TEST*/
+	} END_TEST
 
 
 
@@ -724,7 +724,7 @@ void Test_EVDS_ROCKET_ENGINE() {
 		EVDS_Vector_GetPositionVector(&derivative.force,&vector); //Must be located in reference point
 		EQUAL_TO(vector.coordinate_system,object);
 		VECTOR_EQUAL_TO(&vector,0.0,0.0,0.0);
-	} END_TEST
+	} END_TEST*/
 		
 
 
@@ -762,6 +762,20 @@ void Test_EVDS_ROCKET_ENGINE() {
 		//Reset throttle
 		ERROR_CHECK(EVDS_Variable_SetReal(command_throttle,0.0));
 		ERROR_CHECK(EVDS_Object_Solve(object,0.0));
+
+		{
+			double t;
+			ERROR_CHECK(EVDS_Variable_SetReal(command_throttle,0.5));
+			for (t = 0; t < 10.0; t += 0.05) {
+				if (t > 5.0) ERROR_CHECK(EVDS_Variable_SetReal(command_throttle,1.0));
+				if (t > 8.0) ERROR_CHECK(EVDS_Variable_SetReal(command_throttle,0.0));
+
+				ERROR_CHECK(EVDS_Object_Solve(object,0.05));
+				ERROR_CHECK(EVDS_Object_GetRealVariable(engine,"current.throttle",&real,&variable));
+				printf("%.3f: %.1f %%\n",t,real*100);
+				//REAL_EQUAL_TO(real,0.5);
+			}
+		}
 
 		/*//C
 

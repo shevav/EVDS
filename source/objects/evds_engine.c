@@ -755,11 +755,11 @@ int EVDS_InternalRocketEngine_Solve(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EV
 	//Calculate engine ignition
 	EVDS_Variable_GetReal(userdata->current_time_since_ignition,&current_time_since_ignition);
 	EVDS_Variable_GetReal(userdata->current_ignition,&current_ignition);
-	if (command_throttle >= control_min_throttle) {
+	if ((current_ignition == 0.0) && (command_throttle >= control_min_throttle)) {
 		current_ignition = 1.0;
 		current_time_since_ignition = 0.0;
 	}
-	if (command_throttle < control_min_throttle*0.40) {
+	if ((current_ignition > 0.5) && (command_throttle < control_min_throttle*0.40)) {
 		current_ignition = 0.0;
 		current_time_since_ignition = 0.0;
 	}
@@ -767,18 +767,12 @@ int EVDS_InternalRocketEngine_Solve(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EV
 
 	//Calculate engine ignition/shutdown or operational mode (if startup/shutdown times are 0.0, not used)
 	transient_exponent = 1.0; //Default: no transient
-	if ((current_ignition > 0.5) && (current_time_since_ignition < control_startup_time)) {
+	if (current_ignition > 0.5) {
 		//Startup
-		if (current_time_since_ignition < (15.0*control_startup_time)) {
-			transient_exponent = 1.0 - exp(-current_time_since_ignition / control_startup_time);
-		}
-	} else if ((current_ignition < 0.5) && (current_time_since_ignition < control_shutdown_time)) {
+		transient_exponent = 1.0 - exp(-3.0*current_time_since_ignition / control_startup_time);
+	} else if (current_ignition < 0.5) {
 		//Shutdown
-		if (current_time_since_ignition < (15.0*control_startup_time)) {
-			transient_exponent = exp(-current_time_since_ignition / control_startup_time);
-		} else {
-			transient_exponent = 0.0;
-		}
+		transient_exponent = exp(-3.0*current_time_since_ignition / control_startup_time);
 	}
 
 	//Calculate current throttle based on commanded throttle
