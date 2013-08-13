@@ -725,4 +725,53 @@ void Test_EVDS_ROCKET_ENGINE() {
 		EQUAL_TO(vector.coordinate_system,object);
 		VECTOR_EQUAL_TO(&vector,0.0,0.0,0.0);
 	} END_TEST
+		
+
+
+	START_TEST("Rocket engine (default transient behavior tests)") {
+		////////////////////////////////////////////////////////////////////////
+		EVDS_OBJECT* engine;
+		EVDS_VARIABLE* command_throttle;
+		ERROR_CHECK(EVDS_Object_LoadFromString(root,
+"<EVDS version=\"34\">"
+"    <object name=\"Vessel\" type=\"vessel\">"
+"        <object name=\"Fuel\" type=\"fuel_tank\">"
+"            <parameter name=\"fuel.type\">O2</parameter>"
+"            <parameter name=\"fuel.mass\">4000</parameter>"
+"        </object>"
+"        <object name=\"Fuel\" type=\"fuel_tank\">"
+"            <parameter name=\"fuel.type\">H2</parameter>"
+"            <parameter name=\"fuel.mass\">1000</parameter>"
+"        </object>"
+"        <object name=\"Rocket engine\" type=\"rocket_engine\">"
+"            <parameter name=\"mass\">1000</parameter>"
+"            <parameter name=\"control.throttle_speed\">1.0</parameter>"
+"            <parameter name=\"control.min_throttle\">0.5</parameter>"
+"            <parameter name=\"control.max_throttle\">1.0</parameter>"
+"            <parameter name=\"control.startup_time\">2.0</parameter>"
+"            <parameter name=\"control.shutdown_time\">0.5</parameter>"
+"            <parameter name=\"vacuum.isp\">400.0</parameter>"
+"            <parameter name=\"vacuum.thrust\">100.0</parameter>"
+"        </object>"
+"    </object>"
+"</EVDS>",&object));
+		ERROR_CHECK(EVDS_Object_Initialize(object,1));
+		ERROR_CHECK(EVDS_System_GetObjectByName(system,"Rocket engine",0,&engine));
+		ERROR_CHECK(EVDS_Object_GetVariable(engine,"command.throttle",&command_throttle));
+
+		//Reset throttle
+		ERROR_CHECK(EVDS_Variable_SetReal(command_throttle,0.0));
+		ERROR_CHECK(EVDS_Object_Solve(object,0.0));
+
+		/*//C
+
+		//Command
+		ERROR_CHECK(EVDS_Object_GetRealVariable(engine,"current.throttle",&real,&variable));
+		REAL_EQUAL_TO(real,0.5);
+
+		//Check actual returned thrust
+		ERROR_CHECK(EVDS_Object_Integrate(object,0.0,0,&derivative));
+		VECTOR_EQUAL_TO(&derivative.force,-50.0,0.0,0.0); //Half thrust
+*/
+	} END_TEST
 }

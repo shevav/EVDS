@@ -67,6 +67,8 @@ typedef struct EVDS_SOLVER_ENGINE_USERDATA_TAG {
 	EVDS_VARIABLE *current_isp;
 	EVDS_VARIABLE *current_exhaust_velocity;
 	EVDS_VARIABLE *current_throttle;
+	EVDS_VARIABLE *current_ignition;
+	EVDS_VARIABLE *current_time_since_ignition;
 
 	//Control variables
 	EVDS_VARIABLE *control_min_throttle;
@@ -602,6 +604,8 @@ int EVDS_InternalRocketEngine_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solve
 	EVDS_Object_AddRealVariable(object,"current.isp",0,					&userdata->current_isp);
 	EVDS_Object_AddRealVariable(object,"current.exhaust_velocity",0,	&userdata->current_exhaust_velocity);
 	EVDS_Object_AddRealVariable(object,"current.throttle",0,			&userdata->current_throttle);
+	EVDS_Object_AddRealVariable(object,"current.ignition",0,			&userdata->current_ignition);
+	EVDS_Object_AddRealVariable(object,"current.time_since_ignition",0,	&userdata->current_time_since_ignition);
 																		
 	EVDS_Object_AddRealVariable(object,"control.min_throttle",0,		&userdata->control_min_throttle);
 	EVDS_Object_AddRealVariable(object,"control.max_throttle",0,		&userdata->control_max_throttle);
@@ -723,6 +727,8 @@ int EVDS_InternalRocketEngine_Solve(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EV
 	EVDS_REAL control_min_throttle,control_max_throttle;
 	EVDS_REAL control_startup_time,control_shutdown_time;
 	EVDS_REAL control_throttle_speed;
+	EVDS_REAL current_ignition,current_time_since_ignition;
+	EVDS_REAL transient_exponent;
 
 	EVDS_SOLVER_ENGINE_USERDATA* userdata;
 	EVDS_ERRCHECK(EVDS_Object_GetSolverdata(object,(void**)&userdata));
@@ -734,18 +740,80 @@ int EVDS_InternalRocketEngine_Solve(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EV
 	EVDS_Variable_GetReal(userdata->control_startup_time,	&control_startup_time);
 	EVDS_Variable_GetReal(userdata->control_shutdown_time,	&control_shutdown_time);
 
-	//Calculate current throttle based on commanded throttle
+	//Get commanded values
 	EVDS_Variable_GetReal(userdata->command_throttle,&command_throttle);
-	current_throttle = command_throttle;
-	EVDS_Variable_SetReal(userdata->current_throttle,current_throttle);
 
 	//Apply throttling limits
-	if ((control_min_throttle != 0.0) && (current_throttle < control_min_throttle)) {
-		current_throttle = control_min_throttle;
+	if ((control_min_throttle != 0.0) && (command_throttle < control_min_throttle) &&
+		(command_throttle > control_min_throttle*0.40)) {
+		command_throttle = control_min_throttle;
 	}
-	if ((control_max_throttle != 0.0) && (current_throttle > control_max_throttle)) {
-		current_throttle = control_max_throttle;
+	if ((control_max_throttle != 0.0) && (command_throttle > control_max_throttle)) {
+		command_throttle = control_max_throttle;
 	}
+
+	//Calculate engine ignition
+	EVDS_Variable_GetReal(userdata->current_time_since_ignition,&current_time_since_ignition);
+	EVDS_Variable_GetReal(userdata->current_ignition,&current_ignition);
+	if (command_throttle >= control_min_throttle) {
+		current_ignition = 1.0;
+		current_time_since_ignition = 0.0;
+	}
+	if (command_throttle < control_min_throttle*0.40) {
+		current_ignition = 0.0;
+		current_time_since_ignition = 0.0;
+	}
+	EVDS_Variable_SetReal(userdata->current_ignition,current_ignition);
+
+	//Calculate engine ignition/shutdown or operational mode (if startup/shutdown times are 0.0, not used)
+	transient_exponent = 1.0; //Default: no transient
+	if ((current_ignition > 0.5) && (current_time_since_ignition < control_startup_time)) {
+		//Startup
+		if (current_time_since_ignition < (15.0*control_startup_time)) {
+			transient_exponent = 1.0 - exp(-current_time_since_ignition / control_startup_time);
+		}
+	} else if ((current_ignition < 0.5) && (current_time_since_ignition < control_shutdown_time)) {
+		//Shutdown
+		if (current_time_since_ignition < (15.0*control_startup_time)) {
+			transient_exponent = exp(-current_time_since_ignition / control_startup_time);
+		} else {
+			transient_exponent = 0.0;
+		}
+	}
+
+	//Calculate current throttle based on commanded throttle
+	if (control_throttle_speed > 0.0) {
+		//Calculate change in throttle per solution step
+		EVDS_REAL delta = delta_time * control_throttle_speed;
+		EVDS_Variable_GetReal(userdata->current_throttle,&current_throttle);
+
+		//Snap throttle to minimum value
+		if ((command_throttle >= control_min_throttle*0.4) &&
+			(current_throttle < control_min_throttle)) {
+			current_throttle = control_min_throttle;
+		}
+
+		//Apply throttling rate
+		if (fabs(current_throttle - command_throttle) <= delta) {
+			current_throttle = command_throttle;
+		} else {
+			if (command_throttle < current_throttle) {
+				current_throttle -= delta;
+			} else {
+				current_throttle += delta;
+			}
+		}
+	} else {
+		current_throttle = command_throttle;
+	}
+
+	//Apply startup/shutdown transient
+	current_throttle *= transient_exponent;
+	EVDS_Variable_SetReal(userdata->current_throttle,current_throttle);
+
+	//Calculate ignition progress
+	current_time_since_ignition += delta_time;
+	EVDS_Variable_SetReal(userdata->current_time_since_ignition,current_time_since_ignition);
 
 	//Use basic model for engine perfomance
 	return EVDS_InternalRocketEngine_Solve_Basic(userdata,object,delta_time);
