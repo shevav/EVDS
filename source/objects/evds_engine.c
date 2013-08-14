@@ -901,9 +901,16 @@ int EVDS_InternalRocketEngine_Solve(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EV
 	if (current_ignition > 0.5) {
 		//Run throttle logic only for engine that started up
 		if (control_throttle_speed > 0.0) {
-			//Calculate change in throttle per solution step
-			EVDS_REAL delta = delta_time * control_throttle_speed;
+			EVDS_REAL delta; //Change in throttle per solution step
 			EVDS_Variable_GetReal(userdata->current_throttle,&current_throttle);
+
+			//Linear law
+			//delta = delta_time * control_throttle_speed;
+			//if (command_throttle < current_throttle) {
+			//	delta = -delta;
+			//}
+			//Exponential law (0% to 99% change in throttling period)
+			delta = (command_throttle - current_throttle) * delta_time * 6.0 * control_throttle_speed;
 
 			//Snap throttle to minimum value
 			if ((command_throttle >= control_min_throttle*0.4) &&
@@ -915,11 +922,7 @@ int EVDS_InternalRocketEngine_Solve(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EV
 			if (fabs(current_throttle - command_throttle) <= delta) {
 				current_throttle = command_throttle;
 			} else {
-				if (command_throttle < current_throttle) {
-					current_throttle -= delta;
-				} else {
-					current_throttle += delta;
-				}
+				current_throttle += delta;
 			}
 		} else {
 			current_throttle = command_throttle;
