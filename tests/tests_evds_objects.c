@@ -737,11 +737,11 @@ void Test_EVDS_ROCKET_ENGINE() {
 "    <object name=\"Vessel\" type=\"vessel\">"
 "        <object name=\"Fuel\" type=\"fuel_tank\">"
 "            <parameter name=\"fuel.type\">O2</parameter>"
-"            <parameter name=\"fuel.mass\">4000</parameter>"
+"            <parameter name=\"fuel.mass\">40000</parameter>"
 "        </object>"
 "        <object name=\"Fuel\" type=\"fuel_tank\">"
 "            <parameter name=\"fuel.type\">H2</parameter>"
-"            <parameter name=\"fuel.mass\">1000</parameter>"
+"            <parameter name=\"fuel.mass\">10000</parameter>"
 "        </object>"
 "        <object name=\"Rocket engine\" type=\"rocket_engine\">"
 "            <parameter name=\"mass\">1000</parameter>"
@@ -763,29 +763,128 @@ void Test_EVDS_ROCKET_ENGINE() {
 		ERROR_CHECK(EVDS_Variable_SetReal(command_throttle,0.0));
 		ERROR_CHECK(EVDS_Object_Solve(object,0.0));
 
-		{
-			double t;
-			ERROR_CHECK(EVDS_Variable_SetReal(command_throttle,0.5));
-			for (t = 0; t < 10.0; t += 0.05) {
-				if (t > 5.0) ERROR_CHECK(EVDS_Variable_SetReal(command_throttle,1.0));
-				if (t > 8.0) ERROR_CHECK(EVDS_Variable_SetReal(command_throttle,0.0));
-
-				ERROR_CHECK(EVDS_Object_Solve(object,0.05));
-				ERROR_CHECK(EVDS_Object_GetRealVariable(engine,"current.throttle",&real,&variable));
-				printf("%.3f: %.1f %%\n",t,real*100);
-				//REAL_EQUAL_TO(real,0.5);
-			}
+#define SIMULATE_FOR_TIME(T) \
+		{ \
+			double time; \
+			for (time = 0; time < T; time += 0.01) ERROR_CHECK(EVDS_Object_Solve(object,0.01)); \
 		}
 
-		/*//C
-
-		//Command
+		//Idle engine for 1 second
+		SIMULATE_FOR_TIME(1.0);
 		ERROR_CHECK(EVDS_Object_GetRealVariable(engine,"current.throttle",&real,&variable));
-		REAL_EQUAL_TO(real,0.5);
+		//Check actual throttle
+		ERROR_CHECK(EVDS_Object_GetRealVariable(engine,"current.throttle",&real,&variable));
+		REAL_EQUAL_TO(real,0.0);
 
-		//Check actual returned thrust
-		ERROR_CHECK(EVDS_Object_Integrate(object,0.0,0,&derivative));
-		VECTOR_EQUAL_TO(&derivative.force,-50.0,0.0,0.0); //Half thrust
-*/
+
+		//Start engine up to intermediate throttle level
+		ERROR_CHECK(EVDS_Variable_SetReal(command_throttle,0.5));
+
+		//Check throttle 1.0 seconds in (half the startup time)
+		SIMULATE_FOR_TIME(1.0);
+		ERROR_CHECK(EVDS_Object_GetRealVariable(engine,"current.throttle",&real,&variable));
+		REAL_EQUAL_TO_EPS(real,0.77*0.50,0.01); //Thrust must be 77% +- 1%
+		//Check throttle 2.0 seconds in (at startup time)
+		SIMULATE_FOR_TIME(1.0);
+		ERROR_CHECK(EVDS_Object_GetRealVariable(engine,"current.throttle",&real,&variable));
+		REAL_EQUAL_TO_EPS(real,0.95*0.50,0.01); //Thrust must be 95% +- 1%
+
+		//Run engine at low throttle for 5 seconds
+		SIMULATE_FOR_TIME(5.0);
+		ERROR_CHECK(EVDS_Object_GetRealVariable(engine,"current.throttle",&real,&variable));
+		REAL_EQUAL_TO_EPS(real,1.00*0.50,0.001); //Thrust must be 100% +- 0.01%
+
+
+		//Throttle up to 100%
+		ERROR_CHECK(EVDS_Variable_SetReal(command_throttle,1.0));
+
+		//Check transient (100% must be reached in 0.5 seconds)
+		ERROR_CHECK(EVDS_Object_Solve(object,0.1));
+		ERROR_CHECK(EVDS_Object_GetRealVariable(engine,"current.throttle",&real,&variable));
+		REAL_EQUAL_TO_EPS(real,0.60,0.001);
+
+		ERROR_CHECK(EVDS_Object_Solve(object,0.1));
+		ERROR_CHECK(EVDS_Object_GetRealVariable(engine,"current.throttle",&real,&variable));
+		REAL_EQUAL_TO_EPS(real,0.70,0.001);
+
+		ERROR_CHECK(EVDS_Object_Solve(object,0.1));
+		ERROR_CHECK(EVDS_Object_GetRealVariable(engine,"current.throttle",&real,&variable));
+		REAL_EQUAL_TO_EPS(real,0.80,0.001);
+
+		ERROR_CHECK(EVDS_Object_Solve(object,0.1));
+		ERROR_CHECK(EVDS_Object_GetRealVariable(engine,"current.throttle",&real,&variable));
+		REAL_EQUAL_TO_EPS(real,0.90,0.001);
+
+		ERROR_CHECK(EVDS_Object_Solve(object,0.1));
+		ERROR_CHECK(EVDS_Object_GetRealVariable(engine,"current.throttle",&real,&variable));
+		REAL_EQUAL_TO_EPS(real,1.00,0.001);
+
+		//Shutdown engine
+		ERROR_CHECK(EVDS_Variable_SetReal(command_throttle, 0.0));
+
+		//Check throttle falloff
+		SIMULATE_FOR_TIME(0.25);
+		ERROR_CHECK(EVDS_Object_GetRealVariable(engine,"current.throttle",&real,&variable));
+		REAL_EQUAL_TO_EPS(real,0.23*1.00,0.01); //22% halfway into shutdown time
+		SIMULATE_FOR_TIME(0.25);
+		ERROR_CHECK(EVDS_Object_GetRealVariable(engine,"current.throttle",&real,&variable));
+		REAL_EQUAL_TO_EPS(real,0.05*1.00,0.01); //5% at shutdown time
+
+
+		//Idle for some time
+		SIMULATE_FOR_TIME(5.0);
+		ERROR_CHECK(EVDS_Object_GetRealVariable(engine,"current.throttle",&real,&variable));
+		//Check actual throttle
+		ERROR_CHECK(EVDS_Object_GetRealVariable(engine,"current.throttle",&real,&variable));
+		REAL_EQUAL_TO_EPS(real,0.0,0.001);
+
+
+		//Start engine up again
+		ERROR_CHECK(EVDS_Variable_SetReal(command_throttle,0.50));
+		//Check thrust mid-start
+		SIMULATE_FOR_TIME(1.0);
+		ERROR_CHECK(EVDS_Object_GetRealVariable(engine,"current.throttle",&real,&variable));
+		REAL_EQUAL_TO_EPS(real,0.77*0.50,0.01); //Thrust must be 77% +- 1%
+
+		//Shutdown mid-start
+		ERROR_CHECK(EVDS_Variable_SetReal(command_throttle,0.00));
+		SIMULATE_FOR_TIME(0.25);
+		ERROR_CHECK(EVDS_Object_GetRealVariable(engine,"current.throttle",&real,&variable));
+		REAL_EQUAL_TO_EPS(real,0.23*0.77*0.50,0.01); //22%, including startup transient and throttle
+
+
+		//Idle for some time
+		SIMULATE_FOR_TIME(5.0);
+		ERROR_CHECK(EVDS_Object_GetRealVariable(engine,"current.throttle",&real,&variable));
+		//Check actual throttle
+		ERROR_CHECK(EVDS_Object_GetRealVariable(engine,"current.throttle",&real,&variable));
+		REAL_EQUAL_TO_EPS(real,0.0,0.001);
+
+
+		//Start engine up
+		ERROR_CHECK(EVDS_Variable_SetReal(command_throttle,0.50));
+		//Let engine start up and throttle up
+		SIMULATE_FOR_TIME(5.0);
+		ERROR_CHECK(EVDS_Object_GetRealVariable(engine,"current.throttle",&real,&variable));
+		REAL_EQUAL_TO_EPS(real,0.50,0.01); //50% throttle
+
+		//Check low throttling limit
+		ERROR_CHECK(EVDS_Variable_SetReal(command_throttle,0.45));
+		//Let engine change throttle and work for some time
+		SIMULATE_FOR_TIME(5.0);
+		ERROR_CHECK(EVDS_Object_GetRealVariable(engine,"current.throttle",&real,&variable));
+		REAL_EQUAL_TO_EPS(real,0.50,0.01); //50% throttle
+
+		//Check high throttling limit
+		ERROR_CHECK(EVDS_Variable_SetReal(command_throttle,1.50));
+		//Let engine start up and throttle up
+		SIMULATE_FOR_TIME(5.0);
+		ERROR_CHECK(EVDS_Object_GetRealVariable(engine,"current.throttle",&real,&variable));
+		REAL_EQUAL_TO_EPS(real,1.00,0.01); //100% throttle
+
+
+		//Let engine work until fuel depletion
+
+		//Shutdown engine
 	} END_TEST
 }
