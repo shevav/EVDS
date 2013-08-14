@@ -735,23 +735,23 @@ void Test_EVDS_ROCKET_ENGINE() {
 		ERROR_CHECK(EVDS_Object_LoadFromString(root,
 "<EVDS version=\"34\">"
 "    <object name=\"Vessel\" type=\"vessel\">"
-"        <object name=\"Fuel\" type=\"fuel_tank\">"
+"        <object name=\"Oxidizer\" type=\"fuel_tank\">"
 "            <parameter name=\"fuel.type\">O2</parameter>"
-"            <parameter name=\"fuel.mass\">40000</parameter>"
+"            <parameter name=\"fuel.mass\">4000</parameter>"
 "        </object>"
 "        <object name=\"Fuel\" type=\"fuel_tank\">"
 "            <parameter name=\"fuel.type\">H2</parameter>"
-"            <parameter name=\"fuel.mass\">10000</parameter>"
+"            <parameter name=\"fuel.mass\">1000</parameter>"
 "        </object>"
 "        <object name=\"Rocket engine\" type=\"rocket_engine\">"
 "            <parameter name=\"mass\">1000</parameter>"
-"            <parameter name=\"control.throttle_speed\">1.0</parameter>"
+"            <parameter name=\"control.throttle_speed\">0.25</parameter>"
 "            <parameter name=\"control.min_throttle\">0.5</parameter>"
 "            <parameter name=\"control.max_throttle\">1.0</parameter>"
 "            <parameter name=\"control.startup_time\">2.0</parameter>"
 "            <parameter name=\"control.shutdown_time\">0.5</parameter>"
 "            <parameter name=\"vacuum.isp\">400.0</parameter>"
-"            <parameter name=\"vacuum.thrust\">100.0</parameter>"
+"            <parameter name=\"vacuum.thrust\">100000.0</parameter>"
 "        </object>"
 "    </object>"
 "</EVDS>",&object));
@@ -798,24 +798,27 @@ void Test_EVDS_ROCKET_ENGINE() {
 		//Throttle up to 100%
 		ERROR_CHECK(EVDS_Variable_SetReal(command_throttle,1.0));
 
-		//Check transient (100% must be reached in 0.5 seconds)
-		ERROR_CHECK(EVDS_Object_Solve(object,0.1));
+		//Check transient (100% must be reached in 4.0 seconds)
+		ERROR_CHECK(EVDS_Object_GetRealVariable(engine,"current.throttle",&real,&variable));
+		REAL_EQUAL_TO_EPS(real,0.50,0.001);
+
+		ERROR_CHECK(EVDS_Object_Solve(object,0.4));
 		ERROR_CHECK(EVDS_Object_GetRealVariable(engine,"current.throttle",&real,&variable));
 		REAL_EQUAL_TO_EPS(real,0.60,0.001);
 
-		ERROR_CHECK(EVDS_Object_Solve(object,0.1));
+		ERROR_CHECK(EVDS_Object_Solve(object,0.4));
 		ERROR_CHECK(EVDS_Object_GetRealVariable(engine,"current.throttle",&real,&variable));
 		REAL_EQUAL_TO_EPS(real,0.70,0.001);
 
-		ERROR_CHECK(EVDS_Object_Solve(object,0.1));
+		ERROR_CHECK(EVDS_Object_Solve(object,0.4));
 		ERROR_CHECK(EVDS_Object_GetRealVariable(engine,"current.throttle",&real,&variable));
 		REAL_EQUAL_TO_EPS(real,0.80,0.001);
 
-		ERROR_CHECK(EVDS_Object_Solve(object,0.1));
+		ERROR_CHECK(EVDS_Object_Solve(object,0.4));
 		ERROR_CHECK(EVDS_Object_GetRealVariable(engine,"current.throttle",&real,&variable));
 		REAL_EQUAL_TO_EPS(real,0.90,0.001);
 
-		ERROR_CHECK(EVDS_Object_Solve(object,0.1));
+		ERROR_CHECK(EVDS_Object_Solve(object,0.4));
 		ERROR_CHECK(EVDS_Object_GetRealVariable(engine,"current.throttle",&real,&variable));
 		REAL_EQUAL_TO_EPS(real,1.00,0.001);
 
@@ -862,11 +865,9 @@ void Test_EVDS_ROCKET_ENGINE() {
 
 
 		//Start engine up
-		ERROR_CHECK(EVDS_Variable_SetReal(command_throttle,0.50));
+		ERROR_CHECK(EVDS_Variable_SetReal(command_throttle,1.00));
 		//Let engine start up and throttle up
-		SIMULATE_FOR_TIME(5.0);
-		ERROR_CHECK(EVDS_Object_GetRealVariable(engine,"current.throttle",&real,&variable));
-		REAL_EQUAL_TO_EPS(real,0.50,0.01); //50% throttle
+		SIMULATE_FOR_TIME(10.0);
 
 		//Check low throttling limit
 		ERROR_CHECK(EVDS_Variable_SetReal(command_throttle,0.45));
@@ -877,14 +878,9 @@ void Test_EVDS_ROCKET_ENGINE() {
 
 		//Check high throttling limit
 		ERROR_CHECK(EVDS_Variable_SetReal(command_throttle,1.50));
-		//Let engine start up and throttle up
+		//Let engine change throttle and work for some time
 		SIMULATE_FOR_TIME(5.0);
 		ERROR_CHECK(EVDS_Object_GetRealVariable(engine,"current.throttle",&real,&variable));
 		REAL_EQUAL_TO_EPS(real,1.00,0.01); //100% throttle
-
-
-		//Let engine work until fuel depletion
-
-		//Shutdown engine
 	} END_TEST
 }
