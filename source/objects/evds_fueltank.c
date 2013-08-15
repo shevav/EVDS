@@ -176,6 +176,7 @@ int EVDS_InternalFuelTank_Solve(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVDS_O
 /// @brief Initialize solver
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_InternalFuelTank_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVDS_OBJECT* object) {
+	SIMC_LOCK_ID lock;
 	EVDS_VARIABLE* variable;
 	EVDS_REAL fuel_mass = 0.0;
 	EVDS_REAL fuel_volume = 0.0;
@@ -285,7 +286,9 @@ int EVDS_InternalFuelTank_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, E
 	}
 	EVDS_Object_AddRealVariable(object,"total_mass",0,0);
 
-	//Add a mutex lock that allows 
+	//Add a mutex lock for EVDS_FuelTank_Consume()
+	lock = SIMC_Lock_Create();
+	EVDS_Object_SetSolverdata(object,lock);	
 	return EVDS_CLAIM_OBJECT;
 }
 
@@ -294,6 +297,9 @@ int EVDS_InternalFuelTank_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, E
 /// @brief Deinitialize engine solver
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_InternalFuelTank_Deinitialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVDS_OBJECT* object) {
+	SIMC_LOCK_ID lock;
+	EVDS_Object_GetSolverdata(object,&lock);
+	SIMC_Lock_Destroy(lock);
 	return EVDS_OK;
 }
 
@@ -315,16 +321,27 @@ int EVDS_InternalFuelTank_Deinitialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver,
 /// @retval EVDS_ERROR_BAD_PARAMETER "tank" does not have remaining fuel mass defined
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_FuelTank_Consume(EVDS_OBJECT* tank, EVDS_REAL amount, EVDS_REAL* consumed) {
+	SIMC_LOCK_ID lock;
 	EVDS_VARIABLE* variable;
 	EVDS_REAL fuel_mass;
+	if (consumed) *consumed = 0.0; //No consumption by default
 	if (!tank) return EVDS_ERROR_BAD_PARAMETER;
 	if (EVDS_Object_CheckType(tank,"fuel_tank") != EVDS_OK) return EVDS_ERROR_BAD_PARAMETER;
 
+	//Get the lock to prevent two threads from concurrently consuming fuel
+	EVDS_Object_GetSolverdata(tank,&lock);
+	SIMC_Lock_Enter(lock);
+
 	//Get amount of fuel remaining
-	if (EVDS_Object_GetVariable(tank,"fuel.mass",&variable) != EVDS_OK) return EVDS_ERROR_BAD_PARAMETER;
+	if (EVDS_Object_GetVariable(tank,"fuel.mass",&variable) != EVDS_OK) {
+		SIMC_Lock_Leave(lock);
+		return EVDS_ERROR_BAD_PARAMETER;
+	}
 	EVDS_Variable_GetReal(variable,&fuel_mass);
+
+	//Check if tank is already depleted
 	if (fuel_mass <= 0.0) {
-		if (consumed) *consumed = 0.0;
+		SIMC_Lock_Leave(lock);
 		return EVDS_OK;
 	}
 
@@ -338,6 +355,9 @@ int EVDS_FuelTank_Consume(EVDS_OBJECT* tank, EVDS_REAL amount, EVDS_REAL* consum
 	}
 	if (fuel_mass < 0.0) fuel_mass = 0.0; //Clamp just in case
 	EVDS_Variable_SetReal(variable,fuel_mass);
+
+	//Unlock and return
+	SIMC_Lock_Leave(lock);
 	return EVDS_OK;
 }
 

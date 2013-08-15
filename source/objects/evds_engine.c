@@ -829,7 +829,7 @@ int EVDS_InternalRocketEngine_Solve(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EV
 
 	//Apply throttling limits
 	if ((control_min_throttle != 0.0) && (command_throttle < control_min_throttle) &&
-		(command_throttle > control_min_throttle*0.40)) {
+		(command_throttle > control_min_throttle*0.80)) {
 		command_throttle = control_min_throttle;
 	}
 	if ((control_max_throttle != 0.0) && (command_throttle > control_max_throttle)) {
@@ -884,7 +884,7 @@ int EVDS_InternalRocketEngine_Solve(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EV
 			delta = (command_throttle - current_throttle) * delta_time * 6.0 * control_throttle_speed;
 
 			//Snap throttle to minimum value
-			if ((command_throttle >= control_min_throttle*0.4) &&
+			if ((command_throttle >= control_min_throttle*0.8) &&
 				(current_throttle < control_min_throttle)) {
 				current_throttle = control_min_throttle;
 			}
