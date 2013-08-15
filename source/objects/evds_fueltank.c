@@ -284,6 +284,8 @@ int EVDS_InternalFuelTank_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, E
 		EVDS_Object_AddRealVariable(object,"mass",0,0);
 	}
 	EVDS_Object_AddRealVariable(object,"total_mass",0,0);
+
+	//Add a mutex lock that allows 
 	return EVDS_CLAIM_OBJECT;
 }
 
@@ -292,6 +294,50 @@ int EVDS_InternalFuelTank_Initialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, E
 /// @brief Deinitialize engine solver
 ////////////////////////////////////////////////////////////////////////////////
 int EVDS_InternalFuelTank_Deinitialize(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EVDS_OBJECT* object) {
+	return EVDS_OK;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// @brief Consume fuel from a fuel tank.
+///
+/// This is a thread-safe call that consumes certain amount of fuel from the tank, and 
+/// returns actual amount consumed (which can be less if fuel tank ran out of fuel).
+///
+/// @param[in] tank Pointer to fuel tank object
+/// @param[in] amount Amount of propellant that must be consumed (in kg)
+/// @param[out] consumed Actual amount of propellant that was consumed will be written here.
+///
+/// @returns Error code
+/// @retval EVDS_OK Successfully completed
+/// @retval EVDS_ERROR_BAD_PARAMETER "tank" is null
+/// @retval EVDS_ERROR_BAD_PARAMETER "tank" is not a fuel tank
+/// @retval EVDS_ERROR_BAD_PARAMETER "tank" does not have remaining fuel mass defined
+////////////////////////////////////////////////////////////////////////////////
+int EVDS_FuelTank_Consume(EVDS_OBJECT* tank, EVDS_REAL amount, EVDS_REAL* consumed) {
+	EVDS_VARIABLE* variable;
+	EVDS_REAL fuel_mass;
+	if (!tank) return EVDS_ERROR_BAD_PARAMETER;
+	if (EVDS_Object_CheckType(tank,"fuel_tank") != EVDS_OK) return EVDS_ERROR_BAD_PARAMETER;
+
+	//Get amount of fuel remaining
+	if (EVDS_Object_GetVariable(tank,"fuel.mass",&variable) != EVDS_OK) return EVDS_ERROR_BAD_PARAMETER;
+	EVDS_Variable_GetReal(variable,&fuel_mass);
+	if (fuel_mass <= 0.0) {
+		if (consumed) *consumed = 0.0;
+		return EVDS_OK;
+	}
+
+	//Consume some portion of fuel
+	if (fuel_mass <= amount) { //Not enough fuel in this tank
+		if (consumed) *consumed = fuel_mass;
+		fuel_mass = 0.0;
+	} else {
+		if (consumed) *consumed = amount;
+		fuel_mass -= amount;
+	}
+	if (fuel_mass < 0.0) fuel_mass = 0.0; //Clamp just in case
+	EVDS_Variable_SetReal(variable,fuel_mass);
 	return EVDS_OK;
 }
 

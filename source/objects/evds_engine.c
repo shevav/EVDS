@@ -770,62 +770,28 @@ int EVDS_InternalRocketEngine_ConsumeFuel(EVDS_SOLVER_ENGINE_USERDATA* userdata,
 	//Consume from fuel tanks
 	entry = SIMC_List_GetFirst(userdata->fuel_tanks);
 	while (entry) {
-		char type[256] = { 0 };
-		EVDS_REAL fuel_mass;
-		EVDS_VARIABLE* variable;
+		EVDS_REAL consumed;
 		EVDS_OBJECT* tank = (EVDS_OBJECT*)SIMC_List_GetData(userdata->fuel_tanks,entry);
 
-		//Find fuel tank with remaining fuel
-		if (EVDS_Object_GetVariable(tank,"fuel.mass",&variable) != EVDS_OK) {
-			entry = SIMC_List_GetNext(userdata->fuel_tanks,entry);
-			continue;
+		//Consume fuel from the tank
+		if (delta_fuel > 0.0) {
+			EVDS_FuelTank_Consume(tank,delta_fuel,&consumed);
+			delta_fuel -= consumed;
 		}
-		EVDS_Variable_GetReal(variable,&fuel_mass);
-		if (fuel_mass <= 0.0) {
-			entry = SIMC_List_GetNext(userdata->fuel_tanks,entry);
-			continue;
-		}
-
-		//Consume some portion of fuel
-		if (fuel_mass <= delta_fuel) { //Not enough fuel in this tank
-			delta_fuel -= fuel_mass;
-			fuel_mass = 0.0;
-		} else {
-			fuel_mass -= delta_fuel;
-		}
-		if (fuel_mass < 0.0) fuel_mass = 0.0; //Clamp just in case
-		EVDS_Variable_SetReal(variable,fuel_mass);
 		entry = SIMC_List_GetNext(userdata->fuel_tanks,entry);
 	}
 
 	//Consume from oxidizer tanks
 	entry = SIMC_List_GetFirst(userdata->oxidizer_tanks);
 	while (entry) {
-		char type[256] = { 0 };
-		EVDS_REAL oxidizer_mass;
-		EVDS_VARIABLE* variable;
+		EVDS_REAL consumed;
 		EVDS_OBJECT* tank = (EVDS_OBJECT*)SIMC_List_GetData(userdata->oxidizer_tanks,entry);
 
-		//Find oxidizer tank with remaining oxidizer
-		if (EVDS_Object_GetVariable(tank,"fuel.mass",&variable) != EVDS_OK) {
-			entry = SIMC_List_GetNext(userdata->oxidizer_tanks,entry);
-			continue;
-		}
-		EVDS_Variable_GetReal(variable,&oxidizer_mass);
-		if (oxidizer_mass <= 0.0) {
-			entry = SIMC_List_GetNext(userdata->oxidizer_tanks,entry);
-			continue;
-		}
-
 		//Consume some portion of oxidizer
-		if (oxidizer_mass <= delta_oxidizer) { //Not enough fuel in this tank
-			delta_oxidizer -= oxidizer_mass;
-			oxidizer_mass = 0.0;
-		} else {
-			oxidizer_mass -= delta_oxidizer;
+		if (delta_oxidizer > 0.0) {
+			EVDS_FuelTank_Consume(tank,delta_oxidizer,&consumed);
+			delta_oxidizer -= consumed;
 		}
-		if (oxidizer_mass < 0.0) oxidizer_mass = 0.0; //Clamp just in case
-		EVDS_Variable_SetReal(variable,oxidizer_mass);
 		entry = SIMC_List_GetNext(userdata->oxidizer_tanks,entry);
 	}
 	return EVDS_OK;
@@ -877,7 +843,8 @@ int EVDS_InternalRocketEngine_Solve(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EV
 		current_ignition = 1.0;
 		current_time_since_ignition = 0.0;
 	}
-	if ((fuel_present) && (current_ignition > 0.5) && (command_throttle < control_min_throttle*0.40)) {
+	if ((fuel_present) && (current_ignition > 0.5) && 
+		(command_throttle < control_min_throttle*0.80) && (command_throttle <= 0.0)) {
 		current_ignition = 0.0;
 		current_time_since_ignition = 0.0;
 	}
@@ -891,10 +858,14 @@ int EVDS_InternalRocketEngine_Solve(EVDS_SYSTEM* system, EVDS_SOLVER* solver, EV
 	transient_exponent = 1.0; //Default: no transient
 	if (current_ignition > 0.5) {
 		//Startup
-		transient_exponent = 1.0 - exp(-3.0*current_time_since_ignition / control_startup_time);
+		if (control_startup_time > 0.0) {
+			transient_exponent = 1.0 - exp(-3.0*current_time_since_ignition / control_startup_time);
+		}
 	} else if (current_ignition < 0.5) {
 		//Shutdown
-		transient_exponent = exp(-3.0*current_time_since_ignition / control_shutdown_time);
+		if (control_shutdown_time > 0.0) {
+			transient_exponent = exp(-3.0*current_time_since_ignition / control_shutdown_time);
+		}
 	}
 
 	//Calculate current throttle based on commanded throttle

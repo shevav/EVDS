@@ -470,7 +470,7 @@ void Test_EVDS_GIMBAL() {
 
 
 void Test_EVDS_ROCKET_ENGINE() {
-	/*START_TEST("Rocket engine (nozzle parameters)") {
+	START_TEST("Rocket engine (nozzle parameters)") {
 		////////////////////////////////////////////////////////////////////////
 		ERROR_CHECK(EVDS_Object_LoadFromString(root,
 "<EVDS version=\"31\">"
@@ -724,7 +724,7 @@ void Test_EVDS_ROCKET_ENGINE() {
 		EVDS_Vector_GetPositionVector(&derivative.force,&vector); //Must be located in reference point
 		EQUAL_TO(vector.coordinate_system,object);
 		VECTOR_EQUAL_TO(&vector,0.0,0.0,0.0);
-	} END_TEST*/
+	} END_TEST
 		
 
 
@@ -766,7 +766,7 @@ void Test_EVDS_ROCKET_ENGINE() {
 #define SIMULATE_FOR_TIME(T) \
 		{ \
 			double time; \
-			for (time = 0; time < T; time += 0.01) ERROR_CHECK(EVDS_Object_Solve(object,0.01)); \
+			for (time = 0; time < T; time += 0.01) ERROR_CHECK(EVDS_Object_Solve(engine,0.01)); \
 		}
 
 		//Idle engine for 1 second
@@ -867,8 +867,73 @@ void Test_EVDS_ROCKET_ENGINE() {
 		SIMULATE_FOR_TIME(5.0);
 		ERROR_CHECK(EVDS_Object_GetRealVariable(engine,"current.throttle",&real,&variable));
 		REAL_EQUAL_TO_EPS(real,1.00,0.01); //100% throttle
+	} END_TEST
 
 
-		ERROR_CHECK(EVDS_Object_Solve(object,50.0));
+
+
+	START_TEST("Rocket engine (fuel consumption tests)") {
+		////////////////////////////////////////////////////////////////////////
+		EVDS_OBJECT* engine;
+		EVDS_VARIABLE* command_throttle;
+		ERROR_CHECK(EVDS_Object_LoadFromString(root,
+"<EVDS version=\"34\">"
+"    <object name=\"Vessel\" type=\"vessel\">"
+"        <object name=\"Oxidizer\" type=\"fuel_tank\">"
+"            <parameter name=\"fuel.type\">O2</parameter>"
+"            <parameter name=\"fuel.mass\">400</parameter>"
+"        </object>"
+"        <object name=\"Fuel\" type=\"fuel_tank\">"
+"            <parameter name=\"fuel.type\">H2</parameter>"
+"            <parameter name=\"fuel.mass\">100</parameter>"
+"        </object>"
+"        <object name=\"Rocket engine\" type=\"rocket_engine\">"
+"            <parameter name=\"mass\">1000</parameter>"
+"            <parameter name=\"vacuum.exhaust_velocity\">1000.0</parameter>"
+"            <parameter name=\"vacuum.thrust\">1000.0</parameter>"
+"        </object>"
+"    </object>"
+"</EVDS>",&object));
+		ERROR_CHECK(EVDS_Object_Initialize(object,1));
+		ERROR_CHECK(EVDS_System_GetObjectByName(system,"Rocket engine",0,&engine));
+		ERROR_CHECK(EVDS_Object_GetVariable(engine,"command.throttle",&command_throttle));
+
+		//Reset throttle
+		ERROR_CHECK(EVDS_Variable_SetReal(command_throttle,0.0));
+		ERROR_CHECK(EVDS_Object_Solve(object,0.0));
+
+		//Startup engine and run it for some time
+		ERROR_CHECK(EVDS_Variable_SetReal(command_throttle,1.0));
+		for (real = 0.0; real < 250.0; real += 1.0) {
+			ERROR_CHECK(EVDS_Object_Solve(engine,1.0));
+		}
+
+		//Mass flow is 1.0 kg/sec. The propellants should be worth for 500.0 seconds of flight.
+		//After 250 seconds, half of propellants must be remaining
+
+		//Check remaining fuel
+		ERROR_CHECK(EVDS_System_GetObjectByName(system,"Fuel",0,&object));
+		ERROR_CHECK(EVDS_Object_GetRealVariable(object,"fuel.mass",&real,&variable));
+		REAL_EQUAL_TO_EPS(real,50.0,EVDS_EPSf);
+
+		//Check remaining oxidizer
+		ERROR_CHECK(EVDS_System_GetObjectByName(system,"Oxidizer",0,&object));
+		ERROR_CHECK(EVDS_Object_GetRealVariable(object,"fuel.mass",&real,&variable));
+		REAL_EQUAL_TO_EPS(real,200.0,EVDS_EPSf);
+
+		//Run engine for 300.0 more seconds (so it depletes fuel)
+		for (real = 0.0; real < 300.0; real += 1.0) {
+			ERROR_CHECK(EVDS_Object_Solve(engine,1.0));
+		}
+
+		//Check remaining fuel
+		ERROR_CHECK(EVDS_System_GetObjectByName(system,"Fuel",0,&object));
+		ERROR_CHECK(EVDS_Object_GetRealVariable(object,"fuel.mass",&real,&variable));
+		REAL_EQUAL_TO(real,0.0);
+
+		//Check remaining oxidizer
+		ERROR_CHECK(EVDS_System_GetObjectByName(system,"Oxidizer",0,&object));
+		ERROR_CHECK(EVDS_Object_GetRealVariable(object,"fuel.mass",&real,&variable));
+		REAL_EQUAL_TO(real,0.0);
 	} END_TEST
 }

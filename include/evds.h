@@ -1583,6 +1583,9 @@ EVDS_API int EVDS_Propagator_RK4_Register(EVDS_SYSTEM* system);
 // Update all vessels and detach them if required. Must be called by user to support "detach" variable for vessels.
 EVDS_API int EVDS_RigidBody_UpdateDetaching(EVDS_SYSTEM* system);
 
+// Consume fuel from a fuel tank (thread-safe - does not leak fuel away)
+EVDS_API int EVDS_FuelTank_Consume(EVDS_OBJECT* tank, EVDS_REAL amount, EVDS_REAL* consumed);
+
 // Find the nearest planetary body
 EVDS_API int EVDS_Planet_GetNearest(EVDS_OBJECT* object, EVDS_OBJECT** p_planet);
 
